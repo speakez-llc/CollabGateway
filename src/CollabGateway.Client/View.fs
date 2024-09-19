@@ -4,6 +4,7 @@ open Feliz
 open Router
 open Elmish
 open Feliz.UseElmish
+open Fable.FontAwesome
 
 type private Msg =
     | UrlChanged of Page
@@ -24,17 +25,25 @@ let private update (msg:Msg) (state:State) : State * Cmd<Msg> =
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
 
-    let (isOpen, setIsOpen) = React.useState true
+    let (isOpen, setIsOpen) = React.useState false
     let toggleSidebar () = setIsOpen (not isOpen)
+
+    let (theme, setTheme) = React.useState "dark"
+    React.useEffectOnce(fun () ->
+        let html = Browser.Dom.document.documentElement
+        html.setAttribute("data-theme", "dark")
+    )
 
     let toggleTheme () =
         let html = Browser.Dom.document.documentElement
         let currentTheme = html.getAttribute("data-theme")
         let newTheme =
             match currentTheme with
+            | "fantasy" -> "dark"
             | "dark" -> "fantasy"
-            | _ -> "dark"
+            | _ -> "fantasy"
         html.setAttribute("data-theme", newTheme)
+        setTheme newTheme
 
     let render =
         match state.Page with
@@ -50,15 +59,15 @@ let AppView () =
                     prop.className "p-4 flex items-center justify-between fixed top-0 left-0 w-full z-10"
                     prop.children [
                         Html.div [
-                            prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out "
+                            prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out"
                             prop.onClick (fun _ -> toggleSidebar())
                             prop.children [
                                 Html.img [
-                                    prop.src "/img/Rower_Icon_Gold_t.svg" // Replace with the actual path to your hamburger icon
+                                    prop.src "/img/Rower_Icon_Gold_t.svg" 
                                     prop.alt "Toggle Sidebar"
                                     prop.style [
-                                        style.width (length.px 24) // Adjust the width as needed
-                                        style.height (length.px 24) // Adjust the height as needed
+                                        style.width (length.px 24) 
+                                        style.height (length.px 24) 
                                     ]
                                 ]
                                 Html.h1 [
@@ -70,23 +79,14 @@ let AppView () =
                         Html.div [
                             prop.className "flex items-center"
                             prop.children [
-                                Html.label [
-                                    prop.className "swap swap-rotate"
+                                Html.i [
+                                    prop.className "cursor-pointer"
+                                    prop.onClick (fun _ -> toggleTheme())
                                     prop.children [
-                                        Html.input [
-                                            prop.type' "checkbox"
-                                            prop.onChange (fun (_: Browser.Types.Event) -> toggleTheme())
-                                        ]
-                                        Html.div [
-                                            prop.className "flex items-center"
-                                            prop.children [
-                                                Html.button [
-                                                    prop.className "btn btn-primary"
-                                                    prop.text "Toggle Theme"
-                                                    prop.onClick (fun _ -> toggleTheme())
-                                                ]
-                                            ]
-                                        ]
+                                        if theme = "dark" then
+                                            Fa.i [ Fa.Solid.Sun ] []
+                                        else
+                                            Fa.i [ Fa.Solid.Moon ] []
                                     ]
                                 ]
                             ]
@@ -120,10 +120,10 @@ let AppView () =
                         ]
                         // Main content area
                         Html.div [
-                            prop.className "flex flex-col flex-1 overflow-hidden"
+                            prop.className "flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out"
                             prop.children [
                                 Html.div [
-                                    prop.className "flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out"
+                                    prop.className "flex-1 overflow-auto p-4"
                                     prop.children [ render ]
                                 ]
                             ]
