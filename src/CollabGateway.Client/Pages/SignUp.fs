@@ -24,8 +24,8 @@ let private init () = { Message = "This is the SignUp page" }, Cmd.none
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
-    | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
-    | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
+    | MessageReceived (Ok msg) -> { model with Message = $"Information Successfully Pasted" }, Cmd.none
+    | MessageReceived (Error error) -> { model with Message = $"Message Received!" }, Cmd.none
 
 [<ReactComponent>]
 let IndexView () =
@@ -37,6 +37,11 @@ let IndexView () =
             prop.children [
                 Html.div [
                     prop.children [
+                        // Header with the message
+                        Html.h1 [
+                            prop.className "text-2xl font-bold mb-4 mx-auto"
+                            prop.text state.Message
+                        ]
                         // Full Name
                         Html.div [
                             prop.className "relative flex flex-col space-y-2 w-full md:w-1/2"
@@ -243,6 +248,26 @@ let IndexView () =
                                 Html.div [
                                     prop.className "skeleton rounded-lg h-10 w-full"
                                 ]
+                            ]
+                        ]
+                        Html.div [
+                            prop.className "relative flex flex-col space-y-2 w-full md:w-1/2 mt-4"
+                            prop.children [
+                                // Button group
+                                Daisy.join [
+                                    Daisy.button.button [
+                                        join.item
+                                        button.warning
+                                        prop.text "Smart Paste"
+                                        prop.onClick (fun _ -> true |> AskForMessage |> dispatch)
+                                    ]
+                                    Daisy.button.button [
+                                        join.item
+                                        button.success
+                                        prop.text "Send Your Info"
+                                        prop.onClick (fun _ -> false |> AskForMessage |> dispatch)
+                                    ]
+                            ]
                             ]
                         ]
                     ]

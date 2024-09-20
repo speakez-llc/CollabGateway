@@ -81,7 +81,7 @@ let AppView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "flex items-center"
+                            prop.className "flex items-center mr-2 text-xl"
                             prop.children [
                                 Html.i [
                                     prop.className "cursor-pointer"
@@ -111,7 +111,6 @@ let AppView () =
                                     prop.className (sprintf "menu p-4 min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-0"))
                                     prop.children [
                                         Html.li [
-                                            prop.className "text-primary"
                                             prop.children [
                                                 Html.a [
                                                     prop.href "#"

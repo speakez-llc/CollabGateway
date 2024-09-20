@@ -37,7 +37,7 @@ let IndexView () =
             prop.children [
                 // Header with the message
                 Html.h1 [
-                    prop.className "text-2xl font-bold mb-4 mx-auto"
+                    prop.className "text-2xl font-bold mx-auto"
                     prop.text state.Message
                 ]
                 Html.img [
