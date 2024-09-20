@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-    plugins: [react({ jsxRuntime: 'classic'})], // jsxRuntime: 'classic' is required for fast-refresh for .js files
+    plugins: [react({ jsxRuntime: 'classic'})], 
     root: "./src/CollabGateway.Client",
     server: {
         port: 8080,
