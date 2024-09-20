@@ -6,9 +6,6 @@ chmod +x dotnet-install.sh
 ./dotnet-install.sh -c 8.0 -InstallDir ./dotnet8
 export PATH=./dotnet8:$PATH
 
-# Verify .NET installation
-dotnet --version
-
 # Restore tools and build the project
 dotnet tool restore
 dotnet build
