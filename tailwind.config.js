@@ -1,8 +1,22 @@
 import daisyui from 'daisyui'
+
 export default {
     content: [
         "./src/CollabGateway.Client/.fable-build/**/*.{js,ts,jsx,tsx}",
     ],
+    theme: {
+        extend: {
+            animation: {
+                fade: 'fadeIn 500ms ease-in-out',
+            },
+            keyframes: {
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                },
+            },
+        },
+    },
     plugins: [
         daisyui,
     ],

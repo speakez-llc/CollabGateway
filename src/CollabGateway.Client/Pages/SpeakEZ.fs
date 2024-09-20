@@ -1,4 +1,4 @@
-﻿module CollabGateway.Client.Pages.Index
+﻿module CollabGateway.Client.Pages.SpeakEZ
 
 open Feliz
 open Feliz.DaisyUI
@@ -19,7 +19,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Discover the Next Generation of Decision Support" }, Cmd.none
+let private init () = { Message = "This is the About SpeakEZ page" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -33,16 +33,31 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col items-center justify-center space-y-4"
+            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
             prop.children [
                 // Header with the message
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
-                Html.img [
-                    prop.src "/img/Collab_Logo.svg"
-                    prop.alt "Collab Logo"
+                // First row with one skeleton box
+                Html.div [
+                    prop.className "skeleton rounded-lg h-32 w-4/5 mx-auto"
+                ]
+                // Second row with three skeleton boxes
+                Html.div [
+                    prop.className "flex justify-between space-x-4 w-4/5 mx-auto"
+                    prop.children [
+                        Html.div [
+                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                        ]
+                        Html.div [
+                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                        ]
+                        Html.div [
+                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                        ]
+                    ]
                 ]
             ]
         ]

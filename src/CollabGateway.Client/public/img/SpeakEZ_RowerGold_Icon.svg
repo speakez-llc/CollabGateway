@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 89 89"
+   xml:space="preserve"
+   sodipodi:docname="SpeakEZ_RowerGold_Icon.svg"
+   width="89"
+   height="89"
+   inkscape:version="1.3.1 (91b66b0783, 2023-11-16)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata
+   id="metadata29"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs27" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1350"
+   inkscape:window-height="1237"
+   id="namedview25"
+   showgrid="false"
+   fit-margin-left="2"
+   fit-margin-top="2"
+   fit-margin-right="2"
+   fit-margin-bottom="2"
+   inkscape:zoom="2.6767676"
+   inkscape:cx="121.04151"
+   inkscape:cy="50.247171"
+   inkscape:window-x="1031"
+   inkscape:window-y="130"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_1"
+   inkscape:showpageshadow="0"
+   inkscape:pagecheckerboard="1"
+   inkscape:deskcolor="#d1d1d1" />
+
+<g
+   id="g22"
+   transform="translate(-161.7,-258.3)"
+   style="fill:#c18e3a;fill-opacity:1">
+	<path
+   d="m 246.1,337 c 0,-0.1 -2.5,-6.2 -2.5,-12.3 V 324 c 0,-2.7 0,-6 0.9,-9.6 1.2,-4.5 2,-8 2,-12.7 0,-22.8 -18.6,-41.4 -41.4,-41.4 -22.8,0 -41.4,18.6 -41.4,41.4 0,22.8 18.6,41.4 41.4,41.4 h 36.9 6.7 z m -11.6,-12.9 v 0.6 c 0,3.4 0.6,6.8 1.3,9.5 H 205 c -17.9,0 -32.4,-14.5 -32.4,-32.4 0,-17.9 14.6,-32.4 32.4,-32.4 17.8,0 32.4,14.5 32.4,32.4 0,3.3 -0.5,5.9 -1.7,10.4 -1.2,4.7 -1.2,8.8 -1.2,11.9 z"
+   id="path18"
+   style="fill:#c18e3a;fill-opacity:1" />
+	<path
+   d="m 217.8,280.3 c -3.8,-3.6 -8.7,-5.3 -13.9,-5 -9.4,0.6 -17.1,8.4 -17.4,17.9 -0.2,5.3 1.9,10.4 5.6,14 l -2.1,12 c -0.3,2.1 0.2,4.1 1.6,5.8 1.4,1.6 3.3,2.5 5.5,2.5 h 16.1 c 2.1,0 4.1,-0.9 5.5,-2.5 1.3,-1.6 1.9,-3.7 1.6,-5.7 l -2,-12 c 3.5,-3.5 5.6,-8.3 5.6,-13.3 -0.2,-5.3 -2.4,-10.2 -6.1,-13.7 z m -7.1,21.3 -2.2,1.6 2.5,15.2 h -11.7 l 2.5,-15.2 -2.2,-1.6 c -2.6,-1.9 -4.1,-4.9 -4,-8.2 0.2,-4.9 4.1,-8.9 9,-9.2 2.7,-0.2 5.2,0.8 7.2,2.6 2,1.8 3,4.3 3,7 -0.1,3.1 -1.6,6 -4.1,7.8 z"
+   id="path20"
+   style="fill:#c18e3a;fill-opacity:1" />
+</g>
+</svg>

@@ -1,4 +1,4 @@
-﻿module CollabGateway.Client.Pages.Index
+﻿module CollabGateway.Client.Pages.Contact
 
 open Feliz
 open Feliz.DaisyUI
@@ -19,7 +19,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Discover the Next Generation of Decision Support" }, Cmd.none
+let private init () = { Message = "This is the Contact Form page" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -33,18 +33,29 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col items-center justify-center space-y-4"
+            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-4/5 mx-auto"
             prop.children [
                 // Header with the message
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
-                Html.img [
-                    prop.src "/img/Collab_Logo.svg"
-                    prop.alt "Collab Logo"
+                // Skeleton placeholder for Name field
+                Html.div [
+                    prop.className "skeleton rounded-lg h-10 w-full"
+                ]
+                // Skeleton placeholder for Email field
+                Html.div [
+                    prop.className "skeleton rounded-lg h-10 w-full"
+                ]
+                // Skeleton placeholder for Message field
+                Html.div [
+                    prop.className "skeleton rounded-lg h-32 w-full"
+                ]
+                // Skeleton placeholder for Submit button
+                Html.div [
+                    prop.className "skeleton rounded-lg h-10 w-1/4"
                 ]
             ]
         ]
     ]
-
