@@ -1,0 +1,6 @@
+name = "collabgateway"
+type = "javascript"
+
+[build]
+command = "./build.sh"
+directory = "publish/app/public"
