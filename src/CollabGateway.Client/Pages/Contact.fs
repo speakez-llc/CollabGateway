@@ -6,6 +6,7 @@ open UseElmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
 open Fable.Form.Simple
+open Fable.Form.Simple.Bulma
 
 type Model = {
     Form: Form.View.Model<ContactForm>
@@ -13,8 +14,6 @@ type Model = {
 }
 
 type private Msg =
-    | AskForMessage of bool
-    | MessageReceived of ServerResult<string>
     | FormChanged of Form.View.Model<ContactForm>
     | FormSubmitted of ServerResult<string>
 
@@ -24,9 +23,6 @@ let private init () =
 
 let private update (msg:Msg) (model:Model) : Model * Cmd<Msg> =
     match msg with
-    | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
-    | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
-    | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
     | FormChanged form -> { model with Form = form }, Cmd.none
     | FormSubmitted (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
     | FormSubmitted (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
@@ -67,17 +63,18 @@ let private form: Form.Form<ContactForm, Msg, _> =
             Attributes = {
                 Label = "Message"
                 Placeholder = "Your message"
-                HtmlAttributes = [ prop.autoComplete "message" ]
+                HtmlAttributes = [ prop.autoComplete "off" ]
             }
         }
 
     let onSubmit (form: ContactForm) =
         FormSubmitted (Ok "Form submitted successfully")
 
-    Form.succeed onSubmit
-        |> Form.append nameField
-        |> Form.append emailField
-        |> Form.append messageField
+
+    Form.succeed (fun form -> onSubmit form)
+    |> Form.append nameField
+    |> Form.append emailField
+    |> Form.append messageField
 
 [<ReactComponent>]
 let IndexView () =
@@ -91,7 +88,7 @@ let IndexView () =
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
-                Form.View {
+                Form.View.asHtml {
                     Dispatch = dispatch
                     OnChange = FormChanged
                     Action = Form.View.Action.SubmitOnly "Submit"
