@@ -85,7 +85,7 @@ let IndexView () =
                                             prop.text "A Variety of Industries"
                                         ]
                                         Html.p [
-                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value."
+                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on the investment."
                                         ]
                                     ]
                                 ]
