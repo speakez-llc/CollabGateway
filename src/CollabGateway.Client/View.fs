@@ -25,7 +25,7 @@ let private update (msg:Msg) (state:State) : State * Cmd<Msg> =
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
 
-    let (isOpen, setIsOpen) = React.useState true // Set initial state to true to keep the sidebar open by default
+    let (isOpen, setIsOpen) = React.useState false // Default to closed position
     let toggleSidebar () = setIsOpen (not isOpen)
 
     let (theme, setTheme) = React.useState "dark"
@@ -45,6 +45,9 @@ let AppView () =
         html.setAttribute("data-theme", newTheme)
         setTheme newTheme
 
+    let handleItemClick () =
+        setIsOpen false
+
     let render =
         match state.Page with
         | Page.Index -> Pages.Index.IndexView ()
@@ -63,24 +66,23 @@ let AppView () =
                     prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-300" // Ensure top bar has a higher z-index and a solid background color
                     prop.children [
                         Html.div [
-                            prop.className "flex items-center transition-all duration-300 ease-in-out"
+                            prop.className "flex items-center transition-all duration-500 ease-in-out ml-2"
                             prop.children [
                                 // Hamburger icon
-                                if not isOpen then
-                                    Html.div [
-                                        prop.className "cursor-pointer mr-2"
-                                        prop.onClick (fun _ -> toggleSidebar())
-                                        prop.children [
-                                            Fa.i [ Fa.Solid.Bars ] []
-                                        ]
-                                    ]
                                 Html.div [
-                                    prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out"
+                                    prop.className "cursor-pointer mr-2"
+                                    prop.onClick (fun _ -> toggleSidebar())
+                                    prop.children [
+                                        Fa.i [ Fa.Solid.Bars ] []
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "cursor-pointer flex items-center transition-all duration-500 ease-in-out ml-4"
                                     prop.onClick (fun _ -> toggleSidebar())
                                     prop.children [
                                         Html.img [
                                             prop.src "/img/Rower_Icon_Gold_t.svg"
-                                            prop.alt "Toggle Sidebar"
+                                            prop.alt "Sidebar Menu Control"
                                             prop.style [
                                                 style.width (length.px 24)
                                                 style.height (length.px 24)
@@ -117,21 +119,21 @@ let AppView () =
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else "w-0")) // Ensure sidebar is fixed and covers full height
-                            prop.style [ style.width (if isOpen then length.rem 16 else length.rem 0) ]
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else "w-16")) // Ensure sidebar is fixed and covers full height
+                            prop.style [ style.width (if isOpen then length.rem 16 else length.rem 4) ]
                             prop.children [
                                 // Sidebar content here
                                 Html.ul [
-                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-0"))
+                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-100"))
                                     prop.children [
                                         Html.li [
                                             prop.children [
                                                 Html.a [
                                                     prop.href "#"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.Home ] []
-                                                        Html.span "Welcome"
+                                                        if isOpen then Html.span "Welcome" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -140,10 +142,10 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "project"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.ProjectDiagram ] []
-                                                        Html.span "About The Project"
+                                                        if isOpen then Html.span "About The Project" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -152,10 +154,10 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "signup"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.AddressBook ] []
-                                                        Html.span "Sign Up For Access"
+                                                        if isOpen then Html.span "Sign Up For Access" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -164,7 +166,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "rower"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Html.img [
                                                             prop.src "/img/Rower_Icon_Gold_t.svg"
@@ -176,7 +178,7 @@ let AppView () =
                                                                 style.marginLeft (length.px -3) // Add some space between the icon and the text
                                                             ]
                                                         ]
-                                                        Html.span "About Rower"
+                                                        if isOpen then Html.span "About Rower" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -185,7 +187,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "speakez"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Html.img [
                                                             prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
@@ -197,7 +199,7 @@ let AppView () =
                                                                 style.marginLeft (length.px -3) // Add some space between the icon and the text
                                                             ]
                                                         ]
-                                                        Html.span "About SpeakEZ"
+                                                        if isOpen then Html.span "About SpeakEZ" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -206,10 +208,10 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "contact"
-                                                    prop.onClick Router.goToUrl
+                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Regular.Envelope ] []
-                                                        Html.span "Contact Us"
+                                                        if isOpen then Html.span "Contact Us" else Html.none
                                                     ]
                                                 ]
                                             ]
@@ -220,7 +222,7 @@ let AppView () =
                         ]
                         // Main content area
                         Html.div [
-                            prop.className (sprintf "flex flex-col flex-1 overflow-hidden transition-all duration-500 ease-in-out %s" (if isOpen then "md:ml-64" else ""))
+                            prop.className (sprintf "flex flex-col flex-1 overflow-hidden transition-all duration-500 ease-in-out %s" (if isOpen then "md:ml-64" else "md:ml-16"))
                             prop.children [
                                 Html.div [
                                     prop.key (state.Page.ToString()) // Ensure the component re-renders on route change
