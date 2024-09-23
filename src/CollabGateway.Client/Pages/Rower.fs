@@ -47,7 +47,7 @@ let IndexView () =
                                     prop.text "Delivering Business Solutions You Need With Tools You Trust"
                                 ]
                                 Html.p [
-                                    prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting draws its strength from teamwork and performance. Our diverse team of experts, boasting over 100 years of combined experience, collaborates with companies across various industries to accelerate their digital journeys and unlock their full potential."
+                                    prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting succeeds through teamwork and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on a seasoned view and modern tooling to go beyond the latest hype cycle and deliver solutions that unlock an organization's unique potential."
                                 ]
                             ]
                         ]
