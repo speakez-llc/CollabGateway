@@ -5,6 +5,7 @@ open Router
 open Elmish
 open Feliz.UseElmish
 open Fable.FontAwesome
+open Fable.Core.JsInterop
 
 type private Msg =
     | UrlChanged of Page
@@ -27,13 +28,29 @@ let AppView () =
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
 
-    let (isOpen, setIsOpen) = React.useState (not (isMobileView())) // Set initial state based on screen width
-    let toggleSidebar () = setIsOpen (not isOpen)
+    // Retrieve the initial state from localStorage or set it based on screen width
+    let initialSidebarState =
+        match Browser.Dom.window.localStorage.getItem("sidebarState") with
+        | null -> not (isMobileView())
+        | value -> value = "open"
 
-    let (theme, setTheme) = React.useState "dark"
+    let (isOpen, setIsOpen) = React.useState initialSidebarState
+
+    let toggleSidebar () =
+        let newState = not isOpen
+        setIsOpen newState
+        Browser.Dom.window.localStorage.setItem("sidebarState", if newState then "open" else "closed")
+
+    // Retrieve the initial theme from localStorage or set it to "dark"
+    let initialTheme =
+        match Browser.Dom.window.localStorage.getItem("theme") with
+        | null -> "dark"
+        | value -> value
+
+    let (theme, setTheme) = React.useState initialTheme
     React.useEffectOnce(fun () ->
         let html = Browser.Dom.document.documentElement
-        html.setAttribute("data-theme", "dark")
+        html.setAttribute("data-theme", initialTheme)
     )
 
     let toggleTheme () =
@@ -46,9 +63,11 @@ let AppView () =
             | _ -> "fantasy"
         html.setAttribute("data-theme", newTheme)
         setTheme newTheme
+        Browser.Dom.window.localStorage.setItem("theme", newTheme)
 
     let handleItemClick () =
-        setIsOpen (not (isMobileView()))
+        if isMobileView() then
+            setIsOpen false
 
     let render =
         match state.Page with
@@ -132,6 +151,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "#"
+                                                    prop.title "Home"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.Home ] []
@@ -144,6 +164,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "project"
+                                                    prop.title "About This Project"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.ProjectDiagram ] []
@@ -156,6 +177,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "signup"
+                                                    prop.title "Sign Up For Access"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.AddressBook ] []
@@ -171,6 +193,7 @@ let AppView () =
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Html.img [
+                                                            prop.title "About Rower Consulting"
                                                             prop.src "/img/Rower_Icon_Gold_t.svg"
                                                             prop.alt "Rower Icon"
                                                             prop.style [
@@ -189,6 +212,7 @@ let AppView () =
                                             prop.children [
                                                 Html.a [
                                                     prop.href "speakez"
+                                                    prop.title "About SpeakEZ.ai"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Html.img [
@@ -213,6 +237,7 @@ let AppView () =
                                                                 style.marginLeft (length.px -2)
                                                             ]
                                                     prop.href "contact"
+                                                    prop.title "Contact Us"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
                                                         Fa.i [
