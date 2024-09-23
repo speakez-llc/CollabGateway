@@ -63,20 +63,34 @@ let AppView () =
                     prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-300" // Ensure top bar has a higher z-index and a solid background color
                     prop.children [
                         Html.div [
-                            prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out"
-                            prop.onClick (fun _ -> toggleSidebar())
+                            prop.className "flex items-center transition-all duration-300 ease-in-out"
                             prop.children [
-                                Html.img [
-                                    prop.src "/img/Rower_Icon_Gold_t.svg"
-                                    prop.alt "Toggle Sidebar"
-                                    prop.style [
-                                        style.width (length.px 24)
-                                        style.height (length.px 24)
+                                // Hamburger icon
+                                if not isOpen then
+                                    Html.div [
+                                        prop.className "cursor-pointer mr-2"
+                                        prop.onClick (fun _ -> toggleSidebar())
+                                        prop.children [
+                                            Fa.i [ Fa.Solid.Bars ] []
+                                        ]
                                     ]
-                                ]
-                                Html.h1 [
-                                    prop.className "ml-2 text-lg font-semibold"
-                                    prop.text "Collab Gateway"
+                                Html.div [
+                                    prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out"
+                                    prop.onClick (fun _ -> toggleSidebar())
+                                    prop.children [
+                                        Html.img [
+                                            prop.src "/img/Rower_Icon_Gold_t.svg"
+                                            prop.alt "Toggle Sidebar"
+                                            prop.style [
+                                                style.width (length.px 24)
+                                                style.height (length.px 24)
+                                            ]
+                                        ]
+                                        Html.h1 [
+                                            prop.className "ml-2 text-lg font-semibold"
+                                            prop.text "Collab Gateway"
+                                        ]
+                                    ]
                                 ]
                             ]
                         ]
@@ -103,7 +117,7 @@ let AppView () =
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10" (if isOpen then "w-64" else "w-0")) // Ensure sidebar has a lower z-index
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else "w-0")) // Ensure sidebar is fixed and covers full height
                             prop.style [ style.width (if isOpen then length.rem 16 else length.rem 0) ]
                             prop.children [
                                 // Sidebar content here
@@ -206,7 +220,7 @@ let AppView () =
                         ]
                         // Main content area
                         Html.div [
-                            prop.className "flex flex-col flex-1 overflow-hidden"
+                            prop.className (sprintf "flex flex-col flex-1 overflow-hidden transition-all duration-500 ease-in-out %s" (if isOpen then "md:ml-64" else ""))
                             prop.children [
                                 Html.div [
                                     prop.key (state.Page.ToString()) // Ensure the component re-renders on route change

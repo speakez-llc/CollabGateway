@@ -66,10 +66,10 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex justify-between w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -84,14 +84,14 @@ let IndexView () =
                                             prop.text "A Variety of Industries"
                                         ]
                                         Html.p [
-                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization refine or rebuild."
+                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value."
                                         ]
                                     ]
                                 ]
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -106,14 +106,14 @@ let IndexView () =
                                             prop.text "Flexibility & Experience"
                                         ]
                                         Html.p [
-                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we can help your teams develop tools and strategies that work."
+                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
                                         ]
                                     ]
                                 ]
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -125,10 +125,10 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Meeting You Where You Are"
+                                            prop.text "The Speed of Business"
                                         ]
                                         Html.p [
-                                            prop.text "While we're most known for enterprise analytics, we also create custom operational solutions for desktop, mobile and web."
+                                            prop.text "While we're known for enterprise analytics, we also can help you bring operational app experiences to the field and on the go via phone, tablet or embedded devices."
                                         ]
                                     ]
                                 ]
