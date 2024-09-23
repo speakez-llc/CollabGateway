@@ -55,7 +55,7 @@ let IndexView () =
                 ]
                 // Image  with rounded corners
                 Html.div [
-                    prop.className "w-4/5 p-2 mx-auto"
+                    prop.className "w-4/5 mx-auto"
                     prop.children [
                         Html.img [
                             prop.src "/img/Rower_Logo_grad.svg"

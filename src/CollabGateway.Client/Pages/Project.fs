@@ -45,7 +45,7 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex justify-between space-x-4 w-4/5 mx-auto"
+                    prop.className "flex justify-between w-4/5 mx-auto"
                     prop.children [
                         Html.div [
                             prop.className "card m-4 w-80 shadow bg-base-300"
@@ -139,7 +139,7 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex justify-between space-x-4 w-4/5 mx-auto"
+                    prop.className "flex justify-between w-4/5 mx-auto"
                     prop.children [
                         Html.div [
                             prop.className "card m-4 w-80 shadow bg-base-300"
