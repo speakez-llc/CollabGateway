@@ -53,7 +53,7 @@ let IndexView () =
                         ]
                     ]
                 ]
-                // Image at the top with rounded corners
+                // Image  with rounded corners
                 Html.div [
                     prop.className "w-4/5 p-2 mx-auto"
                     prop.children [
@@ -70,6 +70,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -92,6 +93,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -114,6 +116,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
