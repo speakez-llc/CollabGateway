@@ -47,18 +47,18 @@ let IndexView () =
                                     prop.text "Delivering Business Solutions You Need With Tools You Trust"
                                 ]
                                 Html.p [
-                                    prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting succeeds through teamwork and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on a seasoned view and modern tooling to go beyond the latest hype cycle and deliver solutions that unlock an organization's unique potential."
+                                    prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting delivers innovation through insight and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on a seasoned view and modern tooling to go beyond the latest hype cycle and deliver tailored solutions that unlock an organization's unique potential."
                                 ]
                             ]
                         ]
                     ]
                 ]
-                // Image at the top with rounded corners
+                // Image  with rounded corners
                 Html.div [
-                    prop.className "w-4/5 p-2 mx-auto"
+                    prop.className "w-4/5 mx-auto"
                     prop.children [
                         Html.img [
-                            prop.src "/img/Rower_Logo_grad.svg"
+                            prop.src "/img/Rower_Logo_solid.svg"
                             prop.className "h-full w-full object-cover rounded-3xl" // Ensure the image height adjusts automatically
                             prop.alt "Rower Logo"
                         ]
@@ -70,6 +70,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -92,6 +93,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -114,6 +116,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -128,7 +131,7 @@ let IndexView () =
                                             prop.text "The Speed of Business"
                                         ]
                                         Html.p [
-                                            prop.text "While we're known for enterprise analytics, we also can help you bring operational app experiences to the field and on the go via phone, tablet or embedded devices."
+                                            prop.text "While we're known for enterprise analytics, we also can help you bring operational app experiences to the field and on the go via phone, tablet and even embedded devices."
                                         ]
                                     ]
                                 ]

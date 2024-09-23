@@ -195,10 +195,10 @@ let AppView () =
                                                             prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
                                                             prop.alt "SpeakEZ Icon"
                                                             prop.style [
-                                                                style.width (length.px 24) // Adjust the width as needed
-                                                                style.height (length.px 24) // Adjust the height as needed
+                                                                style.width (length.px 24)
+                                                                style.height (length.px 24)
                                                                 style.marginRight (length.px 0)
-                                                                style.marginLeft (length.px -3) // Add some space between the icon and the text
+                                                                style.marginLeft (length.px -3)
                                                             ]
                                                         ]
                                                         if isOpen then Html.span "About SpeakEZ" else Html.none
@@ -209,10 +209,15 @@ let AppView () =
                                         Html.li [
                                             prop.children [
                                                 Html.a [
+                                                    prop.style [
+                                                                style.marginLeft (length.px -2)
+                                                            ]
                                                     prop.href "contact"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
-                                                        Fa.i [ Fa.Solid.Envelope ] []
+                                                        Fa.i [
+                                                           Fa.Solid.Envelope
+                                                        ] []
                                                         if isOpen then Html.span "Contact Us" else Html.none
                                                     ]
                                                 ]
