@@ -25,7 +25,9 @@ let private update (msg:Msg) (state:State) : State * Cmd<Msg> =
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
 
-    let (isOpen, setIsOpen) = React.useState false // Default to closed position
+    let isMobileView () = Browser.Dom.window.innerWidth < 768.0
+
+    let (isOpen, setIsOpen) = React.useState (not (isMobileView())) // Set initial state based on screen width
     let toggleSidebar () = setIsOpen (not isOpen)
 
     let (theme, setTheme) = React.useState "dark"
@@ -46,7 +48,7 @@ let AppView () =
         setTheme newTheme
 
     let handleItemClick () =
-        setIsOpen false
+        setIsOpen (not (isMobileView()))
 
     let render =
         match state.Page with
@@ -119,12 +121,12 @@ let AppView () =
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else "w-16")) // Ensure sidebar is fixed and covers full height
-                            prop.style [ style.width (if isOpen then length.rem 16 else length.rem 4) ]
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16")) // Ensure sidebar is fixed and covers full height
+                            prop.style [ style.width (if isOpen then length.rem 16 else if isMobileView() then length.rem 0 else length.rem 4) ]
                             prop.children [
                                 // Sidebar content here
                                 Html.ul [
-                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-100"))
+                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
                                     prop.children [
                                         Html.li [
                                             prop.children [
@@ -210,7 +212,7 @@ let AppView () =
                                                     prop.href "contact"
                                                     prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                     prop.children [
-                                                        Fa.i [ Fa.Regular.Envelope ] []
+                                                        Fa.i [ Fa.Solid.Envelope ] []
                                                         if isOpen then Html.span "Contact Us" else Html.none
                                                     ]
                                                 ]
