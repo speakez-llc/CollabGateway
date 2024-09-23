@@ -35,31 +35,107 @@ let IndexView () =
         Html.div [
             prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
             prop.children [
-                // Header with the message
-                Html.h1 [
-                    prop.className "text-2xl font-bold mb-4 mx-auto"
-                    prop.text state.Message
-                ]
-                // First row with one skeleton box
+                // All-text card in its own row
                 Html.div [
-                    prop.className "skeleton rounded-lg h-32 w-4/5 mx-auto"
-                ]
-                // Second row with three skeleton boxes
-                Html.div [
-                    prop.className "flex justify-between space-x-4 w-4/5 mx-auto"
+                    prop.className "card w-4/5 mx-auto bg-base-300 shadow-3xl"
                     prop.children [
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card-body"
+                            prop.children [
+                                Html.h1 [
+                                    prop.className "card-title mx-auto"
+                                    prop.text "Delivering Business Solutions You Need With Tools You Trust"
+                                ]
+                                Html.p [
+                                    prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting draws its strength from teamwork and performance. Our diverse team of experts, boasting over 100 years of combined experience, collaborates with companies across various industries to accelerate digital transformation and unlock their full potential."
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                // Image at the top with rounded corners
+                Html.div [
+                    prop.className "w-4/5 p-2 mx-auto"
+                    prop.children [
+                        Html.img [
+                            prop.src "/img/Rower_Logo_grad.svg"
+                            prop.className "h-full w-full object-cover rounded-3xl" // Ensure the image height adjusts automatically
+                            prop.alt "Rower Logo"
+                        ]
+                    ]
+                ]
+                // Bottom row with three cards
+                Html.div [
+                    prop.className "flex justify-between w-4/5 mx-auto"
+                    prop.children [
+                        Html.div [
+                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "img/hospital.png"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "A Variety of Industries"
+                                        ]
+                                        Html.p [
+                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization refine or rebuild."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "/img/team-meeting.png"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "Flexibility & Experience"
+                                        ]
+                                        Html.p [
+                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we can help your teams develop tools and strategies that work."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card m-2 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "/img/contact.png"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "Meeting You Where You Are"
+                                        ]
+                                        Html.p [
+                                            prop.text "While we're most known for enterprise analytics, we also create custom operational solutions for desktop, mobile and web."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
             ]
         ]
     ]
-

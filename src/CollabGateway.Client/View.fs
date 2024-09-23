@@ -60,18 +60,18 @@ let AppView () =
             prop.children [
                 // Top nav bar
                 Html.div [
-                    prop.className "p-4 flex items-center justify-between fixed top-0 left-0 w-full z-10"
+                    prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-300" // Ensure top bar has a higher z-index and a solid background color
                     prop.children [
                         Html.div [
                             prop.className "cursor-pointer flex items-center transition-all duration-300 ease-in-out"
                             prop.onClick (fun _ -> toggleSidebar())
                             prop.children [
                                 Html.img [
-                                    prop.src "/img/Rower_Icon_Gold_t.svg" 
+                                    prop.src "/img/Rower_Icon_Gold_t.svg"
                                     prop.alt "Toggle Sidebar"
                                     prop.style [
-                                        style.width (length.px 24) 
-                                        style.height (length.px 24) 
+                                        style.width (length.px 24)
+                                        style.height (length.px 24)
                                     ]
                                 ]
                                 Html.h1 [
@@ -103,12 +103,12 @@ let AppView () =
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-300 ease-in-out %s" (if isOpen then "w-64" else "w-0"))
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10" (if isOpen then "w-64" else "w-0")) // Ensure sidebar has a lower z-index
                             prop.style [ style.width (if isOpen then length.rem 16 else length.rem 0) ]
                             prop.children [
                                 // Sidebar content here
                                 Html.ul [
-                                    prop.className (sprintf "menu p-4 min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-0"))
+                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen then "opacity-100" else "opacity-0"))
                                     prop.children [
                                         Html.li [
                                             prop.children [
