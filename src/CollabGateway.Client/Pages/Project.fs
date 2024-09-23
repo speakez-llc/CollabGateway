@@ -1,15 +1,9 @@
 ﻿module CollabGateway.Client.Pages.Project
 
 open Feliz
-open Feliz.DaisyUI
 open Elmish
 open CollabGateway.Client.Server
 open UseElmish
-open Fable.Core.JsInterop
-
-// Workaround to have React-refresh working
-// I need to open an issue on react-refresh to see if they can improve the detection
-emitJsStatement () "import React from \"react\""
 
 type private State = {
     Message : string
@@ -35,27 +29,89 @@ let IndexView () =
         Html.div [
             prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
             prop.children [
-                // Header with the message
-                Html.h1 [
-                    prop.className "text-2xl font-bold mb-4 mx-auto"
-                    prop.text state.Message
-                ]
-                // First row with one skeleton box
+                // Top card spanning 80% width
                 Html.div [
-                    prop.className "skeleton rounded-lg h-32 w-4/5 mx-auto"
+                    prop.className "card w-4/5 mx-auto bg-base-300"
+                    prop.children [
+                        Html.h1 [
+                            prop.className "p-2 mx-auto card-title"
+                            prop.text "Delivering Business Solutions You Need With Tools You Trust"
+                        ]
+                        Html.div [
+                            prop.className "p-4 m-4 card-body mx-auto"
+                            prop.text "Inspired by the Results Only Work Environment (ROWE) philosophy, Rower Consulting draws its strength from teamwork and performance. Our diverse team of experts, boasting over 100 years of combined experience, collaborates with companies across various industries to accelerate digital transformation and unlock their full potential."
+                        ]
+                    ]
                 ]
-                // Second row with three skeleton boxes
+                // Bottom row with three cards
                 Html.div [
                     prop.className "flex justify-between space-x-4 w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card m-4 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "https://picsum.photos/id/103/500/250"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "DaisyUI Card 1"
+                                        ]
+                                        Html.p [
+                                            prop.text "Rerum reiciendis beatae tenetur excepturi aut pariatur est eos. Sit sit necessitatibus."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card m-4 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "https://picsum.photos/id/103/500/250"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "DaisyUI Card 2"
+                                        ]
+                                        Html.p [
+                                            prop.text "Rerum reiciendis beatae tenetur excepturi aut pariatur est eos. Sit sit necessitatibus."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                         Html.div [
-                            prop.className "skeleton rounded-lg h-32 w-1/3"
+                            prop.className "card m-4 w-80 shadow bg-base-300"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.src "https://picsum.photos/id/103/500/250"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "DaisyUI Card 3"
+                                        ]
+                                        Html.p [
+                                            prop.text "Rerum reiciendis beatae tenetur excepturi aut pariatur est eos. Sit sit necessitatibus."
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
