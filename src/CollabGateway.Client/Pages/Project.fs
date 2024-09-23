@@ -149,6 +149,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
