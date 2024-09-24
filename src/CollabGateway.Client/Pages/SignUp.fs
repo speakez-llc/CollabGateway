@@ -23,7 +23,7 @@ type private Msg =
     | ShowTermsModal
     | HideTermsModal
 
-let private init () = { Message = "This is the SignUp page"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false; ShowTermsModal = false }, Cmd.none
+let private init () = { Message = "Let's Get Started!"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false; ShowTermsModal = false }, Cmd.none
 
 let private closeAccordion label model =
     match label with
@@ -140,26 +140,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Full Name"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Full Name"
+                                                            prop.autoComplete "name"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Email Address"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Email Address"
+                                                            prop.autoComplete "email"
                                                         ]
                                                     ]
                                                 ]
@@ -172,26 +166,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Job Title"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Job Title"
+                                                            prop.autoComplete "organization-title"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Phone Number"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Phone Number"
+                                                            prop.autoComplete "tel"
                                                         ]
                                                     ]
                                                 ]
@@ -204,26 +192,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Department/Division"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Department/Division"
+                                                            prop.autoComplete "organization"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Company Name"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Company Name"
+                                                            prop.autoComplete "organization"
                                                         ]
                                                     ]
                                                 ]
@@ -236,26 +218,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Street Address"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Street Address"
+                                                            prop.autoComplete "address-line1"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Street Address 2"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Street Address 2"
+                                                            prop.autoComplete "address-line2"
                                                         ]
                                                     ]
                                                 ]
@@ -268,26 +244,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "City"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "City"
+                                                            prop.autoComplete "address-level2"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "State/Province"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "State/Province"
+                                                            prop.autoComplete "address-level1"
                                                         ]
                                                     ]
                                                 ]
@@ -300,26 +270,20 @@ let IndexView () =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "Country"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "Country"
+                                                            prop.autoComplete "country"
                                                         ]
                                                     ]
                                                 ]
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.label [
-                                                            prop.className "absolute top-50 left-0 px-1"
-                                                            prop.style [ style.zIndex 1 ]
-                                                            prop.text "PostCode"
-                                                        ]
-                                                        Html.div [
-                                                            prop.className "skeleton rounded-lg h-10 w-full"
+                                                        Html.input [
+                                                            prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.placeholder "PostCode"
+                                                            prop.autoComplete "postal-code"
                                                         ]
                                                     ]
                                                 ]

@@ -44,7 +44,7 @@ let IndexView () =
                 Html.input [
                     prop.className "rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-200 pl-2"
                     prop.placeholder "Name"
-                    prop.autoComplete "Full Name"
+                    prop.autoComplete "Name"
                 ]
                 // Email field
                 Html.input [

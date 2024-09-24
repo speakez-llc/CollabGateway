@@ -51,11 +51,10 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row gap-4 w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -77,8 +76,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -100,8 +98,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -145,12 +142,10 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row gap-4 w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -172,8 +167,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -195,8 +189,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [

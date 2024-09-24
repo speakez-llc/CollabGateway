@@ -4,6 +4,7 @@ open Feliz
 open Feliz.DaisyUI
 open Elmish
 open CollabGateway.Client.Server
+open CollabGateway.Client.Router
 open UseElmish
 open Fable.Core.JsInterop
 
@@ -33,11 +34,11 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
+            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out w-4/5 mx-auto"
             prop.children [
                 // All-text card in its own row
                 Html.div [
-                    prop.className "card w-4/5 mx-auto bg-base-200 shadow-3xl"
+                    prop.className "card w-full bg-base-200 shadow-3xl"
                     prop.children [
                         Html.div [
                             prop.className "card-body"
@@ -53,24 +54,23 @@ let IndexView () =
                         ]
                     ]
                 ]
-                // Image  with rounded corners
+                // Image with rounded corners
                 Html.div [
-                    prop.className "w-4/5 mx-auto"
+                    prop.className "w-full"
                     prop.children [
                         Html.img [
                             prop.src "/img/Rower_Logo_solid.svg"
-                            prop.className "h-full w-full object-cover rounded-3xl" // Ensure the image height adjusts automatically
+                            prop.className "h-full w-full object-cover rounded-3xl"
                             prop.alt "Rower Logo"
                         ]
                     ]
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row gap-4 w-full"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -92,8 +92,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -115,8 +114,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
-                            prop.style [ style.flexGrow 1 ]
+                            prop.className "card w-full shadow bg-base-200"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -138,6 +136,17 @@ let IndexView () =
                             ]
                         ]
                     ]
+                ]
+            ]
+        ]
+        Html.div [
+            prop.className "flex justify-center mt-4"
+            prop.children [
+                Html.button [
+                    prop.className "btn btn-primary text-lg"
+                    prop.onClick (fun e -> Router.goToUrl(e))
+                    prop.href "/signup"
+                    prop.text "Sign Up Now"
                 ]
             ]
         ]
