@@ -40,21 +40,25 @@ let IndexView () =
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
-                // Skeleton placeholder for Name field
-                Html.div [
-                    prop.className "skeleton rounded-lg h-10 w-full"
+                // Name field
+                Html.input [
+                    prop.className "rounded-lg h-10 w-1/3 shadow bg-base-200 pl-2"
+                    prop.placeholder "Name"
                 ]
-                // Skeleton placeholder for Email field
-                Html.div [
-                    prop.className "skeleton rounded-lg h-10 w-full"
+                // Email field
+                Html.input [
+                    prop.className "rounded-lg h-10 w-1/3 shadow bg-base-200 pl-2"
+                    prop.placeholder "Email"
                 ]
-                // Skeleton placeholder for Message field
-                Html.div [
-                    prop.className "skeleton rounded-lg h-32 w-full"
+                // Message field
+                Html.textarea [
+                    prop.className "rounded-lg h-32 w-1/2 shadow bg-base-200 p-2"
+                    prop.placeholder "Your Message"
                 ]
-                // Skeleton placeholder for Submit button
-                Html.div [
-                    prop.className "skeleton rounded-lg h-10 w-1/4"
+                // Submit button
+                Html.button [
+                    prop.className "btn btn-primary rounded-lg h-10 w-1/4"
+                    prop.text "Submit"
                 ]
             ]
         ]
