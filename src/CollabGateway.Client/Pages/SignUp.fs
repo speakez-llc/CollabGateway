@@ -11,6 +11,7 @@ type private State = {
     Accordion1Open : bool
     Accordion2Open : bool
     Accordion3Open : bool
+    ShowTermsModal : bool
 }
 
 type private Msg =
@@ -19,8 +20,10 @@ type private Msg =
     | ToggleAccordion1
     | ToggleAccordion2
     | ToggleAccordion3
+    | ShowTermsModal
+    | HideTermsModal
 
-let private init () = { Message = "This is the SignUp page"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false }, Cmd.none
+let private init () = { Message = "This is the SignUp page"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false; ShowTermsModal = false }, Cmd.none
 
 let private closeAccordion label model =
     match label with
@@ -43,6 +46,8 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     | ToggleAccordion3 ->
         let model = closeAccordion "Accordion1" model |> closeAccordion "Accordion2"
         { model with Accordion3Open = not model.Accordion3Open }, Cmd.none
+    | ShowTermsModal -> { model with ShowTermsModal = true }, Cmd.none
+    | HideTermsModal -> { model with ShowTermsModal = false }, Cmd.none
 
 [<ReactComponent>]
 let IndexView () =
@@ -118,7 +123,7 @@ let IndexView () =
                                                     prop.onClick (fun _ -> dispatch ToggleAccordion3)
                                                 ]
                                                 Daisy.collapseContent [
-                                                    prop.text "This is an early glimpse at an 'AI' feature that uses a combination of machine learning and natural language processing. It could be the fastest way to fill out the form. Just find your email signture or contact info and copy it. Then use the 'Smart Paste' button to send the text to our AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info' and you're done!."
+                                                    prop.text "This is an early glimpse at an 'AI' feature that uses a combination of machine learning and natural language processing. It could be the fastest way to fill out the form. Just find your email signature or contact info and copy it. Then use the 'Smart Paste' button to send the text to our AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info' and onto verifying your email!"
                                                 ]
                                             ]
                                         ]
@@ -320,9 +325,29 @@ let IndexView () =
                                                 ]
                                             ]
                                         ]
+                                        // Add the checkbox and hyperlink text
                                         Html.div [
                                             prop.className "relative flex flex-col space-y-2 w-full md:w-1/2 mt-4"
                                             prop.children [
+                                                Html.div [
+                                                    prop.className "flex items-center"
+                                                    prop.children [
+                                                        Html.input [
+                                                            prop.type' "checkbox"
+                                                            prop.className "mr-2"
+                                                        ]
+                                                        Html.span [
+                                                            prop.children [
+                                                                Html.text "You Agree to Our "
+                                                                Html.a [
+                                                                    prop.className "text-blue-500 underline cursor-pointer"
+                                                                    prop.text "Terms of Service"
+                                                                    prop.onClick (fun _ -> dispatch ShowTermsModal)
+                                                                ]
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ]
                                                 // Button group
                                                 Daisy.join [
                                                     Daisy.button.button [
@@ -337,6 +362,31 @@ let IndexView () =
                                                         button.primary
                                                         prop.text "Send Your Info"
                                                         prop.onClick (fun _ -> false |> AskForMessage |> dispatch)
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+
+                                        // Modal component for Terms of Service
+                                        Html.div [
+                                            prop.className (if state.ShowTermsModal then "modal modal-open" else "modal")
+                                            prop.children [
+                                                Html.div [
+                                                    prop.className "modal-box"
+                                                    prop.children [
+                                                        Html.h2 [
+                                                            prop.className "text-xl font-bold"
+                                                            prop.text "Terms of Service"
+                                                        ]
+                                                        Html.p [
+                                                            prop.text "Here are the terms of service..."
+                                                        ]
+                                                        Daisy.button.button [
+                                                            button.secondary
+                                                            prop.className "mt-4"
+                                                            prop.text "Close"
+                                                            prop.onClick (fun _ -> dispatch HideTermsModal)
+                                                        ]
                                                     ]
                                                 ]
                                             ]
