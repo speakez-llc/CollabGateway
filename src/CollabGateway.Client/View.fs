@@ -143,113 +143,114 @@ let AppView () =
                             prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16")) // Ensure sidebar is fixed and covers full height
                             prop.style [ style.width (if isOpen then length.rem 16 else if isMobileView() then length.rem 0 else length.rem 4) ]
                             prop.children [
-                                // Sidebar content here
-                                Html.ul [
-                                    prop.className (sprintf "menu min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
-                                    prop.children [
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.href "#"
-                                                    prop.title "Home"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Fa.i [ Fa.Solid.Home ] []
-                                                        if isOpen then Html.span "Welcome" else Html.none
-                                                    ]
-                                                ]
-                                            ]
-                                        ]
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.href "project"
-                                                    prop.title "About This Project"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Fa.i [ Fa.Solid.ProjectDiagram ] []
-                                                        if isOpen then Html.span "About The Project" else Html.none
-                                                    ]
-                                                ]
-                                            ]
-                                        ]
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.href "signup"
-                                                    prop.title "Sign Up For Access"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Fa.i [ Fa.Solid.AddressBook ] []
-                                                        if isOpen then Html.span "Sign Up For Access" else Html.none
-                                                    ]
-                                                ]
-                                            ]
-                                        ]
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.href "rower"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Html.img [
-                                                            prop.title "About Rower Consulting"
-                                                            prop.src "/img/Rower_Icon_Gold_t.svg"
-                                                            prop.alt "Rower Icon"
-                                                            prop.style [
-                                                                style.width (length.px 24) // Adjust the width as needed
-                                                                style.height (length.px 24) // Adjust the height as needed
-                                                                style.marginRight (length.px 0)
-                                                                style.marginLeft (length.px -3) // Add some space between the icon and the text
-                                                            ]
+                                if isOpen || not (isMobileView()) then
+                                    Html.ul [
+                                        prop.className (sprintf "menu min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
+                                        prop.children [
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "#"
+                                                        prop.title "Home"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [ Fa.Solid.Home ] []
+                                                            if isOpen then Html.span "Welcome" else Html.none
                                                         ]
-                                                        if isOpen then Html.span "About Rower" else Html.none
                                                     ]
                                                 ]
                                             ]
-                                        ]
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.href "speakez"
-                                                    prop.title "About SpeakEZ.ai"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Html.img [
-                                                            prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
-                                                            prop.alt "SpeakEZ Icon"
-                                                            prop.style [
-                                                                style.width (length.px 24)
-                                                                style.height (length.px 24)
-                                                                style.marginRight (length.px 0)
-                                                                style.marginLeft (length.px -3)
-                                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "project"
+                                                        prop.title "About This Project"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [ Fa.Solid.ProjectDiagram ] []
+                                                            if isOpen then Html.span "About The Project" else Html.none
                                                         ]
-                                                        if isOpen then Html.span "About SpeakEZ" else Html.none
                                                     ]
                                                 ]
                                             ]
-                                        ]
-                                        Html.li [
-                                            prop.children [
-                                                Html.a [
-                                                    prop.style [
-                                                                style.marginLeft (length.px -2)
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "signup"
+                                                        prop.title "Sign Up For Access"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [ Fa.Solid.AddressBook ] []
+                                                            if isOpen then Html.span "Sign Up For Access" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "rower"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Html.img [
+                                                                prop.title "About Rower Consulting"
+                                                                prop.src "/img/Rower_Icon_Gold_t.svg"
+                                                                prop.alt "Rower Icon"
+                                                                prop.style [
+                                                                    style.width (length.px 24) // Adjust the width as needed
+                                                                    style.height (length.px 24) // Adjust the height as needed
+                                                                    style.marginRight (length.px 0)
+                                                                    style.marginLeft (length.px -3) // Add some space between the icon and the text
+                                                                ]
                                                             ]
-                                                    prop.href "contact"
-                                                    prop.title "Contact Us"
-                                                    prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
-                                                    prop.children [
-                                                        Fa.i [
-                                                           Fa.Solid.Envelope
-                                                        ] []
-                                                        if isOpen then Html.span "Contact Us" else Html.none
+                                                            if isOpen then Html.span "About Rower" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "speakez"
+                                                        prop.title "About SpeakEZ.ai"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Html.img [
+                                                                prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
+                                                                prop.alt "SpeakEZ Icon"
+                                                                prop.style [
+                                                                    style.width (length.px 24)
+                                                                    style.height (length.px 24)
+                                                                    style.marginRight (length.px 0)
+                                                                    style.marginLeft (length.px -3)
+                                                                ]
+                                                            ]
+                                                            if isOpen then Html.span "About SpeakEZ" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.style [
+                                                            style.marginLeft (length.px -2)
+                                                        ]
+                                                        prop.href "contact"
+                                                        prop.title "Contact Us"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [
+                                                                Fa.Solid.Envelope
+                                                            ] []
+                                                            if isOpen then Html.span "Contact Us" else Html.none
+                                                        ]
                                                     ]
                                                 ]
                                             ]
                                         ]
                                     ]
-                                ]
+                                else Html.none
                             ]
                         ]
                         // Main content area

@@ -19,7 +19,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "This is the Contact Form page" }, Cmd.none
+let private init () = { Message = "Feel free to send us a message" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -42,22 +42,24 @@ let IndexView () =
                 ]
                 // Name field
                 Html.input [
-                    prop.className "rounded-lg h-10 w-1/3 shadow bg-base-200 pl-2"
+                    prop.className "rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-200 pl-2"
                     prop.placeholder "Name"
+                    prop.autoComplete "Full Name"
                 ]
                 // Email field
                 Html.input [
-                    prop.className "rounded-lg h-10 w-1/3 shadow bg-base-200 pl-2"
+                    prop.className "rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-200 pl-2"
                     prop.placeholder "Email"
+                    prop.autoComplete "Email"
                 ]
                 // Message field
                 Html.textarea [
-                    prop.className "rounded-lg h-32 w-1/2 shadow bg-base-200 p-2"
+                    prop.className "rounded-lg h-32 w-full md:w-1/2 shadow bg-base-200 p-2"
                     prop.placeholder "Your Message"
                 ]
                 // Submit button
                 Html.button [
-                    prop.className "btn btn-primary rounded-lg h-10 w-1/4"
+                    prop.className "btn btn-primary rounded-lg h-10 w-1/2 md:w-1/4"
                     prop.text "Submit"
                 ]
             ]
