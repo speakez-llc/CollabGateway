@@ -84,7 +84,7 @@ let AppView () =
             prop.children [
                 // Top nav bar
                 Html.div [
-                    prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-300" // Ensure top bar has a higher z-index and a solid background color
+                    prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-200" // Ensure top bar has a higher z-index and a solid background color
                     prop.children [
                         Html.div [
                             prop.className "flex items-center transition-all duration-500 ease-in-out ml-2"
@@ -145,7 +145,7 @@ let AppView () =
                             prop.children [
                                 // Sidebar content here
                                 Html.ul [
-                                    prop.className (sprintf "menu min-h-full bg-base-300 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
+                                    prop.className (sprintf "menu min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
                                     prop.children [
                                         Html.li [
                                             prop.children [

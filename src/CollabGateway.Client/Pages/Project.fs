@@ -37,7 +37,7 @@ let IndexView () =
                 ]
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card w-4/5 mx-auto bg-base-300"
+                    prop.className "card w-4/5 mx-auto bg-base-200"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -54,7 +54,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
@@ -77,7 +77,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
@@ -100,7 +100,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
@@ -116,7 +116,7 @@ let IndexView () =
                                             prop.text "Step 3: Something New"
                                         ]
                                         Html.p [
-                                            prop.text "Our partner SpeakEZ has provided a sample application lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
+                                            prop.text "Our partner SpeakEZ has provided a sample application that lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
                                         ]
                                     ]
                                 ]
@@ -131,7 +131,7 @@ let IndexView () =
             prop.children [
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card w-4/5 mx-auto bg-base-300"
+                    prop.className "card w-4/5 mx-auto bg-base-200"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -148,7 +148,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row justify-between w-4/5 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
 
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
@@ -172,7 +172,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
@@ -185,17 +185,17 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Confirm Ownership of your Email"
+                                            prop.text "Confirm Your Email"
                                         ]
                                         Html.p [
-                                            prop.text "You'll receive an email from SpeakEZ that will prompt you to verify that you own the email address you provided. This is a standard security measure to ensure that you are the one who signed up."
+                                            prop.text "You'll receive a message to verify that you own the address you provided. This is a standard security measure to ensure that you are the one who signed up. Once confirmed you'll see a link to the Curator portal."
                                         ]
                                     ]
                                 ]
                             ]
                         ]
                         Html.div [
-                            prop.className "card m-2 w-full md:w-80 shadow bg-base-300"
+                            prop.className "card m-2 w-full md:w-80 shadow bg-base-200"
                             prop.style [ style.flexGrow 1 ]
                             prop.children [
                                 Html.figure [
@@ -211,7 +211,7 @@ let IndexView () =
                                             prop.text "Log In and Explore"
                                         ]
                                         Html.p [
-                                            prop.text "You can use the provided password to log in. And if your email is part of a Microsoft365, you will log in with your corporate credentials. Don't worry, only Microsoft sees your login info to verify that you are 'you'."
+                                            prop.text "You can use the provided password to log in. If your email is part of Microsoft365, you will log in with your corporate credentials. Don't worry, only Microsoft sees your login info to confirm your identity."
                                         ]
                                     ]
                                 ]
