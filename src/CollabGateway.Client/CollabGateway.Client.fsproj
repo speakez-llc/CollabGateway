@@ -4,6 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Components\Carousel.fs" />
+        <Compile Include="Components\ReactFlow.fs" />
+    </ItemGroup>
+    <ItemGroup>
         <Compile Include="Server.fs" />
         <Compile Include="Router.fs" />
         <Compile Include="Extensions.fs" />
@@ -20,7 +24,8 @@
         <ProjectReference Include="..\CollabGateway.Shared\CollabGateway.Shared.fsproj" />
     </ItemGroup>
     <ItemGroup>
-      <Compile Include="Components\Carousel.fs" />
+      <PackageReference Include="Fable.Fetch" Version="2.7.0" />
+      <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
