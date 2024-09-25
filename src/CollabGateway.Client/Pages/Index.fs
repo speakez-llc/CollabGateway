@@ -33,18 +33,19 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col items-center justify-center space-y-4"
+            prop.className "flex flex-col items-center justify-center space-y-4 md:w-4/5 mx-auto"
             prop.children [
                 // Header with the message
                 Html.h1 [
                     prop.className "text-2xl mt-8 font-bold mx-auto"
                     prop.text state.Message
                 ]
-                Html.img [
-                    prop.src "/img/Collab_Logo.svg"
-                    prop.alt "Collab Logo"
+                // Animated SVG
+                Html.embed [
+                    prop.src "/img/Animated_SVG_small.svg"
+                    prop.type' "image/svg+xml"
+                    prop.className "w-full h-auto"
                 ]
             ]
         ]
     ]
-
