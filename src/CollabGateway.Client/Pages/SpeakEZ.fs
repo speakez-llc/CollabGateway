@@ -16,7 +16,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Next-Gen Decision Support For Security And The Bottom Line" }, Cmd.none
+let private init () = { Message = "Next-Gen Decision Support For Your Security And Your Bottom Line" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -69,7 +69,7 @@ let IndexView () =
                                             prop.text "Seasoned Experience, Modern Tools and Innovative Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery' that uses both tried-and-true as well as leading edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for industrial-strength tools to support skilled, mission-critical knowledge work, SpeakEZ is the place to start."
+                                            prop.text "SpeakEZ is an 'AI Refinery' that uses both tried-and-true as well as leading edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for a secure industrial-strength platform to support skilled, mission-critical knowledge work - all with lower operational overhead, SpeakEZ is the place to start."
                                         ]
                                     ]
                                 ]
@@ -88,20 +88,17 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Balancing Innovation with Security"
+                                            prop.text "Innovation without Compromise"
                                         ]
                                         Html.p [
-                                            prop.text "Harness the power of AI to transform data into actionable insights, enabling smarter and faster decision-making processes."
-                                        ]
-                                        Html.p [
-                                            prop.text "Our innovative solutions are designed to meet the unique needs of your business, providing you with the tools you need to succeed."
+                                            prop.text "Because of the .com and SaaS eras, we've become inured to divulging data as a devil's bargain with Corporate Surveillance congolmerates. Their real business is selling ads to you, or worse, your data to others. SpeakEZ is security-first and is solely focused on delivering high quality knowledge services."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Systm2 - A Preview"
+                                            prop.text "Systm2"
                                         ]
                                         Html.p [
-                                            prop.text "Our innovative solutions are designed to meet the unique needs of your business, providing you with the tools you need to succeed."
+                                            prop.text "Rather than following the 'AI hype train' to the fastest answer, SpeakEZ's Systm2 platform quickly develops multiple paths to the best answer. It helps knowledge workers make optimal decisions on mission-critical tasks."
                                         ]
                                     ]
                                 ]
@@ -126,17 +123,17 @@ let IndexView () =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "Our innovative solutions are designed to meet the unique needs of your business, providing you with the tools you need to succeed."
+                                            prop.text "we've all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. "
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
                                             prop.text "Deep Background"
                                         ]
                                         Html.p [
-                                            prop.text "Harness the power of AI to transform data into actionable insights, enabling smarter and faster decision-making processes."
+                                            prop.text "Many companies that are new to 'AI' are just now discovering some of the techniques that our engineers have been utilizing for decades."
                                         ]
                                         Html.p [
-                                            prop.text "Harness the power of AI to transform data into actionable insights, enabling smarter and faster decision-making processes."
+                                            prop.text "Houston Haynes, the founder of SpeakEZ, has more than 20 years of building intelligent systems in various forms. It's that experience that brings unique value to our collaboration with Rower Consulting."
                                         ]
                                     ]
                                 ]
