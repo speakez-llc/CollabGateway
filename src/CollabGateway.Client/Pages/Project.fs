@@ -28,7 +28,7 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
+            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out mx-auto max-w-screen-xl"
             prop.children [
                 // Header with the message
                 Html.h1 [
@@ -37,7 +37,7 @@ let IndexView () =
                 ]
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card w-4/5 mx-auto bg-base-200"
+                    prop.className "card mx-auto bg-base-200"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -51,7 +51,7 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex flex-col md:flex-row gap-4 w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row gap-4 mx-auto"
                     prop.children [
                         Html.div [
                             prop.className "card w-full md:w-1/3 shadow bg-base-200"
@@ -124,11 +124,11 @@ let IndexView () =
             ]
         ]
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out"
+            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out mx-auto max-w-screen-xl"
             prop.children [
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card w-4/5 mx-auto bg-base-200"
+                    prop.className "card mx-auto bg-base-200"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -142,7 +142,7 @@ let IndexView () =
                 ]
                 // Bottom row with three cards
                 Html.div [
-                    prop.className "flex flex-col md:flex-row gap-4 w-4/5 mx-auto"
+                    prop.className "flex flex-col md:flex-row gap-4 mx-auto"
                     prop.children [
                         Html.div [
                             prop.className "card w-full md:w-1/3 shadow bg-base-200"

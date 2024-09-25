@@ -33,7 +33,7 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-4/5 mx-auto"
+            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-4/5 mx-auto max-w-screen-xl"
             prop.children [
                 // Header with the message
                 Html.h1 [

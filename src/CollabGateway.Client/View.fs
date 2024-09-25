@@ -168,7 +168,7 @@ let AppView () =
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.ProjectDiagram ] []
-                                                            if isOpen then Html.span "About The Project" else Html.none
+                                                            if isOpen then Html.span "Learn More" else Html.none
                                                         ]
                                                     ]
                                                 ]
@@ -181,7 +181,7 @@ let AppView () =
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.AddressBook ] []
-                                                            if isOpen then Html.span "Sign Up For Access" else Html.none
+                                                            if isOpen then Html.span "Sign Up" else Html.none
                                                         ]
                                                     ]
                                                 ]
