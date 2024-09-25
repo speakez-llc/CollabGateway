@@ -75,7 +75,7 @@ let IndexView () =
                                     prop.className "flex justify-end space-x-4 mt-4 item-center"
                                     prop.children [
                                         Html.p [
-                                            prop.text "Feel free to review the information presented throughout this site. Then you're ready to see for yourself, sign up to gain secure access to the portal and experience the future hands-on."
+                                            prop.text "Feel free to review the information presented throughout this site. When you're ready to see for yourself, sign up to gain secure access to the portal - and experience the future hands-on!"
                                         ]
                                         Html.button [
                                             prop.className "btn btn-secondary text-lg"
