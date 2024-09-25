@@ -48,7 +48,7 @@ let IndexView () =
                             prop.className "flex flex-col md:flex-row"
                             prop.children [
                                 Html.div [
-                                    prop.className "w-full md:w-1/6 flex md:ml-4 mt-4 md:mt-0  justify-center"
+                                    prop.className "w-full md:w-1/6 flex md:ml-4 mt-4 justify-center"
                                     prop.children [
                                         Html.div [
                                             prop.className ""
