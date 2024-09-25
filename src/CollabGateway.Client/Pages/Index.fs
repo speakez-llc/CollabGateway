@@ -41,10 +41,15 @@ let IndexView () =
                     prop.text state.Message
                 ]
                 // Animated SVG
-                Html.embed [
-                    prop.src "/img/Animated_SVG_small.svg"
-                    prop.type' "image/svg+xml"
-                    prop.className "w-full h-auto"
+                Html.div [
+                    prop.className "card rounded-lg shadow-lg overflow-hidden w-4/5"
+                    prop.children [
+                        Html.embed [
+                            prop.src "/img/RowerCollab2.svg"
+                            prop.type' "image/svg+xml"
+                            prop.className "w-full h-auto"
+                        ]
+                    ]
                 ]
             ]
         ]
