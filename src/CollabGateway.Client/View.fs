@@ -58,9 +58,9 @@ let AppView () =
         let currentTheme = html.getAttribute("data-theme")
         let newTheme =
             match currentTheme with
-            | "fantasy" -> "dark"
-            | "dark" -> "fantasy"
-            | _ -> "fantasy"
+            | "nord" -> "business"
+            | "business" -> "nord"
+            | _ -> "nord"
         html.setAttribute("data-theme", newTheme)
         setTheme newTheme
         Browser.Dom.window.localStorage.setItem("theme", newTheme)
