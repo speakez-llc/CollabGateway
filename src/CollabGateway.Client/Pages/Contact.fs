@@ -40,6 +40,15 @@ let IndexView () =
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
+                Html.div [
+                    prop.className "card mx-auto bg-base-200 w-4/5 mx-auto"
+                    prop.children [
+                        Html.div [
+                            prop.className "p-4 m-2 card-body mx-auto"
+                            prop.text "There's a lot of ways to get in touch with us. You can send us a message using the form below, and we'll reach out via email as soon as we can. We're always happy to hear from you."
+                        ]
+                    ]
+                ]
                 // Name field
                 Html.input [
                     prop.className "rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-200 pl-2"
@@ -59,8 +68,8 @@ let IndexView () =
                 ]
                 // Submit button
                 Html.button [
-                    prop.className "btn btn-primary rounded-lg h-10 w-1/2 md:w-1/4"
-                    prop.text "Submit"
+                    prop.className "btn btn-primary h-10 w-1/2 md:w-1/4"
+                    prop.text "Get In Touch"
                 ]
             ]
         ]

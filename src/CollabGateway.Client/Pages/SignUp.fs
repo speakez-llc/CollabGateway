@@ -46,7 +46,7 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     | ToggleAccordion3 ->
         let model = closeAccordion "Accordion1" model |> closeAccordion "Accordion2"
         { model with Accordion3Open = not model.Accordion3Open }, Cmd.none
-    | ShowTermsModal -> { model with ShowTermsModal = true }, Cmd.none
+    | ShowTermsModal -> { model with ShowTermsModal = not model.ShowTermsModal }, Cmd.none
     | HideTermsModal -> { model with ShowTermsModal = false }, Cmd.none
 
 [<ReactComponent>]
@@ -68,6 +68,15 @@ let IndexView () =
                     ]
                 ]
                 Html.div [
+                    prop.className "card mx-auto bg-base-200"
+                    prop.children [
+                        Html.div [
+                            prop.className "p-4 m-2 card-body mx-auto"
+                            prop.text "The process we use for accessing the site include adding you as an 'external user' to our Entra ID tenant. This will allow you to access the site and use the features available to you. We will also send you an email with a link to the site. You can use this link to access the site at any time. If you have any questions or need help, please feel free to reach out to us."
+                        ]
+                    ]
+                ]
+                Html.div [
                     prop.children [
                         // Wrapper div for the accordion and form
                         Html.div [
@@ -77,33 +86,16 @@ let IndexView () =
                                 Html.div [
                                     prop.className "flex flex-col w-full md:w-1/3"
                                     prop.children [
-                                        Html.h1 [
-                                            prop.className "text-xl font-bold mx-auto"
-                                            prop.text "Methods of Entry"
-                                        ]
-                                        Daisy.collapse [
-                                            prop.className (if state.Accordion1Open then "collapse-open collapse-arrow" else "collapse-close collapse-arrow")
+                                        Html.div [
+                                            prop.className "card bg-base-200 shadow-lg p-4"
                                             prop.children [
-                                                Daisy.collapseTitle [
-                                                    prop.className "text-l font-bold mx-auto"
-                                                    prop.text "Type info directly"
-                                                    prop.onClick (fun _ -> dispatch ToggleAccordion1)
+                                                Html.h1 [
+                                                    prop.className "text-xl font-bold mx-auto"
+                                                    prop.text "Choices in Entering Your Info"
                                                 ]
-                                                Daisy.collapseContent [
-                                                    prop.text "Boring, but it works. Just type your information in the form fields."
-                                                ]
-                                            ]
-                                        ]
-                                        Daisy.collapse [
-                                            prop.className (if state.Accordion2Open then "collapse-open collapse-arrow" else "collapse-close collapse-arrow")
-                                            prop.children [
-                                                Daisy.collapseTitle [
-                                                    prop.className "text-l font-bold mx-auto"
-                                                    prop.text "Use Form Autofill"
-                                                    prop.onClick (fun _ -> dispatch ToggleAccordion2)
-                                                ]
-                                                Daisy.collapseContent [
-                                                    prop.text "It's a modern browser feature that fills out forms for you. Just click into the field and use the autofill feature that prompts you with the appropriate values. If you've entered your business information on a site before it should populate most of the fields with one click."
+                                                Html.p [
+                                                    prop.className "mx-auto"
+                                                    prop.text "There are three ways to fill out the form. Choose the one that works best for you."
                                                 ]
                                             ]
                                         ]
@@ -123,14 +115,40 @@ let IndexView () =
                                                     prop.onClick (fun _ -> dispatch ToggleAccordion3)
                                                 ]
                                                 Daisy.collapseContent [
-                                                    prop.text "This is an early glimpse at an 'AI' feature that uses a combination of machine learning and natural language processing. It could be the fastest way to fill out the form. Just find your email signature or contact info and copy it. Then use the 'Smart Paste' button to send the text to our AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info' and onto verifying your email!"
+                                                    prop.text "This is an early glimpse at an 'AI' feature that uses a combination of machine learning and natural language processing. It could be the fastest way to fill out the form. You can pick out an old email with your info in the signature - or- copy your contact info from an app. Any place where that info is in regular text. Then use the 'Smart Paste' button to send the clipboard text to our AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info' and onto verifying your email!"
+                                                ]
+                                            ]
+                                        ]
+                                        Daisy.collapse [
+                                            prop.className (if state.Accordion2Open then "collapse-open collapse-arrow" else "collapse-close collapse-arrow")
+                                            prop.children [
+                                                Daisy.collapseTitle [
+                                                    prop.className "text-l font-bold mx-auto"
+                                                    prop.text "Use Form Autofill"
+                                                    prop.onClick (fun _ -> dispatch ToggleAccordion2)
+                                                ]
+                                                Daisy.collapseContent [
+                                                    prop.text "It's a standard browser feature that populates the form for you. Just click into the field and use the autofill feature that prompts you with the appropriate values. If you've entered your business information on a site before it should populate most of the fields with one click."
+                                                ]
+                                            ]
+                                        ]
+                                        Daisy.collapse [
+                                            prop.className (if state.Accordion1Open then "collapse-open collapse-arrow" else "collapse-close collapse-arrow")
+                                            prop.children [
+                                                Daisy.collapseTitle [
+                                                    prop.className "text-l font-bold mx-auto"
+                                                    prop.text "Type info directly"
+                                                    prop.onClick (fun _ -> dispatch ToggleAccordion1)
+                                                ]
+                                                Daisy.collapseContent [
+                                                    prop.text "Boring, but it works. Just type your information in the form fields."
                                                 ]
                                             ]
                                         ]
                                     ]
                                 ]
                                 // Form area
-                                Html.div [
+                                Html.form [
                                     prop.className "flex flex-col w-full md:w-2/3"
                                     prop.children [
                                         // Full Name, Email Address
@@ -144,6 +162,7 @@ let IndexView () =
                                                             prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Full Name"
                                                             prop.autoComplete "name"
+                                                            prop.required true
                                                         ]
                                                     ]
                                                 ]
@@ -154,6 +173,7 @@ let IndexView () =
                                                             prop.className "rounded-lg h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Email Address"
                                                             prop.autoComplete "email"
+                                                            prop.required true
                                                         ]
                                                     ]
                                                 ]
@@ -299,6 +319,7 @@ let IndexView () =
                                                         Html.input [
                                                             prop.type' "checkbox"
                                                             prop.className "mr-2"
+                                                            prop.required true
                                                         ]
                                                         Html.span [
                                                             prop.children [
@@ -318,7 +339,7 @@ let IndexView () =
                                                         join.item
                                                         button.success
                                                         prop.className "bg-orange-700 hover:bg-green-700 text-base-300"
-                                                        prop.text "Smart Paste"
+                                                        prop.text "Use Smart Paste"
                                                         prop.onClick (fun _ -> true |> AskForMessage |> dispatch)
                                                     ]
                                                     Daisy.button.button [

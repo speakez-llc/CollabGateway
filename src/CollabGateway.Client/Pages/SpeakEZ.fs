@@ -69,7 +69,7 @@ let IndexView () =
                                             prop.text "Seasoned Experience, Modern Tools and Innovative Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery' that uses both tried-and-true as well as leading edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for a secure industrial-strength platform to support skilled, mission-critical knowledge work - all with lower operational overhead, SpeakEZ is the place to start."
+                                            prop.text "SpeakEZ is an 'AI Refinery' that combines long-standing and leading-edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for a secure industrial-strength platform to support skilled, mission-critical knowledge work - all with lower operational overhead, SpeakEZ is the place to start."
                                         ]
                                     ]
                                 ]
