@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module EmailAddress
+﻿module CollabGateway.Shared.Types.EmailAddress
 
 type T = private EmailAddress of string
 

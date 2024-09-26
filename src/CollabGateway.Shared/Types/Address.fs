@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module Address
+﻿module CollabGateway.Shared.Types.Address
 
 module Country =
 

@@ -10,8 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fable.FontAwesome" Version="3.0.0" />
-    <PackageReference Include="Fable.Form" Version="2.0.0" />
-    <PackageReference Include="Fable.Form.Simple" Version="4.1.0" />
     <PackageReference Include="Fable.FormValidation" Version="1.1.1" />
   </ItemGroup>
   <Import Project=".paket\Paket.Restore.targets" />
