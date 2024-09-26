@@ -45,7 +45,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "There's a lot of ways to get in touch with us. You can send us a message using the form below, and we'll reach out via email as soon as we can. We're always happy to hear from you."
+                            prop.text "There are many ways to reach out to us. You can send us a message using the form below, and we'll respond via email as soon as we can. We're always happy to hear from you."
                         ]
                     ]
                 ]
