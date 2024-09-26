@@ -75,7 +75,7 @@ let IndexView () =
                                     prop.className "flex flex-col space-y-4 mt-4 items-center md:items-end"
                                     prop.children [
                                         Html.p [
-                                            prop.className "text-center md:text-right"
+                                            prop.className "text-left"
                                             prop.text "Feel free to review the information presented throughout this site. When you're ready to see for yourself, sign up to gain secure access to the portal - and get ready to experience the future hands-on!"
                                         ]
                                         Html.div [
