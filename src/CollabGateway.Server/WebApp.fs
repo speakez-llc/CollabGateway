@@ -3,7 +3,6 @@
 open System
 open System.Net
 open System.Net.Http
-open System.Threading.Tasks
 open Giraffe
 open Microsoft.AspNetCore.Http
 open CollabGateway.Shared.API
@@ -26,7 +25,7 @@ module WebApp =
             try
                 let apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
                 if String.IsNullOrEmpty(apiKey) then
-                    return "SendGrid API key is not set."
+                    return! ServerError.failwith (ServerError.Exception "SendGrid API key is not set.")
                 else
                     let client = SendGridClient(apiKey)
                     let from = EmailAddress("engineering@speakez.net", "Engineering Team")
@@ -41,10 +40,10 @@ module WebApp =
                     if response.StatusCode = HttpStatusCode.OK || response.StatusCode = HttpStatusCode.Accepted then
                         return "Email sent successfully"
                     else
-                        return $"Failed to send email: {response.StatusCode}"
+                        return! ServerError.failwith (ServerError.Exception $"Failed to send email: {response.StatusCode}")
             with
             | ex ->
-                return $"Failed to send email: {ex.Message}"
+                return! ServerError.failwith (ServerError.Exception $"Failed to send email: {ex.Message}")
         }
         |> Async.AwaitTask
 
@@ -69,7 +68,7 @@ module WebApp =
                 let token = if authHeader.StartsWith("Bearer ") then authHeader.Substring(7) else ""
 
                 if String.IsNullOrEmpty(requestToken) || requestToken <> token then
-                    return! json "Unauthorized" next ctx
+                    return! ServerError.failwith (ServerError.Authentication "Unauthorized")
                 else
                     let! contactForm = ctx.BindJsonAsync<ContactForm>()
                     let! geoInfo = getGeoInfo contactForm.ClientIP
