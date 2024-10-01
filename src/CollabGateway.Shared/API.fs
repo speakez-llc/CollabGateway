@@ -4,6 +4,7 @@ type ContactForm = {
     Name : string
     Email : string
     Message : string
+    ClientIP: string
 }
 
 type Service = {
