@@ -1,14 +1,16 @@
 module CollabGateway.Server.Program
 
 open Microsoft.AspNetCore.Builder
+open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Giraffe
 
-let private configureWeb (builder:WebApplicationBuilder) =
+let private configureWeb (builder: WebApplicationBuilder) =
     builder.Services.AddGiraffe() |> ignore
+    builder.Services.AddLogging() |> ignore
     builder
 
-let private configureApp (app:WebApplication) =
+let private configureApp (app: WebApplication) =
     app.UseStaticFiles() |> ignore
     app.UseGiraffe WebApp.webApp
     app
