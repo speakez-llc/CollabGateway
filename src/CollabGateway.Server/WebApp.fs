@@ -5,6 +5,7 @@ open System.Net
 open System.Net.Http
 open Giraffe
 open Microsoft.AspNetCore.Http
+open Microsoft.Extensions.Logging
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Errors
 open SendGrid
@@ -13,6 +14,12 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 
 module WebApp =
+
+    let parseAndPrintMessage json =
+        let jObject = JObject.Parse(json)
+        let messageContent = jObject.SelectToken("choices[0].message.content").ToString()
+        let formattedMessage = JObject.Parse(messageContent).ToString(Formatting.Indented)
+        Console.WriteLine(formattedMessage)
 
     let formatJson (json: string) =
         let jObject = JObject.Parse(json)
@@ -51,7 +58,7 @@ module WebApp =
         task {
             let geoipifyToken = Environment.GetEnvironmentVariable("GEOIPIFY_TOKEN")
             if String.IsNullOrEmpty(geoipifyToken) then
-                return None
+                return! ServerError.failwith (ServerError.Exception "GeoApify API key is not set.")
             else
                 let url = sprintf "https://geo.ipify.org/api/v2/country,city?apiKey=%s&ipAddress=%s" geoipifyToken clientIP
                 use httpClient = new HttpClient()
@@ -79,8 +86,66 @@ module WebApp =
                     return! json result next ctx
             }
 
+    let validateClipboardText (text: string) =
+        if String.IsNullOrWhiteSpace(text) then
+            false
+        else
+            // Add more validation logic if needed
+            true
+
+    let callAzureOpenAI (text: string) =
+        task {
+            let apiKey = Environment.GetEnvironmentVariable("AZUREOPENAI_API_KEY")
+            if String.IsNullOrEmpty(apiKey) then
+                return! ServerError.failwith (ServerError.Exception "Azure OpenAI API key is not set.")
+            else
+                let url = "https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview"
+                use httpClient = new HttpClient()
+                httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
+                let requestPayload = {
+                    messages = [
+                        { role = "system"; content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null." }
+                        { role = "user"; content = text }
+                    ]
+                    max_tokens = 800
+                    temperature = 0.7
+                    frequency_penalty = 0.0
+                    presence_penalty = 0.0
+                    top_p = 0.95
+                    stop = None
+                }
+                let content = new StringContent(JsonConvert.SerializeObject(requestPayload), System.Text.Encoding.UTF8, "application/json")
+                let! response = httpClient.PostAsync(url, content)
+                let! responseBody = response.Content.ReadAsStringAsync()
+                if response.StatusCode = HttpStatusCode.OK then
+                    parseAndPrintMessage responseBody
+                    return responseBody
+                else
+                    return! ServerError.failwith (ServerError.Exception $"Failed to call Azure OpenAI API: {response.StatusCode} - {responseBody}")
+        }
+        |> Async.AwaitTask
+
+    let processClipboardTextHandler : HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let logger = ctx.GetLogger("processClipboardTextHandler")
+                try
+                    let! clipboardText = ctx.BindJsonAsync<{| text: string |}>()
+                    if not (validateClipboardText clipboardText.text) then
+                        logger.LogError("Invalid clipboard text.")
+                        return! ServerError.failwith (ServerError.Exception "Invalid clipboard text.")
+                    else
+                        let! result = callAzureOpenAI clipboardText.text
+                        return! json result next ctx
+                with
+                | ex ->
+                    logger.LogError(ex, "An internal server error occurred.")
+                    return! ServerError.failwith (ServerError.Exception $"An internal server error occurred: {ex.Message}")
+            }
+
     let webApp : HttpHandler =
         choose [
             POST >=> route "/send-email" >=> sendEmailHandler
+            POST >=> route "/process-clipboard-text" >=> processClipboardTextHandler
             // Add other routes here
         ]

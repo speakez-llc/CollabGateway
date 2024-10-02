@@ -1,0 +1,6 @@
+POST http://localhost:5000/process-clipboard-text
+Content-Type: application/json
+
+{
+    "text": "Jordan Blake\nChief Innovation Officer\nInnovateX Solutions\n📞 Office: (555) 123-4567\n📱 Mobile: (555) 987-6543\n✉️ Email: jordan.blake@innovatex.fake\n🌐 Website: www.innovatexsolutions.fake\n🏢 Address: 123 Innovation Drive, Suite 100, Tech City, CA 90210\n🔗 LinkedIn: linkedin.com/in/jordanblake\n🐦 Twitter: @JordanBlake"
+}

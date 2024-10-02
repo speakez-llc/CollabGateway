@@ -1,0 +1,12 @@
+POST https://api-inference.huggingface.co/models/rajammanabrolu/gpt-3-5-turbo-chat
+Content-Type: application/json
+Authorization: Bearer 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
+Accept: application/json
+
+{
+    "prompt": "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null.",
+    "inputs": "Houston Haynes\\nManaging Partner\\nRower Consulting\\nO: (404) 689-9467\\nA: 1 W Ct Square Suite 750,\\nDecatur, GA 30030",
+    "temperature": 0.2,
+    "max_tokens": 150,
+    "stop": ["Output:"]
+}
