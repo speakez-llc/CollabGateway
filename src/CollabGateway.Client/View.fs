@@ -73,10 +73,12 @@ let AppView () =
         match state.Page with
         | Page.Index -> Pages.Index.IndexView ()
         | Page.Project -> Pages.Project.IndexView ()
+        | Page.CMSData -> Pages.CMSData.IndexView ()
         | Page.SignUp -> Pages.SignUp.IndexView ()
         | Page.Rower -> Pages.Rower.IndexView ()
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
         | Page.Contact -> Pages.Contact.IndexView ()
+        | Page.Partners -> Pages.Partners.IndexView ()
 
     let navigationWrapper =
         Html.div [
@@ -167,8 +169,21 @@ let AppView () =
                                                         prop.title "About This Project"
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
-                                                            Fa.i [ Fa.Solid.ProjectDiagram ] []
-                                                            if isOpen then Html.span "Learn More" else Html.none
+                                                            Fa.i [ Fa.Solid.ChartArea ] []
+                                                            if isOpen then Html.span "The Project" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.href "cmsdata"
+                                                        prop.title "About The Data"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [ Fa.Solid.Sitemap ] []
+                                                            if isOpen then Html.span "The Data" else Html.none
                                                         ]
                                                     ]
                                                 ]
@@ -177,11 +192,11 @@ let AppView () =
                                                 prop.children [
                                                     Html.a [
                                                         prop.href "signup"
-                                                        prop.title "Sign Up For Access"
+                                                        prop.title "Get On The List"
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
-                                                            Fa.i [ Fa.Solid.AddressBook ] []
-                                                            if isOpen then Html.span "Sign Up" else Html.none
+                                                            Fa.i [ Fa.Solid.FileSignature ] []
+                                                            if isOpen then Html.span "Get On The List" else Html.none
                                                         ]
                                                     ]
                                                 ]
@@ -244,6 +259,24 @@ let AppView () =
                                                                 Fa.Solid.Envelope
                                                             ] []
                                                             if isOpen then Html.span "Contact Us" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.style [
+                                                            style.marginLeft (length.px -2)
+                                                        ]
+                                                        prop.href "partners"
+                                                        prop.title "Partner Info"
+                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [
+                                                                Fa.Solid.InfoCircle
+                                                            ] []
+                                                            if isOpen then Html.span "Partner Info" else Html.none
                                                         ]
                                                     ]
                                                 ]

@@ -13,8 +13,10 @@
         <Compile Include="Extensions.fs" />
         <Compile Include="Pages\Index.fs" />
         <Compile Include="Pages\Project.fs" />
+        <Compile Include="Pages\CMSData.fs" />
         <Compile Include="Pages\SignUp.fs" />
         <Compile Include="Pages\Rower.fs" />
+        <Compile Include="Pages\Partners.fs" />
         <Compile Include="Pages\SpeakEZ.fs" />
         <Compile Include="Pages\Contact.fs" />
         <Compile Include="View.fs" />
