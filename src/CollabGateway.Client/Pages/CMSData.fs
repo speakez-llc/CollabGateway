@@ -45,7 +45,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "This showcase leverages public data released by the Centers for Medicare & Medicaid Services (CMS). The 'Medicare Part D Prescribers by Provider and Drug' dataset provides information on prescription drugs issued to Medicare beneficiaries enrolled in Part D by physicians and other health care providers. This dataset contains the total number of prescription fills that were dispensed and the total drug cost paid organized by prescribing National Provider Identifier (NPI), drug brand name (if applicable) and drug generic name. The span of time covered by this data ranges from 2013 to 2022, a full ten-year span."
+                            prop.text "The showcase we provide in Interworks Curator leverages public data released by the Centers for Medicare & Medicaid Services (CMS). The 'Medicare Part D Prescribers by Provider and Drug' data set his historical information on prescription drugs issued to Medicare beneficiaries enrolled in Part D. This dataset contains the total number of prescription fills that were dispensed and the total drug cost paid organized by prescribing National Provider Identifier (NPI), drug brand name (if applicable) and drug generic name. The span of time covered by this data ranges from 2013 to 2022, a full ten-year span."
                         ]
                     ]
                 ]
