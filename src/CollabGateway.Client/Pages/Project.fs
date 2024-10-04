@@ -66,7 +66,7 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Step 1: Curator"
+                                            prop.text "Step 1: Interworks Curator"
                                         ]
                                         Html.p [
                                             prop.text "Interworks Curator is a flexible portal that collates and coordinates all of your data. It provides a cohesive experience to place existing reports with new decision support assets under one convenient 'pane of glass'."
@@ -88,7 +88,7 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Step 2: Existing Work"
+                                            prop.text "Step 2: Integrate Your Reports"
                                         ]
                                         Html.p [
                                             prop.text "The portal 'wraps' your in-place reports with menus and permissions to match your organization's roles and access. Our sample includes a variety of report sources, including Tableau and Power BI."
@@ -110,7 +110,7 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Step 3: Something New"
+                                            prop.text "Step 3: Introduce Something New"
                                         ]
                                         Html.p [
                                             prop.text "Our partner SpeakEZ has provided a sample application that lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
