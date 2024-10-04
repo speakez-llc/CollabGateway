@@ -58,7 +58,7 @@ let IndexView () =
                             prop.children [
                                 Html.figure [
                                     Html.img [
-                                        prop.src "/img/MedPtD_Splash_Image.png"
+                                        prop.src "/img/MedPtD_Cover.png"
                                     ]
                                 ]
                                 Html.div [
@@ -113,7 +113,7 @@ let IndexView () =
                                             prop.text "Data Enrichment"
                                         ]
                                         Html.p [
-                                            prop.text "As with real world projects, data preparation was also a factor. In certain cases it was as simple as column labels for human (and LLM) readability. In others it was a matter of pulling in fresh data to add facets of discoverability."
+                                            prop.text "As with real world projects, data preparation was also a factor. In certain cases it was as simple as column labels for human (and LLM) readability. In others it was a matter of pulling in fresh data to add new avenues of discovery."
                                         ]
                                     ]
                                 ]

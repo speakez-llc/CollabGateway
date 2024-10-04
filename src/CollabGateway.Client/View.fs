@@ -192,11 +192,11 @@ let AppView () =
                                                 prop.children [
                                                     Html.a [
                                                         prop.href "signup"
-                                                        prop.title "Get On The List"
+                                                        prop.title "The Waitlist"
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.FileSignature ] []
-                                                            if isOpen then Html.span "Get On The List" else Html.none
+                                                            if isOpen then Html.span "The Waitlist" else Html.none
                                                         ]
                                                     ]
                                                 ]
