@@ -217,7 +217,7 @@ let IndexView () =
                     prop.className "w-full"
                     prop.children [
                         Html.img [
-                            prop.src "/img/Census_Regions_and_Division_of_the_United_States.svg"
+                            prop.src "/img/Census_Regions_US.svg"
                             prop.className "h-full w-full object-cover rounded-3xl"
                             prop.alt "Rower Logo"
                         ]
