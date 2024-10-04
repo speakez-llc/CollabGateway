@@ -37,7 +37,7 @@ let IndexView () =
                 ]
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card mx-auto bg-base-200"
+                    prop.className "card mx-auto bg-base-200 rounded-3xl"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -54,7 +54,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row gap-4 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -76,7 +76,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -98,7 +98,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -128,7 +128,7 @@ let IndexView () =
             prop.children [
                 // Top card spanning 80% width
                 Html.div [
-                    prop.className "card mx-auto bg-base-200"
+                    prop.className "card mx-auto bg-base-200 rounded-3xl"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
@@ -145,7 +145,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row gap-4 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -167,7 +167,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -189,7 +189,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full md:w-1/3 shadow bg-base-200"
+                            prop.className "card w-full md:w-1/3 shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -214,7 +214,7 @@ let IndexView () =
                 ]
                 // Bottom card spanning 2/3 width
                 Html.div [
-                    prop.className "card mx-auto bg-base-200 w-full md:w-2/3"
+                    prop.className "card mx-auto bg-base-200 w-full md:w-2/3 rounded-3xl"
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"

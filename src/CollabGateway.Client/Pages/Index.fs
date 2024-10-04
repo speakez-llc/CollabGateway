@@ -38,7 +38,7 @@ let IndexView () =
                     prop.text state.Message
                 ]
                 Html.div [
-                    prop.className "card w-full bg-base-200"
+                    prop.className "card w-full bg-base-200 rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "card-body"
@@ -62,7 +62,7 @@ let IndexView () =
                     ]
                 ]
                 Html.div [
-                    prop.className "card w-full bg-base-200"
+                    prop.className "card w-full bg-base-200 rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "card-body"
@@ -87,7 +87,7 @@ let IndexView () =
                                                     prop.className "btn btn-primary text-lg w-full md:w-auto"
                                                     prop.onClick (fun e -> Router.goToUrl(e))
                                                     prop.href "/signup"
-                                                    prop.text "Sign Up Now"
+                                                    prop.text "Join The Waitlist"
                                                 ]
                                             ]
                                         ]

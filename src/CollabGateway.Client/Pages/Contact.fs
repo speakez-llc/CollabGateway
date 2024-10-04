@@ -68,8 +68,8 @@ let IndexView () =
                 ]
                 // Submit button
                 Html.button [
-                    prop.className "btn btn-primary h-10 w-1/2 md:w-1/4"
-                    prop.text "Get In Touch"
+                    prop.className "btn btn-primary h-10 w-1/2 md:w-1/4 text-gray-200"
+                    prop.text "Get In Touch!"
                 ]
             ]
         ]

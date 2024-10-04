@@ -70,7 +70,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row gap-4 w-full"
                     prop.children [
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -92,7 +92,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
@@ -114,7 +114,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [

@@ -42,7 +42,7 @@ let IndexView () =
                     ]
                 ]
                 Html.div [
-                    prop.className "card mx-auto bg-base-200 shadow-3xl"
+                    prop.className "card mx-auto bg-base-200 shadow-3xl rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "flex flex-col md:flex-row"
@@ -62,7 +62,7 @@ let IndexView () =
                                     ]
                                 ]
                                 Html.div [
-                                    prop.className "card-body w-full"
+                                    prop.className "card-body w-full rounded-3xl"
                                     prop.children [
                                         Html.h1 [
                                             prop.className "card-title mx-auto"
@@ -81,7 +81,7 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row gap-4 mx-auto"
                     prop.children [
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.div [
                                     prop.className "card-body"
@@ -105,7 +105,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.img [
                                     prop.src "img/Systm2_badge_580px.svg"
@@ -113,7 +113,7 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.div [
                                     prop.className "card-body"
@@ -142,7 +142,7 @@ let IndexView () =
                     ]
                 ]
                 Html.div [
-                    prop.className "card  mx-auto bg-base-200 shadow-3xl"
+                    prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "flex"
@@ -166,7 +166,7 @@ let IndexView () =
             prop.className "flex justify-center mt-4"
             prop.children [
                 Html.button [
-                    prop.className "btn btn-primary text-lg"
+                    prop.className "btn btn-primary text-lg text-gray-200"
                     prop.onClick (fun e -> Router.goToUrl(e))
                     prop.href "/signup"
                     prop.text "Sign Up Now"

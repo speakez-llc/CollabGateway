@@ -338,13 +338,14 @@ let IndexView () =
                                                     Daisy.button.button [
                                                         join.item
                                                         button.success
-                                                        prop.className "bg-orange-700 hover:bg-green-700 text-base-300"
+                                                        prop.className "bg-orange-700 hover:bg-green-700 text-gray-200"
                                                         prop.text "Use Smart Paste"
                                                         prop.onClick (fun _ -> true |> AskForMessage |> dispatch)
                                                     ]
                                                     Daisy.button.button [
                                                         join.item
                                                         button.primary
+                                                        prop.className "text-gray-200"
                                                         prop.text "Send Your Info"
                                                         prop.onClick (fun _ -> false |> AskForMessage |> dispatch)
                                                     ]
