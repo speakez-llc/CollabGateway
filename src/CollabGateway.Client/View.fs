@@ -196,7 +196,7 @@ let AppView () =
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.FileSignature ] []
-                                                            if isOpen then Html.span "The Waitlist" else Html.none
+                                                            if isOpen then Html.span "Join Our Waitlist" else Html.none
                                                         ]
                                                     ]
                                                 ]

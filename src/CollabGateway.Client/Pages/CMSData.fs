@@ -212,9 +212,23 @@ let IndexView () =
                         ]
                     ]
                 ]
+                // Bottom card spanning 2/3 width
+                Html.div [
+                    prop.className "card mx-auto bg-base-200 w-full md:w-2/3"
+                    prop.children [
+                        Html.h1 [
+                            prop.className "p-2 mx-auto card-title mt-4"
+                            prop.text "Data Enrichment: Adding Regions and Other Location Elements"
+                        ]
+                        Html.div [
+                            prop.className "p-4 m-2 card-body mx-auto"
+                            prop.text "One feature of Interworks Curator we've come to appreciate is its ability to adapt its navigation and permissions to map to the organization's existing structure. Of course that can take many forms, but here we opted to show the reports from a variety of regional perspectives. This meant adding location data to the original data set such that the Census-defined attributes of Region and Division could be grouped as the scope of reports were changed to map to the responsibility of the viewer."
+                        ]
+                    ]
+                ]
                 // Image with rounded corners
                 Html.div [
-                    prop.className "w-full"
+                    prop.className "w-full md:w-2/3 mx-auto"
                     prop.children [
                         Html.img [
                             prop.src "/img/Census_Regions_US.svg"
@@ -232,7 +246,7 @@ let IndexView () =
                     prop.className "btn btn-primary text-lg text-gray-200"
                     prop.onClick (fun e -> Router.goToUrl(e))
                     prop.href "/signup"
-                    prop.text "Get On The List"
+                    prop.text "Join Our Waitlist"
                 ]
             ]
         ]
