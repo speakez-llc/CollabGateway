@@ -102,7 +102,7 @@ let IndexView () =
                             prop.children [
                                 Html.figure [
                                     Html.img [
-                                        prop.src "/img/MedPtD_OtherData.png"
+                                        prop.src "/img/SpeakEZ_Data_Prep.png"
                                     ]
                                 ]
                                 Html.div [
@@ -110,10 +110,10 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Options for Exploration"
+                                            prop.text "Data Enrichment"
                                         ]
                                         Html.p [
-                                            prop.text "Our partner SpeakEZ has provided a sample application that lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
+                                            prop.text "As with real world projects, data preparation was also a factor. In certain cases it was as simple as column labels for human (and LLM) readability. In others it was a matter of pulling in fresh data to add dimensions to the corpus."
                                         ]
                                     ]
                                 ]
@@ -229,7 +229,7 @@ let IndexView () =
             prop.className "flex justify-center mt-4"
             prop.children [
                 Html.button [
-                    prop.className "btn btn-primary text-lg"
+                    prop.className "btn btn-primary text-lg text-gray-200"
                     prop.onClick (fun e -> Router.goToUrl(e))
                     prop.href "/signup"
                     prop.text "Get On The List"

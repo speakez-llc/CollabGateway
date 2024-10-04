@@ -143,7 +143,7 @@ let IndexView () =
             prop.className "flex justify-center mt-4"
             prop.children [
                 Html.button [
-                    prop.className "btn btn-primary text-lg"
+                    prop.className "btn btn-primary text-lg text-gray-200 text-gray-200"
                     prop.onClick (fun e -> Router.goToUrl(e))
                     prop.href "/signup"
                     prop.text "Sign Up Now"
