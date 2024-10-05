@@ -212,6 +212,17 @@ let IndexView () =
                         ]
                     ]
                 ]
+                Html.div [
+                    prop.className "flex justify-center mt-4"
+                    prop.children [
+                        Html.button [
+                            prop.className "btn btn-primary text-lg text-gray-200"
+                            prop.onClick (fun e -> Router.goToUrl(e))
+                            prop.href "/signup"
+                            prop.text "Join Our Waitlist"
+                        ]
+                    ]
+                ]
                 // Bottom card spanning 2/3 width
                 Html.div [
                     prop.className "card mx-auto bg-base-200 w-full md:w-2/3 rounded-3xl"
@@ -236,17 +247,6 @@ let IndexView () =
                             prop.alt "Rower Logo"
                         ]
                     ]
-                ]
-            ]
-        ]
-        Html.div [
-            prop.className "flex justify-center mt-4"
-            prop.children [
-                Html.button [
-                    prop.className "btn btn-primary text-lg text-gray-200"
-                    prop.onClick (fun e -> Router.goToUrl(e))
-                    prop.href "/signup"
-                    prop.text "Join Our Waitlist"
                 ]
             ]
         ]

@@ -49,17 +49,6 @@ let IndexView () =
                         ]
                     ]
                 ]
-                // Image with rounded corners
-                Html.div [
-                    prop.className "w-full"
-                    prop.children [
-                        Html.img [
-                            prop.src "/img/Rower_Logo_solid.svg"
-                            prop.className "h-full w-full object-cover rounded-3xl"
-                            prop.alt "Rower Logo"
-                        ]
-                    ]
-                ]
                 // Bottom row with three cards
                 Html.div [
                     prop.className "flex flex-col md:flex-row gap-4 w-full"
@@ -131,17 +120,6 @@ let IndexView () =
                             ]
                         ]
                     ]
-                ]
-            ]
-        ]
-        Html.div [
-            prop.className "flex justify-center mt-4"
-            prop.children [
-                Html.button [
-                    prop.className "btn btn-primary text-lg"
-                    prop.onClick (fun e -> Router.goToUrl(e))
-                    prop.href "/signup"
-                    prop.text "Sign Up Now"
                 ]
             ]
         ]

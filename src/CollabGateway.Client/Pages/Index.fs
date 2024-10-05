@@ -78,13 +78,13 @@ let IndexView () =
                                             prop.className "flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto"
                                             prop.children [
                                                 Html.button [
-                                                    prop.className "btn btn-secondary text-lg w-full md:w-auto"
+                                                    prop.className "btn btn-secondary text-lg w-full md:w-auto text-gray-200"
                                                     prop.onClick (fun e -> Router.goToUrl(e))
                                                     prop.href "/project"
                                                     prop.text "Learn More"
                                                 ]
                                                 Html.button [
-                                                    prop.className "btn btn-primary text-lg w-full md:w-auto"
+                                                    prop.className "btn btn-primary text-lg w-full md:w-auto text-gray-200"
                                                     prop.onClick (fun e -> Router.goToUrl(e))
                                                     prop.href "/signup"
                                                     prop.text "Join The Waitlist"

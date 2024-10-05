@@ -754,18 +754,29 @@ Cloud
   <text
      dx="0"
      dy="0"
-     font-family="&quot;eAqgBOf3HI81:::Roboto&quot;"
-     font-size="48"
+     font-family="'eAqgBOf3HI81:::Roboto'"
+     font-size="48px"
      font-weight="400"
-     transform="translate(1145.301072 663.015022)"
      stroke-width="0"
-     id="text50"><tspan
-       y="0"
+     id="text50"
+     x="1139.6724"
+     y="663.01501"><tspan
+       y="663.01501"
        font-weight="400"
        stroke-width="0"
-       id="tspan50"><![CDATA[
-On Premise
-]]></tspan></text>
+       id="tspan50"><![CDATA[On Premise]]></tspan></text>
+  <text
+     font-family="'eAqgBOf3HI81:::Roboto'"
+     font-size="48px"
+     font-weight="400"
+     stroke-width="0"
+     id="text50-1"
+     x="1173.3052"
+     y="994.31885"><tspan
+       y="994.31885"
+       font-weight="400"
+       stroke-width="0"
+       id="tspan50-9">Or Cloud</tspan></text>
   <g
      transform="matrix(.341816 0 0 0.341816 250.494082 168.483846)"
      id="g51">

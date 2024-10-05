@@ -160,16 +160,16 @@ let IndexView () =
                         ]
                     ]
                 ]
-            ]
-        ]
-        Html.div [
-            prop.className "flex justify-center mt-4"
-            prop.children [
-                Html.button [
-                    prop.className "btn btn-primary text-lg text-gray-200"
-                    prop.onClick (fun e -> Router.goToUrl(e))
-                    prop.href "/signup"
-                    prop.text "Sign Up Now"
+                Html.div [
+                    prop.className "flex flex-col md:flex-row gap-4 justify-end"
+                    prop.children [
+                        Html.button [
+                            prop.className "btn btn-primary text-lg text-gray-200"
+                            prop.onClick (fun e -> Router.goToUrl(e))
+                            prop.href "/signup"
+                            prop.text "Join Our Waitlist"
+                        ]
+                    ]
                 ]
             ]
         ]

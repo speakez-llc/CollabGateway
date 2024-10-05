@@ -41,7 +41,7 @@ let IndexView () =
                     prop.text state.Message
                 ]
                 Html.div [
-                    prop.className "card mx-auto bg-base-200 w-4/5 mx-auto"
+                    prop.className "card mx-auto bg-base-200 w-4/5 mx-auto rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
