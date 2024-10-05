@@ -104,7 +104,7 @@ module WebApp =
                 httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
                 let requestPayload = {
                     messages = [
-                        { role = "system"; content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null." }
+                        { role = "system"; content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. Only return one value for each key. For fields without any corresponding information in inputs, use the value null." }
                         { role = "user"; content = text }
                     ]
                     max_tokens = 800
@@ -145,6 +145,7 @@ module WebApp =
 
     let webApp : HttpHandler =
         choose [
+            GET >=> route "/" >=> htmlFile "public/index.html"
             POST >=> route "/send-email" >=> sendEmailHandler
             POST >=> route "/process-clipboard-text" >=> processClipboardTextHandler
             // Add other routes here
