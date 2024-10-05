@@ -366,11 +366,18 @@ let IndexView () =
                                             prop.className (if state.ShowTermsModal then "modal modal-open items-center justify-center" else "modal items-center justify-center")
                                             prop.children [
                                                 Html.div [
-                                                    prop.className "modal-box w-11/12 max-w-5xl"
+                                                    prop.className "modal-box w-11/12 max-w-5xl bg-gray-200"
                                                     prop.children [
-                                                        Html.h2 [
-                                                            prop.className "text-xl font-bold"
-                                                            prop.text "Terms of Service"
+                                                        Html.div [
+                                                            prop.className "flex flex-col md:flex-row gap-4 justify-end"
+                                                            prop.children [
+                                                                Daisy.button.button [
+                                                                    button.secondary
+                                                                    prop.className "text-xl text-gray-200"
+                                                                    prop.text "Close This Page"
+                                                                    prop.onClick (fun _ -> dispatch HideTermsModal)
+                                                                ]
+                                                            ]
                                                         ]
                                                         Html.div [
                                                             rawHtml "<style>
