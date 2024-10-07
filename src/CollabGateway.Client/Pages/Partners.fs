@@ -180,7 +180,6 @@ let IndexView () =
                         ]
                     ]
                 ]
-
                 Html.div [
                     prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl w-full md:w-4/5"
                     prop.children [
@@ -197,11 +196,43 @@ let IndexView () =
                                     prop.className "card-title"
                                     prop.children [
                                         Html.a [
-                                            prop.href "https://www.speakez.ai/"
+                                            prop.href "https://speakez.ai/"
                                             prop.target "_blank"
                                             prop.children [
                                                 Html.span [
                                                     prop.text "SpeakEZ Platform Services"
+                                                ]
+                                                Html.i [
+                                                    prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                Html.div [
+                    prop.className "card mx-auto bg-base-200 shadow-3xl rounded-3xl w-full md:w-4/5 pt-6"
+                    prop.children [
+                        Html.figure [
+                            Html.img [
+                                prop.src "/img/RowerConsulting_Logo_t.svg"
+                            ]
+                        ]
+                        Html.div [
+                            prop.className "card-body"
+                            prop.children [
+                                Html.h2 [
+                                    prop.className "card-title"
+                                    prop.children [
+                                        Html.a [
+                                            prop.href "https://www.rowerconsulting.com/"
+                                            prop.target "_blank"
+                                            prop.children [
+                                                Html.span [
+                                                    prop.text "Rower Consulting Main website"
                                                 ]
                                                 Html.i [
                                                     prop.className "fas fa-external-link-alt ml-2 text-gold"

@@ -123,7 +123,7 @@ let IndexView () =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "we've all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. "
+                                            prop.text "We have all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. "
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"

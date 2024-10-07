@@ -160,7 +160,7 @@ let IndexView () =
                                             prop.text "Sign Up For A Guided Tour"
                                         ]
                                         Html.p [
-                                            prop.text "It's quick and easy. You have three options for filling out the form: 1) by hand, 2) using your browser auto-fill, or 3) SpeakEZ's Smart Form feature. The third option is an early glimpse into the power of 'AI'."
+                                            prop.text "It's quick and easy. You have three options for filling out the form: 1) typing in by hand, 2) using your browser auto-fill, or 3) SpeakEZ's Smart Form feature. The third option is an early glimpse into the power of 'AI'."
                                         ]
                                     ]
                                 ]
