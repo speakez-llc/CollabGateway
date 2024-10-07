@@ -28,7 +28,6 @@ let AppView () =
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
 
-    // Retrieve the initial state from localStorage or set it based on screen width
     let initialSidebarState =
         match Browser.Dom.window.localStorage.getItem("sidebarState") with
         | null -> not (isMobileView())
@@ -41,7 +40,6 @@ let AppView () =
         setIsOpen newState
         Browser.Dom.window.localStorage.setItem("sidebarState", if newState then "open" else "closed")
 
-    // Retrieve the initial theme from localStorage or set it to "dark"
     let initialTheme =
         match Browser.Dom.window.localStorage.getItem("theme") with
         | null -> "dark"
@@ -86,7 +84,7 @@ let AppView () =
             prop.children [
                 // Top nav bar
                 Html.div [
-                    prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-200" // Ensure top bar has a higher z-index and a solid background color
+                    prop.className "p-5 flex items-center justify-between fixed top-0 left-0 w-full z-20 bg-base-200"
                     prop.children [
                         Html.div [
                             prop.className "flex items-center transition-all duration-500 ease-in-out ml-2"
@@ -138,16 +136,16 @@ let AppView () =
                 ]
                 // Sidebar and main content wrapper
                 Html.div [
-                    prop.className "flex flex-1 pt-16" // Add padding-top to account for the fixed top nav bar
+                    prop.className "flex flex-1 pt-16"
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)]" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16")) // Ensure sidebar is fixed and covers full height
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)] flex flex-col" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16"))
                             prop.style [ style.width (if isOpen then length.rem 16 else if isMobileView() then length.rem 0 else length.rem 4) ]
                             prop.children [
                                 if isOpen || not (isMobileView()) then
                                     Html.ul [
-                                        prop.className (sprintf "menu min-h-full bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
+                                        prop.className (sprintf "menu flex-1 bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
                                         prop.children [
                                             Html.li [
                                                 prop.children [
@@ -212,10 +210,10 @@ let AppView () =
                                                                 prop.src "/img/Rower_Icon_Gold_t.svg"
                                                                 prop.alt "Rower Icon"
                                                                 prop.style [
-                                                                    style.width (length.px 24) // Adjust the width as needed
-                                                                    style.height (length.px 24) // Adjust the height as needed
+                                                                    style.width (length.px 24)
+                                                                    style.height (length.px 24)
                                                                     style.marginRight (length.px 0)
-                                                                    style.marginLeft (length.px -3) // Add some space between the icon and the text
+                                                                    style.marginLeft (length.px -3)
                                                                 ]
                                                             ]
                                                             if isOpen then Html.span "About Rower" else Html.none
@@ -284,6 +282,22 @@ let AppView () =
                                         ]
                                     ]
                                 else Html.none
+                                // Add the copyright blurb here
+                                if isOpen || not (isMobileView()) then
+                                    Html.div [
+                                        prop.className "mt-auto text-center text-sm p-4 bg-base-200"
+                                        prop.children [
+                                            if isOpen then
+                                                Html.span [
+                                                    prop.dangerouslySetInnerHTML "&copy; 2024 SpeakEZ Platform Services. All Rights Reserved."
+                                                ]
+                                            else
+                                                Html.span [
+                                                    prop.dangerouslySetInnerHTML "&copy;"
+                                                ]
+                                        ]
+                                    ]
+                                else Html.none
                             ]
                         ]
                         // Main content area
@@ -291,7 +305,7 @@ let AppView () =
                             prop.className (sprintf "flex flex-col flex-1 overflow-hidden transition-all duration-500 ease-in-out %s" (if isOpen then "md:ml-64" else "md:ml-16"))
                             prop.children [
                                 Html.div [
-                                    prop.key (state.Page.ToString()) // Ensure the component re-renders on route change
+                                    prop.key (state.Page.ToString())
                                     prop.className "flex-1 overflow-auto p-4 animate-fade"
                                     prop.children [ render ]
                                 ]
