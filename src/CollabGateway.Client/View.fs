@@ -268,13 +268,13 @@ let AppView () =
                                                             style.marginLeft (length.px -2)
                                                         ]
                                                         prop.href "partners"
-                                                        prop.title "Partner Info"
+                                                        prop.title "Partners & Links"
                                                         prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [
                                                                 Fa.Solid.InfoCircle
                                                             ] []
-                                                            if isOpen then Html.span "Partner Info" else Html.none
+                                                            if isOpen then Html.span "Partners & Links" else Html.none
                                                         ]
                                                     ]
                                                 ]

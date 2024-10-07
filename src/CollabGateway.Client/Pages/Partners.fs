@@ -15,7 +15,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Partners & Technologies" }, Cmd.none
+let private init () = { Message = "Partners & Links" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -232,7 +232,7 @@ let IndexView () =
                                             prop.target "_blank"
                                             prop.children [
                                                 Html.span [
-                                                    prop.text "Rower Consulting Main website"
+                                                    prop.text "Rower Consulting Main Website"
                                                 ]
                                                 Html.i [
                                                     prop.className "fas fa-external-link-alt ml-2 text-gold"
