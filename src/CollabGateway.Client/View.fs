@@ -293,7 +293,10 @@ let AppView () =
                                                 ]
                                             else
                                                 Html.span [
-                                                    prop.dangerouslySetInnerHTML "&copy;"
+                                                    prop.title "Copyright 2024 SpeakEZ Platform Services. All Rights Reserved."
+                                                    prop.children [
+                                                        Fa.i [ Fa.Solid.Copyright ] []
+                                                    ]
                                                 ]
                                         ]
                                     ]
