@@ -180,6 +180,40 @@ let IndexView () =
                         ]
                     ]
                 ]
+
+                Html.div [
+                    prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl"
+                    prop.children [
+                        Html.figure [
+                            Html.img [
+                                prop.className "bg-gray-700"
+                                prop.src "/img/SpeakEZcolorBanner.svg"
+                            ]
+                        ]
+                        Html.div [
+                            prop.className "card-body"
+                            prop.children [
+                                Html.h2 [
+                                    prop.className "card-title"
+                                    prop.children [
+                                        Html.a [
+                                            prop.href "https://www.speakez.ai/"
+                                            prop.target "_blank"
+                                            prop.children [
+                                                Html.span [
+                                                    prop.text "SpeakEZ Platform Services"
+                                                ]
+                                                Html.i [
+                                                    prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ]
     ]
