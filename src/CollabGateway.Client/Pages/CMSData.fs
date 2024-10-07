@@ -45,7 +45,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "The showcase we provide in Interworks Curator leverages public data released by the Centers for Medicare & Medicaid Services (CMS). The 'Medicare Part D Prescribers by Provider and Drug' data set provides historical information on prescription drugs issued to Medicare beneficiaries enrolled in Part D. It contains a specific collation of prescription fills that were dispensed along with total drug cost paid, organized by prescribing National Provider Identifier (NPI), drug brand name (if applicable) and drug generic name. The span of time covered by this data ranges from 2013 to 2022, a full ten-year span."
+                            prop.text "This showcase uses public data released by the Centers for Medicare & Medicaid Services (CMS). The 'Medicare Part D Prescribers by Provider and Drug' data set provides historical information on prescription drugs issued to Medicare beneficiaries enrolled in Part D. It contains a specific collation of prescription fills that were dispensed along with total drug cost paid, organized by prescribing National Provider Identifier (NPI), drug brand name (if applicable) and drug generic name. The span of time covered by this data ranges from 2013 to 2022, a full ten-year span."
                         ]
                     ]
                 ]
@@ -69,7 +69,7 @@ let IndexView () =
                                             prop.text "A Big Picture"
                                         ]
                                         Html.p [
-                                            prop.text "We chose a public data set that anyone could verify for themselves. And even if your company is concerned with a different domain, everyone has a sense of the complexities in dealing with their own (and their family's) healthcare."
+                                            prop.text "We chose this particular public data set for it's 'narrow' scope and relatively deep history. And if this isn't related to your particular domain, don't worry. Our guided tour will help you understand the data and its implications."
                                         ]
                                     ]
                                 ]
@@ -91,7 +91,7 @@ let IndexView () =
                                             prop.text "Selecting A Specific View"
                                         ]
                                         Html.p [
-                                            prop.text "The data set is useful as it represents 10 years of history plus pre-categorized data for patients both below and at/above 65 years of age. Both demography and geography are relatable without being overly complex."
+                                            prop.text "Nearly 250 million rows of fact data: the 'year-level grain', simplified demography (below and at/above 65 years of age), as well as geography features to the city/state level bring relatable features without being overly complex."
                                         ]
                                     ]
                                 ]
@@ -136,7 +136,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "p-4 card-body mx-auto"
-                            prop.text "Organizations don't want to abandon their current investments while exploring new avenues of value. We've seen this so often that we followed suit by building a similar profile in this showcase. Efforts were taken to mimic a real-world data landscape."
+                            prop.text "Organizations want to preserve their current investments while exploring new avenues of value. We've seen this so often that we followed suit by building a similar profile in this showcase. Efforts were taken to mimic a real-world data landscape."
                         ]
                     ]
                 ]
@@ -160,7 +160,7 @@ let IndexView () =
                                             prop.text "Tableau Summary (2022)"
                                         ]
                                         Html.p [
-                                            prop.text "It's quick and easy. You have three options for filling out the form: 1) by hand, 2) using your browser auto-fill, or 3) our smart paste feature. The third option is an early glimpse into the power of 'AI'."
+                                            prop.text "This report focuses on the most recent year of data. It provides many common views and controls available in Tableau reporting, and is a good place to start if you're new to the data set. "
                                         ]
                                     ]
                                 ]
@@ -182,7 +182,7 @@ let IndexView () =
                                             prop.text "PowerBI Details (10 Years of Data)"
                                         ]
                                         Html.p [
-                                            prop.text "You'll receive a message to verify that you own the address you provided. This is a standard security measure to ensure that you are the one who signed up. Once confirmed you'll see a link to the Curator portal."
+                                            prop.text "The PowerBI reports provide a longer view of the data set. The added feature of an 'Is_Opioid' column to the medications dimension enhances the original CMS data."
                                         ]
                                     ]
                                 ]
@@ -204,7 +204,7 @@ let IndexView () =
                                             prop.text "SpeakEZ 'Rex' AI Chat"
                                         ]
                                         Html.p [
-                                            prop.text "You can use the provided password to log in. If your email is part of Microsoft365, you will log in with your corporate credentials. Don't worry, only Microsoft sees your login info to confirm your identity."
+                                            prop.text "SpeakEZ 'Rex' is a new proof-of-concept using a 'chat' style interaction. This is where the power of 'AI' moves beyond the hype and allows users to explore the data with natural language."
                                         ]
                                     ]
                                 ]
@@ -233,7 +233,7 @@ let IndexView () =
                         ]
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "One feature of Interworks Curator we've come to appreciate is its ability to adapt its navigation and permissions to map to the organization's existing structure. Of course that can take many forms, but here we opted to show the reports from a variety of regional perspectives. This meant adding location data to the original data set such that the Census-defined attributes of Region and Division could be grouped as the scope of reports were changed to map to the responsibility of the viewer."
+                            prop.text "One feature of Interworks Curator we've come to appreciate is its ability to adapt its navigation and permissions to map to the organization's existing structure. Of course that can take many forms, but here we opted to show the reports from a variety of regional perspectives. This meant enriching location data from the original data set such that the Census-defined attributes of Region and Division could be grouped as the scope of reports were changed to map to the responsibility of the viewer."
                         ]
                     ]
                 ]

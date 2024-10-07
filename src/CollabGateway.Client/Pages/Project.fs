@@ -41,11 +41,11 @@ let IndexView () =
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
-                            prop.text "Tempering the Tried-and-True with Leading-Edge Engineering"
+                            prop.text "Blending the Tried-and-True with Leading-Edge Engineering"
                         ]
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "Rower's Analytics Portal showcases the power of data-driven decision-making, taking you step-by-step through the journey to leverage existing investments while adding new capabilities in a single responsive application. Our platform integrates seamlessly with your existing systems, providing real-time insights and actionable recommendations. With Rower's expertise and SpeakEZ technologies, you can harness the full potential of your data and drive your business forward."
+                            prop.text "Our Analytics Portal showcases the power of data-driven decision-making, taking you step-by-step through the journey to leverage existing investments while adding new capabilities in a single responsive web application. Our platform integrates seamlessly with your existing systems, providing real-time insights and actionable recommendations. With Rower's expertise and SpeakEZ technologies, you can harness the full potential of your data and drive your business forward."
                         ]
                     ]
                 ]
@@ -69,7 +69,7 @@ let IndexView () =
                                             prop.text "Step 1: Interworks Curator"
                                         ]
                                         Html.p [
-                                            prop.text "Interworks Curator is a flexible portal that collates and coordinates all of your data. It provides a cohesive experience to place existing reports with new decision support assets under one convenient 'pane of glass'."
+                                            prop.text "We use Interworks Curator as a flexible portal that collates and coordinates all of your data. It provides a cohesive experience to place existing reports with new decision support assets under one convenient 'pane of glass'."
                                         ]
                                     ]
                                 ]
@@ -132,11 +132,11 @@ let IndexView () =
                     prop.children [
                         Html.h1 [
                             prop.className "p-2 mx-auto card-title mt-4"
-                            prop.text "Get Access and Experience the Future Hands-On"
+                            prop.text "Sign Up to Experience the Future Hands-On"
                         ]
                         Html.div [
                             prop.className "p-4 card-body mx-auto"
-                            prop.text "After signing up and confirming your email you'll be provisioned as an 'external user' to our Curator portal. The site will grant you access to a variety of reports and dashboards.  including the SpeakEZ application. You'll be able to explore the data and see how the portal can help you make better decisions."
+                            prop.text "After signing up for our waitlist we'll set up a guided tour that's convenient to you. At a later date we'll be releasing the site as a private beta for current and future customers to explore on their own. This collaborative process will provide guided access to the data and allow you to develop your own ideas on how a blended information portal can help your organization make better, faster business decisions."
                         ]
                     ]
                 ]
@@ -157,10 +157,10 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Sign Up For Access"
+                                            prop.text "Sign Up For A Guided Tour"
                                         ]
                                         Html.p [
-                                            prop.text "It's quick and easy. You have three options for filling out the form: 1) by hand, 2) using your browser auto-fill, or 3) our smart paste feature. The third option is an early glimpse into the power of 'AI'."
+                                            prop.text "It's quick and easy. You have three options for filling out the form: 1) by hand, 2) using your browser auto-fill, or 3) SpeakEZ's Smart Form feature. The third option is an early glimpse into the power of 'AI'."
                                         ]
                                     ]
                                 ]
@@ -182,7 +182,7 @@ let IndexView () =
                                             prop.text "Confirm Your Email"
                                         ]
                                         Html.p [
-                                            prop.text "You'll receive a message to verify that you own the address you provided. This is a standard security measure to ensure that you are the one who signed up. Once confirmed you'll see a link to the Curator portal."
+                                            prop.text "You'll receive a message to verify that you own the address provided. This is a standard security measure to ensure that you are the one who signed up. Once confirmed you'll be contacted by someone to set up a time to review the site."
                                         ]
                                     ]
                                 ]
@@ -201,10 +201,10 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Log In and Explore"
+                                            prop.text "Join Us and Explore"
                                         ]
                                         Html.p [
-                                            prop.text "You can use the provided password to log in. If your email is part of Microsoft365, you will log in with your corporate credentials. Don't worry, only Microsoft sees your login info to confirm your identity."
+                                            prop.text "Initially we're setting up guided tours both to demonstrate features of the site and to gather feedback. In time we'll release the site as a private beta for those who have toured the site with us to continue exploring on their own."
                                         ]
                                     ]
                                 ]

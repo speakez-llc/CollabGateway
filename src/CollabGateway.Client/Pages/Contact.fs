@@ -33,7 +33,7 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-4/5 mx-auto max-w-screen-xl"
+            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-2/3 mx-auto max-w-screen-xl"
             prop.children [
                 // Header with the message
                 Html.h1 [
@@ -45,7 +45,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "There are many ways to reach out to us. You can send us a message using the form below, and we'll respond via email as soon as we can. We're always happy to hear from you."
+                            prop.text "If you're not ready to sign up on our waitlist, you can still reach out. Use the form below and we'll respond via email as soon as we can. We're always happy to hear from you."
                         ]
                     ]
                 ]
@@ -68,7 +68,7 @@ let IndexView () =
                 ]
                 // Submit button
                 Html.button [
-                    prop.className "btn btn-primary h-10 w-1/2 md:w-1/4 text-gray-200"
+                    prop.className "btn btn-primary h-10 w-1/2 md:w-1/4 text-gray-200 text-xl"
                     prop.text "Get In Touch!"
                 ]
             ]

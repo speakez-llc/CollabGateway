@@ -80,7 +80,7 @@ let IndexView () =
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "The process we use for accessing the site include adding you as an 'external user' to our Entra ID tenant. This will allow you to access the site and use the features available to you. We will also send you an email with a link to the site. You can use this link to access the site at any time. If you have any questions or need help, please feel free to reach out to us."
+                            prop.text "Let's start the conversation. Sending this info allows the helpful experts at Rower to contact you and set up a convenient time for a guided tour. And we've also added a small 'AI' feature to help the process. You can choose to fill out the form manually, or use standard browser autofill feature. But the 'Easter egg' here is the SpeakEZ Smart Form feature. You can simply copy your contact info from an email or app and paste it into the form. The AI will do its best to fill out the form for you. Then click 'Send Your Info' and someone will be in touch with you soon."
                         ]
                     ]
                 ]
