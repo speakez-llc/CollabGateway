@@ -182,7 +182,7 @@ let IndexView () =
                 ]
 
                 Html.div [
-                    prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl"
+                    prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl w-full md:w-4/5"
                     prop.children [
                         Html.figure [
                             Html.img [
