@@ -15,7 +15,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Partner Information" }, Cmd.none
+let private init () = { Message = "Partner And Technology Information" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -29,21 +29,60 @@ let IndexView () =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out mx-auto max-w-screen-xl"
+            prop.className "flex flex-col p-4 space-y-4 transition-all duration-300 ease-in-out mx-auto max-w-screen-xl w-full md:w-1/2"
             prop.children [
-                // All-text card in its own row
+                // Header with the message
+                Html.h1 [
+                    prop.className "text-2xl font-bold mb-4 mx-auto"
+                    prop.text state.Message
+                ]
+                // Bottom row with three cards
                 Html.div [
-                    prop.className "card w-full bg-base-200 shadow-3xl"
+                    prop.className "flex flex-col md:flex-row gap-4 w-full"
                     prop.children [
                         Html.div [
-                            prop.className "card-body"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
-                                Html.h1 [
-                                    prop.className "card-title mx-auto"
-                                    prop.text "Delivering Business Solutions You Need With Tools You Trust"
+                                Html.figure [
+                                    Html.img [
+                                        prop.className "bg-gray-300"
+                                        prop.src "img/curator_by_interworks.png"
+                                    ]
                                 ]
-                                Html.p [
-                                    prop.text "Inspired by the Results Oriented Work Environment (ROWE) philosophy, Rower Consulting delivers innovation through insight and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on a seasoned view and modern tooling to see the real opportunities beyond the latest hype cycle and deliver tailored solutions that unlock an organization's unique potential."
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "Interworks, makers of Curator"
+                                        ]
+                                        Html.p [
+                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on the investment."
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                        Html.div [
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
+                            prop.children [
+                                Html.figure [
+                                    Html.img [
+                                        prop.className "bg-gray-200"
+                                        prop.src "/img/Tableau-Emblem.png"
+                                    ]
+                                ]
+                                Html.div [
+                                    prop.className "card-body"
+                                    prop.children [
+                                        Html.h2 [
+                                            prop.className "card-title"
+                                            prop.text "Salesforce Tableau"
+                                        ]
+                                        Html.p [
+                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
+                                        ]
+                                    ]
                                 ]
                             ]
                         ]
@@ -54,11 +93,12 @@ let IndexView () =
                     prop.className "flex flex-col md:flex-row gap-4 w-full"
                     prop.children [
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
-                                        prop.src "img/hospital.png"
+                                        prop.className "bg-gray-500"
+                                        prop.src "img/PowerBI.png"
                                     ]
                                 ]
                                 Html.div [
@@ -66,7 +106,7 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "A Variety of Industries"
+                                            prop.text "Microsoft Power BI"
                                         ]
                                         Html.p [
                                             prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on the investment."
@@ -76,11 +116,12 @@ let IndexView () =
                             ]
                         ]
                         Html.div [
-                            prop.className "card w-full shadow bg-base-200"
+                            prop.className "card w-full shadow bg-base-200 rounded-3xl"
                             prop.children [
                                 Html.figure [
                                     Html.img [
-                                        prop.src "/img/team-meeting.png"
+                                        prop.className "bg-gray-100"
+                                        prop.src "/img/ThoughtSpot_Logo.png"
                                     ]
                                 ]
                                 Html.div [
@@ -88,32 +129,10 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Flexibility & Experience"
+                                            prop.text "ThoughtSpot"
                                         ]
                                         Html.p [
                                             prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                        Html.div [
-                            prop.className "card w-full shadow bg-base-200"
-                            prop.children [
-                                Html.figure [
-                                    Html.img [
-                                        prop.src "/img/contact.png"
-                                    ]
-                                ]
-                                Html.div [
-                                    prop.className "card-body"
-                                    prop.children [
-                                        Html.h2 [
-                                            prop.className "card-title"
-                                            prop.text "The Speed of Business"
-                                        ]
-                                        Html.p [
-                                            prop.text "While we're known for enterprise analytics, we also can help you bring robust operational app experiences to the field and on the go via phone, tablet and even embedded devices."
                                         ]
                                     ]
                                 ]

@@ -66,7 +66,7 @@ let IndexView () =
                                     prop.children [
                                         Html.h1 [
                                             prop.className "card-title mx-auto"
-                                            prop.text "Seasoned Experience, Modern Tools and Innovative Design"
+                                            prop.text "Seasoned Experience, Modern Tools and Human Centered Design"
                                         ]
                                         Html.p [
                                             prop.text "SpeakEZ is an 'AI Refinery' that combines long-standing and leading-edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for a secure industrial-strength platform to support skilled, mission-critical knowledge work - all with lower operational overhead, SpeakEZ is the place to start."
@@ -91,7 +91,7 @@ let IndexView () =
                                             prop.text "Innovation without Compromise"
                                         ]
                                         Html.p [
-                                            prop.text "Because of the .com and SaaS eras, we've become inured to divulging data as a devil's bargain with Corporate Surveillance congolmerates. Their real business is selling ads to you, or worse, your data to others. SpeakEZ is security-first and is solely focused on delivering high quality knowledge services."
+                                            prop.text "Because of the .com and SaaS eras, we've become inured to divulging data as a devil's bargain with Corporate Surveillance conglomerates. Their real business is selling ads to you, or worse, selling your data to others. SpeakEZ is security-first and is solely focused on delivering high quality knowledge services."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"

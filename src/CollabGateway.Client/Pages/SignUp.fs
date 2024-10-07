@@ -123,7 +123,7 @@ let IndexView () =
                                                     prop.onClick (fun _ -> dispatch ToggleAccordion3)
                                                 ]
                                                 Daisy.collapseContent [
-                                                    prop.text "This is an early glimpse at an 'AI' feature that uses a combination of machine learning and natural language processing. It could be the fastest way to fill out the form. You can pick out an old email with your info in the signature - or- copy your contact info from an app. Any place where that info is in regular text. Then use the 'Smart Paste' button to send the clipboard text to our AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info' and onto verifying your email!"
+                                                    prop.text "This is an early glimpse at an 'AI' feature. You can copy your email signature with your contact info - or - copy your contact info if you have it in a contact management app. Any place where that info is in regular text. Then use the 'Smart Paste' button to send the clipboard text to the AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info'."
                                                 ]
                                             ]
                                         ]
