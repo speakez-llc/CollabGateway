@@ -289,11 +289,11 @@ let AppView () =
                                         prop.children [
                                             if isOpen then
                                                 Html.span [
-                                                    prop.dangerouslySetInnerHTML "&copy; 2024 SpeakEZ Platform Services. All Rights Reserved."
+                                                    prop.dangerouslySetInnerHTML "&copy; 2024 SpeakEZ LLC. <br> All Rights Reserved."
                                                 ]
                                             else
                                                 Html.span [
-                                                    prop.title "Copyright 2024 SpeakEZ Platform Services. All Rights Reserved."
+                                                    prop.title "Copyright 2024 SpeakEZ LLC. All Rights Reserved."
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.Copyright ] []
                                                     ]
