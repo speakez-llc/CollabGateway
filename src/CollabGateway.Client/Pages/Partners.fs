@@ -15,7 +15,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Partner And Technology Information" }, Cmd.none
+let private init () = { Message = "Partners & Technologies" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -54,10 +54,20 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Interworks, makers of Curator"
-                                        ]
-                                        Html.p [
-                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on the investment."
+                                            prop.children [
+                                                Html.a [
+                                                    prop.href "https://www.interworks.com/curator"
+                                                    prop.target "_blank"
+                                                    prop.children [
+                                                        Html.span [
+                                                            prop.text "Interworks, makers of Curator"
+                                                        ]
+                                                        Html.i [
+                                                            prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
                                         ]
                                     ]
                                 ]
@@ -77,10 +87,20 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Salesforce Tableau"
-                                        ]
-                                        Html.p [
-                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
+                                            prop.children [
+                                                Html.a [
+                                                    prop.href "https://www.salesforce.com/products/tableau/"
+                                                    prop.target "_blank"
+                                                    prop.children [
+                                                        Html.span [
+                                                            prop.text "Salesforce Tableau"
+                                                        ]
+                                                        Html.i [
+                                                            prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
                                         ]
                                     ]
                                 ]
@@ -106,10 +126,20 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "Microsoft Power BI"
-                                        ]
-                                        Html.p [
-                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on the investment."
+                                            prop.children [
+                                                Html.a [
+                                                    prop.href "https://powerbi.microsoft.com/"
+                                                    prop.target "_blank"
+                                                    prop.children [
+                                                        Html.span [
+                                                            prop.text "Microsoft Power BI"
+                                                        ]
+                                                        Html.i [
+                                                            prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
                                         ]
                                     ]
                                 ]
@@ -129,10 +159,20 @@ let IndexView () =
                                     prop.children [
                                         Html.h2 [
                                             prop.className "card-title"
-                                            prop.text "ThoughtSpot"
-                                        ]
-                                        Html.p [
-                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
+                                            prop.children [
+                                                Html.a [
+                                                    prop.href "https://www.thoughtspot.com/"
+                                                    prop.target "_blank"
+                                                    prop.children [
+                                                        Html.span [
+                                                            prop.text "ThoughtSpot"
+                                                        ]
+                                                        Html.i [
+                                                            prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
                                         ]
                                     ]
                                 ]

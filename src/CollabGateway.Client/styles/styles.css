@@ -8,3 +8,7 @@
 .btn {
     @apply rounded-full;
 }
+
+.text-gold {
+    color: #C18E3A;
+}
