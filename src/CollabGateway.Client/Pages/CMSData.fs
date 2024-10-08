@@ -69,7 +69,7 @@ let IndexView () =
                                             prop.text "A Big Picture"
                                         ]
                                         Html.p [
-                                            prop.text "We chose this particular public data set for it's 'narrow' scope and relatively deep history. And if this isn't related to your particular domain, don't worry. Our guided tour will help you understand the data and its implications."
+                                            prop.text "We chose this particular public data set for it's 'narrow' scope and relatively deep history. And if this isn't related to your particular domain, don't worry. Our guided tour will help you understand the data and its real-world use."
                                         ]
                                     ]
                                 ]

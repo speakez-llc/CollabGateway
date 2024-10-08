@@ -23,7 +23,7 @@ type private Msg =
     | ShowTermsModal
     | HideTermsModal
 
-let private init () = { Message = "Let's Get Started!"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false; ShowTermsModal = false }, Cmd.none
+let private init () = { Message = "Take The First Step!"; Accordion1Open = false; Accordion2Open = false; Accordion3Open = false; ShowTermsModal = false }, Cmd.none
 
 let private closeAccordion label model =
     match label with

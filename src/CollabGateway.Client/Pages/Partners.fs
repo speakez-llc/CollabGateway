@@ -4,7 +4,6 @@ open Feliz
 open Feliz.DaisyUI
 open Elmish
 open CollabGateway.Client.Server
-open CollabGateway.Client.Router
 open UseElmish
 
 type private State = {
@@ -36,6 +35,38 @@ let IndexView () =
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.Message
                 ]
+                Html.div [
+                    prop.className "card mx-auto bg-base-200 shadow-3xl rounded-3xl w-full md:w-4/5 pt-6"
+                    prop.children [
+                        Html.figure [
+                            Html.img [
+                                prop.src "/img/RowerConsulting_Logo_t.svg"
+                            ]
+                        ]
+                        Html.div [
+                            prop.className "card-body"
+                            prop.children [
+                                Html.h2 [
+                                    prop.className "card-title"
+                                    prop.children [
+                                        Html.a [
+                                            prop.href "https://www.rowerconsulting.com/"
+                                            prop.target "_blank"
+                                            prop.children [
+                                                Html.span [
+                                                    prop.text "Main Website"
+                                                ]
+                                                Html.i [
+                                                    prop.className "fas fa-external-link-alt ml-2 text-gold"
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
                 // Bottom row with three cards
                 Html.div [
                     prop.className "flex flex-col md:flex-row gap-4 w-full"
@@ -60,7 +91,7 @@ let IndexView () =
                                                     prop.target "_blank"
                                                     prop.children [
                                                         Html.span [
-                                                            prop.text "Interworks, makers of Curator"
+                                                            prop.text "Curator"
                                                         ]
                                                         Html.i [
                                                             prop.className "fas fa-external-link-alt ml-2 text-gold"
@@ -93,7 +124,7 @@ let IndexView () =
                                                     prop.target "_blank"
                                                     prop.children [
                                                         Html.span [
-                                                            prop.text "Salesforce Tableau"
+                                                            prop.text "Tableau"
                                                         ]
                                                         Html.i [
                                                             prop.className "fas fa-external-link-alt ml-2 text-gold"
@@ -132,7 +163,7 @@ let IndexView () =
                                                     prop.target "_blank"
                                                     prop.children [
                                                         Html.span [
-                                                            prop.text "Microsoft Power BI"
+                                                            prop.text "Power BI"
                                                         ]
                                                         Html.i [
                                                             prop.className "fas fa-external-link-alt ml-2 text-gold"
@@ -185,7 +216,7 @@ let IndexView () =
                     prop.children [
                         Html.figure [
                             Html.img [
-                                prop.className "bg-gray-700"
+                                prop.className ""
                                 prop.src "/img/SpeakEZcolorBanner.svg"
                             ]
                         ]
@@ -200,39 +231,7 @@ let IndexView () =
                                             prop.target "_blank"
                                             prop.children [
                                                 Html.span [
-                                                    prop.text "SpeakEZ Platform Services"
-                                                ]
-                                                Html.i [
-                                                    prop.className "fas fa-external-link-alt ml-2 text-gold"
-                                                ]
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-                Html.div [
-                    prop.className "card mx-auto bg-base-200 shadow-3xl rounded-3xl w-full md:w-4/5 pt-6"
-                    prop.children [
-                        Html.figure [
-                            Html.img [
-                                prop.src "/img/RowerConsulting_Logo_t.svg"
-                            ]
-                        ]
-                        Html.div [
-                            prop.className "card-body"
-                            prop.children [
-                                Html.h2 [
-                                    prop.className "card-title"
-                                    prop.children [
-                                        Html.a [
-                                            prop.href "https://www.rowerconsulting.com/"
-                                            prop.target "_blank"
-                                            prop.children [
-                                                Html.span [
-                                                    prop.text "Rower Consulting Main Website"
+                                                    prop.text "SpeakEZ.ai"
                                                 ]
                                                 Html.i [
                                                     prop.className "fas fa-external-link-alt ml-2 text-gold"

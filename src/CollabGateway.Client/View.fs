@@ -7,26 +7,77 @@ open Feliz.UseElmish
 open Fable.FontAwesome
 open Fable.Core.JsInterop
 
+type AlertLevel =
+    | Neutral
+    | Primary
+    | Secondary
+    | Accent
+    | Success
+    | Error
+    | Warning
+    | Info
+
 type private Msg =
     | UrlChanged of Page
+    | ShowToast of string * AlertLevel
+    | HideToast
 
 type private State = {
     Page : Page
+    ToastMessage : string option
 }
 
 let private init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
-    { Page = nextPage }, Cmd.navigatePage nextPage
+    { Page = nextPage; ToastMessage = Some "This is a test message" }, Cmd.navigatePage nextPage
 
-let private update (msg:Msg) (state:State) : State * Cmd<Msg> =
+let private update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
     | UrlChanged page -> { state with Page = page }, Cmd.none
+    | ShowToast message ->
+        let hideToastCmd =
+            Cmd.OfAsync.perform (fun () ->
+                async {
+                    do! Async.Sleep 5000
+                    return HideToast
+                }) ()
+        { state with ToastrMessage = Some message }, hideToastCmd
+    | HideToast -> { state with ToastMessage = None },
 
 [<ReactComponent>]
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
+    let (isFadingOut, setIsFadingOut) = React.useState false
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
+
+    let Toast (message: string) =
+        Html.div [
+            prop.className (sprintf "toast toast-bottom toast-end %s" (if isFadingOut then "animate-fadeOut" else ""))
+            prop.children [
+                Html.div [
+                    prop.className "alert alert-success"
+                    prop.children [
+                        Html.div [
+                            prop.className "flex-1"
+                            prop.children [
+                                Html.span [ prop.text message ]
+                            ]
+                        ]
+                        Html.button [
+                            prop.className "btn btn-sm btn-ghost"
+                            prop.onClick (fun _ ->
+                                setIsFadingOut true
+                                Browser.Dom.window.setTimeout((fun () -> dispatch HideToast), 1000) |> ignore
+                            )
+                            prop.children [
+                                Fa.i [ Fa.Solid.Times ] []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
     let initialSidebarState =
         match Browser.Dom.window.localStorage.getItem("sidebarState") with
@@ -77,6 +128,11 @@ let AppView () =
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
         | Page.Contact -> Pages.Contact.IndexView ()
         | Page.Partners -> Pages.Partners.IndexView ()
+
+    let renderToast () =
+        match state.ToastMessage with
+        | Some message -> Toast message
+        | None -> Html.none
 
     let navigationWrapper =
         Html.div [
@@ -316,6 +372,7 @@ let AppView () =
                         ]
                     ]
                 ]
+                renderToast ()
             ]
         ]
 

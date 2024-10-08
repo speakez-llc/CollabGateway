@@ -8,11 +8,16 @@ export default {
         extend: {
             animation: {
                 fade: 'fadeIn 500ms ease-in-out',
+                fadeOut: 'fadeOut 1s ease-in-out',
             },
             keyframes: {
                 fadeIn: {
                     '0%': { opacity: '0' },
                     '100%': { opacity: '1' },
+                },
+                fadeOut: {
+                    '0%': { opacity: '1' },
+                    '100%': { opacity: '0' },
                 },
             },
         },
@@ -21,12 +26,12 @@ export default {
         daisyui,
     ],
     daisyui: {
-        themes: ["business", "nord"], // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
-        base: true, // applies background color and foreground color for root element by default
-        styled: true, // include daisyUI colors and design decisions for all components
-        utils: true, // adds responsive and modifier utility classes
-        prefix: "", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
-        logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
-        themeRoot: ":root", // The element that receives theme color CSS
+        themes: ["business", "nord"],
+        base: true,
+        styled: true,
+        utils: true,
+        prefix: "",
+        logs: true,
+        themeRoot: ":root",
     },
 }

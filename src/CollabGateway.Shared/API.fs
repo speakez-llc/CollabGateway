@@ -22,6 +22,22 @@ type ContactForm = {
     ClientIP: string
 }
 
+type SignUpFrom = {
+    Name : string
+    Email : string
+    JobTitle : string
+    Phone : string
+    Department : string
+    Company : string
+    StreetAddress1 : string
+    StreetAddress2 : string
+    City : string
+    StateProvince : string
+    PostCode : string
+    Country : string
+    ClientIP: string
+}
+
 type Service = {
     GetMessage : bool -> Async<string>
     SendEmailMessage : ContactForm -> Async<string>
