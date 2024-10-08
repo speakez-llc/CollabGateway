@@ -8,41 +8,37 @@ open Fable.FontAwesome
 open Fable.Core.JsInterop
 
 type AlertLevel =
-    | Neutral
-    | Primary
-    | Secondary
-    | Accent
     | Success
     | Error
     | Warning
     | Info
 
+type Toast = {
+    Message: string
+    Level: AlertLevel
+}
+
 type private Msg =
     | UrlChanged of Page
-    | ShowToast of string * AlertLevel
-    | HideToast
+    | ShowToast of Toast
+    | HideToast of Toast
 
 type private State = {
-    Page : Page
-    ToastMessage : string option
+    Page: Page
+    Toasts: Toast list
 }
 
 let private init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
-    { Page = nextPage; ToastMessage = Some "This is a test message" }, Cmd.navigatePage nextPage
+    { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
 
 let private update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
     | UrlChanged page -> { state with Page = page }, Cmd.none
-    | ShowToast message ->
-        let hideToastCmd =
-            Cmd.OfAsync.perform (fun () ->
-                async {
-                    do! Async.Sleep 5000
-                    return HideToast
-                }) ()
-        { state with ToastrMessage = Some message }, hideToastCmd
-    | HideToast -> { state with ToastMessage = None },
+    | ShowToast toast ->
+        { state with Toasts = toast :: state.Toasts }, Cmd.none
+    | HideToast toast ->
+        { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
 
 [<ReactComponent>]
 let AppView () =
@@ -51,32 +47,38 @@ let AppView () =
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
 
-    let Toast (message: string) =
+    let getAlertClass level =
+        match level with
+        | Success -> "alert alert-success"
+        | Error -> "alert alert-error"
+        | Warning -> "alert alert-warning"
+        | Info -> "alert alert-info"
+
+    let Toast (toast: Toast) (dispatch: Msg -> unit) =
         Html.div [
-            prop.className (sprintf "toast toast-bottom toast-end %s" (if isFadingOut then "animate-fadeOut" else ""))
+            prop.className (getAlertClass toast.Level)
             prop.children [
-                Html.div [
-                    prop.className "alert alert-success"
+                Html.button [
+                    prop.className "btn btn-sm btn-ghost"
+                    prop.onClick (fun _ -> dispatch (HideToast toast))
                     prop.children [
-                        Html.div [
-                            prop.className "flex-1"
-                            prop.children [
-                                Html.span [ prop.text message ]
-                            ]
-                        ]
-                        Html.button [
-                            prop.className "btn btn-sm btn-ghost"
-                            prop.onClick (fun _ ->
-                                setIsFadingOut true
-                                Browser.Dom.window.setTimeout((fun () -> dispatch HideToast), 1000) |> ignore
-                            )
-                            prop.children [
-                                Fa.i [ Fa.Solid.Times ] []
-                            ]
-                        ]
+                        Fa.i [ Fa.Solid.Times ] []
+                    ]
+                ]
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.span [ prop.text toast.Message ]
                     ]
                 ]
             ]
+        ]
+
+
+    let renderToast (toasts: Toast list) (dispatch: Msg -> unit) =
+        Html.div [
+            prop.className "toast"
+            prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
         ]
 
     let initialSidebarState =
@@ -128,11 +130,6 @@ let AppView () =
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
         | Page.Contact -> Pages.Contact.IndexView ()
         | Page.Partners -> Pages.Partners.IndexView ()
-
-    let renderToast () =
-        match state.ToastMessage with
-        | Some message -> Toast message
-        | None -> Html.none
 
     let navigationWrapper =
         Html.div [
@@ -338,7 +335,7 @@ let AppView () =
                                         ]
                                     ]
                                 else Html.none
-                                // Add the copyright blurb here
+                                // copyright blurb
                                 if isOpen || not (isMobileView()) then
                                     Html.div [
                                         prop.className "mt-auto text-center text-sm p-4 bg-base-200"
@@ -372,7 +369,7 @@ let AppView () =
                         ]
                     ]
                 ]
-                renderToast ()
+                renderToast state.Toasts dispatch
             ]
         ]
 
