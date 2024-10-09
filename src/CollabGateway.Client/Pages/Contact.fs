@@ -5,6 +5,7 @@ open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
 open UseElmish
+open CollabGateway.Client.ViewMsg
 
 type private State = {
     Message : string
@@ -13,7 +14,7 @@ type private State = {
 type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
-    | SendToast of Toast
+    //| SendToast of Toast
 
 let private init () = { Message = "Feel Free To Reach Out" }, Cmd.none
 
@@ -21,15 +22,17 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
     | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
-    | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
-    | SendToast toast -> model, Cmd.OfMsg (ShowToast toast)
+    //| MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
+    //| SendToast toast -> model, Cmd.OfMsg (ShowToast toast)
 
 [<ReactComponent>]
-let IndexView () =
+let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
 
     let handleButtonClick () =
-        dispatch (SendToast { Message="Message sent"; Level=Info })
+        //dispatch (SendToast { Message="Message sent"; Level=Info })
+        parentDispatch (ShowToast { Message="Message sent"; Level=Info } )
+        ()
 
     React.fragment [
         Html.div [

@@ -11,6 +11,7 @@
         <Compile Include="Server.fs" />
         <Compile Include="Router.fs" />
         <Compile Include="Extensions.fs" />
+        <Compile Include="ViewMsg.fs" />
         <Compile Include="Pages\Index.fs" />
         <Compile Include="Pages\Project.fs" />
         <Compile Include="Pages\CMSData.fs" />

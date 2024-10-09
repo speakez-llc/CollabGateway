@@ -6,12 +6,12 @@ open Elmish
 open Feliz.UseElmish
 open Fable.FontAwesome
 open CollabGateway.Shared.API
-
-type Msg =
+open CollabGateway.Client.ViewMsg
+(* type Msg =
     | ShowToast of Toast
     | HideToast of Toast
     | UrlChanged of Page
-
+ *)
 type State = {
     Page: Page
     Toasts: Toast list
@@ -21,7 +21,7 @@ let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
     { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
 
-let update (msg: Msg) (state: State) : State * Cmd<Msg> =
+let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
     | UrlChanged page -> { state with Page = page }, Cmd.none
     | ShowToast toast ->
@@ -42,7 +42,7 @@ let AppView () =
         | Warning -> "alert alert-warning"
         | Info -> "alert alert-info"
 
-    let Toast (toast: Toast) (dispatch: Msg -> unit) =
+    let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
         Html.div [
             prop.className (getAlertClass toast.Level)
             prop.children [
@@ -62,7 +62,7 @@ let AppView () =
             ]
         ]
 
-    let renderToast (toasts: Toast list) (dispatch: Msg -> unit) =
+    let renderToast (toasts: Toast list) (dispatch: ViewMsg -> unit) =
         Html.div [
             prop.className "toast"
             prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
@@ -116,7 +116,7 @@ let AppView () =
         | Page.SignUp -> Pages.SignUp.IndexView ()
         | Page.Rower -> Pages.Rower.IndexView ()
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
-        | Page.Contact -> Pages.Contact.IndexView ()
+        | Page.Contact -> Pages.Contact.IndexView (dispatch)
         | Page.Partners -> Pages.Partners.IndexView ()
 
     let navigationWrapper =
