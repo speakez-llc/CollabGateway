@@ -1,12 +1,12 @@
 ﻿module CollabGateway.Shared.API
 
-type Message = {
+type ChatMessage = {
     role: string
     content: string
 }
 
 type OpenAIRequest = {
-    messages: Message list
+    messages: ChatMessage list
     max_tokens: int
     temperature: float
     frequency_penalty: float

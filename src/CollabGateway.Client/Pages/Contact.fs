@@ -14,7 +14,6 @@ type private State = {
 type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
-    //| SendToast of Toast
 
 let private init () = { Message = "Feel Free To Reach Out" }, Cmd.none
 
@@ -29,9 +28,8 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
 let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
 
-    let handleButtonClick () =
-        //dispatch (SendToast { Message="Message sent"; Level=Info })
-        parentDispatch (ShowToast { Message="Message sent"; Level=Info } )
+    let handleButtonClick event toast =
+        parentDispatch (ShowToast toast )
         ()
 
     React.fragment [
@@ -52,27 +50,24 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         ]
                     ]
                 ]
-                // Name field
                 Html.input [
                     prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2"
                     prop.placeholder "Name"
                     prop.autoComplete "Name"
                 ]
-                // Email field
                 Html.input [
                     prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2"
                     prop.placeholder "Email"
                     prop.autoComplete "Email"
                 ]
-                // Message field
                 Html.textarea [
                     prop.className "rounded-lg h-32 w-full lg:w-1/2 shadow bg-base-200 p-2"
                     prop.placeholder "Your Message"
                 ]
-                // Submit button
                 Html.button [
                     prop.className "btn btn-primary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
                     prop.text "Get In Touch!"
+                    prop.onClick (fun event -> handleButtonClick event { Message="Message sent"; Level=Success })
                 ]
             ]
         ]

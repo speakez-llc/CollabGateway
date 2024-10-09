@@ -7,6 +7,7 @@ open Feliz.UseElmish
 open Fable.FontAwesome
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
+
 (* type Msg =
     | ShowToast of Toast
     | HideToast of Toast
@@ -116,7 +117,7 @@ let AppView () =
         | Page.SignUp -> Pages.SignUp.IndexView ()
         | Page.Rower -> Pages.Rower.IndexView ()
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
-        | Page.Contact -> Pages.Contact.IndexView (dispatch)
+        | Page.Contact -> Pages.Contact.IndexView dispatch
         | Page.Partners -> Pages.Partners.IndexView ()
 
     let navigationWrapper =
