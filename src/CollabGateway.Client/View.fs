@@ -5,34 +5,23 @@ open Router
 open Elmish
 open Feliz.UseElmish
 open Fable.FontAwesome
-open Fable.Core.JsInterop
+open CollabGateway.Shared.API
 
-type AlertLevel =
-    | Success
-    | Error
-    | Warning
-    | Info
-
-type Toast = {
-    Message: string
-    Level: AlertLevel
-}
-
-type private Msg =
-    | UrlChanged of Page
+type Msg =
     | ShowToast of Toast
     | HideToast of Toast
+    | UrlChanged of Page
 
-type private State = {
+type State = {
     Page: Page
     Toasts: Toast list
 }
 
-let private init () =
+let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
     { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
 
-let private update (msg: Msg) (state: State) : State * Cmd<Msg> =
+let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
     | UrlChanged page -> { state with Page = page }, Cmd.none
     | ShowToast toast ->
@@ -43,7 +32,6 @@ let private update (msg: Msg) (state: State) : State * Cmd<Msg> =
 [<ReactComponent>]
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
-    let (isFadingOut, setIsFadingOut) = React.useState false
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
 
@@ -74,12 +62,12 @@ let AppView () =
             ]
         ]
 
-
     let renderToast (toasts: Toast list) (dispatch: Msg -> unit) =
         Html.div [
             prop.className "toast"
             prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
         ]
+
 
     let initialSidebarState =
         match Browser.Dom.window.localStorage.getItem("sidebarState") with

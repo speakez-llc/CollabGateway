@@ -22,7 +22,7 @@ type ContactForm = {
     ClientIP: string
 }
 
-type SignUpFrom = {
+type SignUpForm = {
     Name : string
     Email : string
     JobTitle : string
@@ -36,6 +36,17 @@ type SignUpFrom = {
     PostCode : string
     Country : string
     ClientIP: string
+}
+
+type AlertLevel =
+    | Success
+    | Error
+    | Warning
+    | Info
+
+type Toast = {
+    Message: string
+    Level: AlertLevel
 }
 
 type Service = {
