@@ -1,5 +1,6 @@
 ﻿module CollabGateway.Client.Pages.Contact
 
+open System
 open Feliz
 open Elmish
 open Fable.Core
@@ -35,6 +36,7 @@ type private State = {
     ContactForm: ContactForm
     ResponseMessage: string
     InFormMessage: string
+    Errors: Map<string, string>
 }
 
 type private Msg =
@@ -53,8 +55,16 @@ let private init () =
         MessageBody = ""
         ClientIP = ""
     }
-    let initialState = { ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = "" }
+    let initialState = { ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = ""; Errors = Map.empty }
     initialState, Cmd.none
+
+let private validateForm (contactForm: ContactForm) =
+    let errors =
+        [ if String.IsNullOrWhiteSpace(contactForm.Name) then Some("Name is required") else None
+          if String.IsNullOrWhiteSpace(contactForm.Email) then Some("Email is required") else None
+          if String.IsNullOrWhiteSpace(contactForm.MessageBody) then Some("Message is required") else None ]
+        |> List.choose id
+    errors, not (List.isEmpty errors)
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
@@ -63,11 +73,16 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | UpdateEmail email -> { model with State.ContactForm.Email = email }, Cmd.none
     | UpdateMessageBody messageBody -> { model with State.ContactForm.MessageBody = messageBody }, Cmd.none
     | SubmitForm ->
-        let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm model.ContactForm) FormSubmitted
-        model, cmd
+        let errors, hasErrors = validateForm model.ContactForm
+        if hasErrors then
+            errors |> List.iter (fun error -> parentDispatch (ShowToast { Message = error; Level = Warning }))
+            model, Cmd.none
+        else
+            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm model.ContactForm) FormSubmitted
+            model, cmd
     | FormSubmitted (Ok response) ->
         parentDispatch (ShowToast { Message = "Message sent"; Level = Success })
-        { model with ResponseMessage = $"Got success response: {response}" }, Cmd.none
+        { model with State.ContactForm.Email = ""; State.ContactForm.Name = ""; State.ContactForm.MessageBody = ""; State.ResponseMessage = $"Got success response: {response}" }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
         parentDispatch (ShowToast { Message = "Failed to send message"; Level = Error })
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}" }, Cmd.none
@@ -87,7 +102,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
         fetchIP () |> Async.StartImmediate
     )
 
-    let handleButtonClick (_: Browser.Types.MouseEvent) =
+    let handleButtonClick (e: Browser.Types.Event) =
+        e.preventDefault()
         dispatch SubmitForm
         ()
 
@@ -109,7 +125,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.input [
-                    prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2"
+                    prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2 required"
                     prop.placeholder "Name"
                     prop.autoComplete "Name"
                     prop.value state.ContactForm.Name
@@ -118,7 +134,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         dispatch (UpdateName target.value))
                 ]
                 Html.input [
-                    prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2"
+                    prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2 required pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'"
                     prop.placeholder "Email"
                     prop.autoComplete "Email"
                     prop.value state.ContactForm.Email
@@ -127,7 +143,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         dispatch (UpdateEmail target.value))
                 ]
                 Html.textarea [
-                    prop.className "rounded-lg h-32 w-full lg:w-1/2 shadow bg-base-200 p-2"
+                    prop.className "rounded-lg h-32 w-full lg:w-1/2 shadow bg-base-200 p-2 required"
                     prop.placeholder "Your Message"
                     prop.value state.ContactForm.MessageBody
                     prop.onChange (fun (e: Browser.Types.Event) ->
@@ -137,6 +153,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 Html.button [
                     prop.className "btn btn-primary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
                     prop.text "Get In Touch!"
+                    prop.type' "submit"
                     prop.onClick handleButtonClick
                 ]
             ]
