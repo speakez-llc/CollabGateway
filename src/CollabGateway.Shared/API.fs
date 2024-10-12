@@ -18,7 +18,7 @@ type OpenAIRequest = {
 type ContactForm = {
     Name : string
     Email : string
-    Message : string
+    MessageBody : string
     ClientIP: string
 }
 
@@ -51,7 +51,7 @@ type Toast = {
 
 type Service = {
     GetMessage : bool -> Async<string>
-    SendEmailMessage : ContactForm -> Async<string>
+    ProcessContactForm : ContactForm -> Async<string>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m
