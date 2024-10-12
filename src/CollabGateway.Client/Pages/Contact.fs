@@ -2,20 +2,46 @@
 
 open Feliz
 open Elmish
+open Fable.Core
+open Thoth.Fetch
+open Thoth.Json
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
-open UseElmish
 open CollabGateway.Client.ViewMsg
+open UseElmish
+
+
+type IpResponse = { ip: string }
+
+let getClientIP =
+    async {
+        let url = "https://api.ipify.org?format=json"
+        let! response = Fetch.get(url) |> Async.AwaitPromise
+        match response with
+        | Ok json ->
+            match Decode.Auto.fromString<IpResponse>(json) with
+            | Ok ipResponse ->
+                Browser.Dom.console.log($"Client IP: {ipResponse.ip}")
+                return ipResponse.ip
+            | Result.Error error ->
+                Browser.Dom.console.log($"Error decoding IP: {error}")
+                return $"Error decoding IP: {error}"
+        | Result.Error error ->
+            Browser.Dom.console.log($"Error fetching IP: {error}")
+            return $"Error fetching IP: {error}"
+    }
 
 type private State = {
     ContactForm: ContactForm
     ResponseMessage: string
+    InFormMessage: string
 }
 
 type private Msg =
     | UpdateName of string
     | UpdateEmail of string
     | UpdateMessageBody of string
+    | UpdateClientIP of string
     | SubmitForm
     | FormSubmitted of ServerResult<string>
     | ParentDispatch of ViewMsg
@@ -27,10 +53,12 @@ let private init () =
         MessageBody = ""
         ClientIP = ""
     }
-    { ContactForm = initialContactForm; ResponseMessage = "Feel Free To Reach Out" }, Cmd.none
+    let initialState = { ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = "" }
+    initialState, Cmd.none
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
+    | UpdateClientIP ip -> { model with State.ContactForm.ClientIP = ip }, Cmd.none
     | UpdateName name -> { model with State.ContactForm.Name = name }, Cmd.none
     | UpdateEmail email -> { model with State.ContactForm.Email = email }, Cmd.none
     | UpdateMessageBody messageBody -> { model with State.ContactForm.MessageBody = messageBody }, Cmd.none
@@ -51,7 +79,15 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
 let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish((fun () -> init ()), (fun msg model -> update msg model parentDispatch), [| |])
 
-    let handleButtonClick event =
+    React.useEffectOnce(fun () ->
+        let fetchIP () = async {
+            let! ip = getClientIP
+            dispatch (UpdateClientIP ip)
+        }
+        fetchIP () |> Async.StartImmediate
+    )
+
+    let handleButtonClick (_: Browser.Types.MouseEvent) =
         dispatch SubmitForm
         ()
 
@@ -61,7 +97,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             prop.children [
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
-                    prop.text state.ResponseMessage
+                    prop.text state.InFormMessage
                 ]
                 Html.div [
                     prop.className "card mx-auto bg-base-200 w-full md:w-4/5 mx-auto rounded-3xl"
