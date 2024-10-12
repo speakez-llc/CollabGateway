@@ -24,7 +24,7 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ShowToast toast ->
         let hideToastCommand =
             async {
-                do! Async.Sleep 2000
+                do! Async.Sleep 4000
                 return HideToast toast
             } |> Cmd.OfAsync.result
         { state with Toasts = toast :: state.Toasts }, hideToastCommand
@@ -63,7 +63,7 @@ let AppView () =
 
     let renderToast (toasts: Toast list) (dispatch: ViewMsg -> unit) =
         Html.div [
-            prop.className "toast"
+            prop.className "toast fadeOut"
             prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
         ]
 
@@ -72,7 +72,7 @@ let AppView () =
         | null -> not (isMobileView())
         | value -> value = "open"
 
-    let (isOpen, setIsOpen) = React.useState initialSidebarState
+    let isOpen, setIsOpen = React.useState initialSidebarState
 
     let toggleSidebar () =
         let newState = not isOpen
@@ -84,7 +84,7 @@ let AppView () =
         | null -> "dark"
         | value -> value
 
-    let (theme, setTheme) = React.useState initialTheme
+    let theme, setTheme = React.useState initialTheme
     React.useEffectOnce(fun () ->
         let html = Browser.Dom.document.documentElement
         html.setAttribute("data-theme", initialTheme)

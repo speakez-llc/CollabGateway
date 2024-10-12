@@ -38,6 +38,7 @@ type SignUpForm = {
     ClientIP: string
 }
 
+
 type AlertLevel =
     | Success
     | Error

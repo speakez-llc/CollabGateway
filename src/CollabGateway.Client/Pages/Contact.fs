@@ -75,16 +75,16 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | SubmitForm ->
         let errors, hasErrors = validateForm model.ContactForm
         if hasErrors then
-            errors |> List.iter (fun error -> parentDispatch (ShowToast { Message = error; Level = Warning }))
+            errors |> List.iter (fun error -> parentDispatch (ShowToast { Message = error; Level = AlertLevel.Warning }))
             model, Cmd.none
         else
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm model.ContactForm) FormSubmitted
             model, cmd
     | FormSubmitted (Ok response) ->
-        parentDispatch (ShowToast { Message = "Message sent"; Level = Success })
+        parentDispatch (ShowToast { Message = "Message sent"; Level = AlertLevel.Success })
         { model with State.ContactForm.Email = ""; State.ContactForm.Name = ""; State.ContactForm.MessageBody = ""; State.ResponseMessage = $"Got success response: {response}" }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
-        parentDispatch (ShowToast { Message = "Failed to send message"; Level = Error })
+        parentDispatch (ShowToast { Message = "Failed to send message"; Level = AlertLevel.Error })
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}" }, Cmd.none
     | ParentDispatch viewMsg ->
         parentDispatch viewMsg
