@@ -109,14 +109,14 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
     React.fragment [
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-full md:w-1/2 mx-auto max-w-screen-xl"
+            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-full md:w-4/5  mx-auto max-w-screen-xl"
             prop.children [
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.text state.InFormMessage
                 ]
                 Html.div [
-                    prop.className "card mx-auto bg-base-200 w-full md:w-4/5 mx-auto rounded-3xl"
+                    prop.className "card mx-auto bg-base-200 w-4/5 mx-auto rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
@@ -125,7 +125,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.input [
-                    prop.className "rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-200 pl-2 required"
+                    prop.className "rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-200 pl-2 required"
                     prop.placeholder "Name"
                     prop.autoComplete "Name"
                     prop.value state.ContactForm.Name
