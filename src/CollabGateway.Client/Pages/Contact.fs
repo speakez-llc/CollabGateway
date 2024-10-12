@@ -37,6 +37,7 @@ type private State = {
     ResponseMessage: string
     InFormMessage: string
     Errors: Map<string, string>
+    IsProcessing: bool
 }
 
 type private Msg =
@@ -55,7 +56,7 @@ let private init () =
         MessageBody = ""
         ClientIP = ""
     }
-    let initialState = { ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = ""; Errors = Map.empty }
+    let initialState = { ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = ""; Errors = Map.empty; IsProcessing = false }
     initialState, Cmd.none
 
 let private validateForm (contactForm: ContactForm) =
@@ -79,13 +80,13 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             model, Cmd.none
         else
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm model.ContactForm) FormSubmitted
-            model, cmd
+            { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
         parentDispatch (ShowToast { Message = "Message sent"; Level = AlertLevel.Success })
-        { model with State.ContactForm.Email = ""; State.ContactForm.Name = ""; State.ContactForm.MessageBody = ""; State.ResponseMessage = $"Got success response: {response}" }, Cmd.none
+        { model with State.ContactForm.Email = ""; State.ContactForm.Name = ""; State.ContactForm.MessageBody = ""; State.ResponseMessage = $"Got success response: {response}"; IsProcessing = false }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
         parentDispatch (ShowToast { Message = "Failed to send message"; Level = AlertLevel.Error })
-        { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}" }, Cmd.none
+        { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | ParentDispatch viewMsg ->
         parentDispatch viewMsg
         model, Cmd.none
@@ -150,11 +151,33 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         let target = e.target :?> Browser.Types.HTMLTextAreaElement
                         dispatch (UpdateMessageBody target.value))
                 ]
-                Html.button [
-                    prop.className "btn btn-primary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
-                    prop.text "Get In Touch!"
-                    prop.type' "submit"
-                    prop.onClick handleButtonClick
+                Html.div [
+                    prop.className "flex items-center space-x-2"
+                    prop.children [
+                        Html.button [
+                            prop.className "btn btn-primary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
+                            prop.text "Get In Touch!"
+                            prop.type' "submit"
+                            prop.onClick handleButtonClick
+                        ]
+                        if state.IsProcessing then
+                            Html.div [
+                                prop.className "flex items-center space-x-2"
+                                prop.children [
+                                    Html.div [
+                                        prop.className "loading loading-ring loading-md text-warning animate-spin"
+                                        prop.style [
+                                            style.fontSize (length.px 24)
+                                            style.marginLeft (length.px 10)
+                                        ]
+                                    ]
+                                    Html.span [
+                                        prop.className "text-warning"
+                                        prop.text "Processing"
+                                    ]
+                                ]
+                            ]
+                    ]
                 ]
             ]
         ]
