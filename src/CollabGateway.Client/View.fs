@@ -8,11 +8,6 @@ open Fable.FontAwesome
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
 
-(* type Msg =
-    | ShowToast of Toast
-    | HideToast of Toast
-    | UrlChanged of Page
- *)
 type State = {
     Page: Page
     Toasts: Toast list
@@ -24,11 +19,41 @@ let init () =
 
 let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
-    | UrlChanged page -> { state with Page = page }, Cmd.none
+    | UrlChanged page ->
+        { state with Page = page }, Cmd.none
     | ShowToast toast ->
-        { state with Toasts = toast :: state.Toasts }, Cmd.none
+        let hideToastCommand =
+            async {
+                do! Async.Sleep 2000
+                return HideToast toast
+            } |> Cmd.OfAsync.result
+        { state with Toasts = toast :: state.Toasts }, hideToastCommand
     | HideToast toast ->
         { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
+
+let getAlertClass level =
+        match level with
+        | Success -> "alert alert-success"
+        | Error -> "alert alert-error"
+        | Warning -> "alert alert-warning"
+        | Info -> "alert alert-info"
+
+let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
+    Html.div [
+        prop.className (getAlertClass toast.Level)
+        prop.children [
+            Html.button [
+                prop.className "btn btn-sm btn-ghost"
+                prop.onClick (fun _ -> dispatch (HideToast toast))
+                prop.children [ Fa.i [ Fa.Solid.Times ] [] ]
+            ]
+            Html.div [
+                prop.className "flex-1"
+                prop.children [ Html.span [ prop.text toast.Message ] ]
+            ]
+        ]
+    ]
+
 
 [<ReactComponent>]
 let AppView () =
@@ -36,39 +61,11 @@ let AppView () =
 
     let isMobileView () = Browser.Dom.window.innerWidth < 768.0
 
-    let getAlertClass level =
-        match level with
-        | Success -> "alert alert-success"
-        | Error -> "alert alert-error"
-        | Warning -> "alert alert-warning"
-        | Info -> "alert alert-info"
-
-    let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
-        Html.div [
-            prop.className (getAlertClass toast.Level)
-            prop.children [
-                Html.button [
-                    prop.className "btn btn-sm btn-ghost"
-                    prop.onClick (fun _ -> dispatch (HideToast toast))
-                    prop.children [
-                        Fa.i [ Fa.Solid.Times ] []
-                    ]
-                ]
-                Html.div [
-                    prop.className "flex-1"
-                    prop.children [
-                        Html.span [ prop.text toast.Message ]
-                    ]
-                ]
-            ]
-        ]
-
     let renderToast (toasts: Toast list) (dispatch: ViewMsg -> unit) =
         Html.div [
             prop.className "toast"
             prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
         ]
-
 
     let initialSidebarState =
         match Browser.Dom.window.localStorage.getItem("sidebarState") with
