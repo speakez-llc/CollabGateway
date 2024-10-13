@@ -5,6 +5,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Giraffe
 open Microsoft.AspNetCore.Cors.Infrastructure
+open CollabGateway.Server.Database
 
 let private configureCors (builder: CorsPolicyBuilder) =
     builder.WithOrigins("http://localhost:8080", "https://rower.speakez.tech", "https://rower-stg.speakez.tech")
@@ -19,6 +20,7 @@ let private configureWeb (builder: WebApplicationBuilder) =
     builder.Services.AddCors(fun options ->
         options.AddPolicy("AllowClient", configureCors)
     ) |> ignore
+    builder.Services.AddSingleton(store) |> ignore
     builder
 
 let private configureApp (app: WebApplication) =
