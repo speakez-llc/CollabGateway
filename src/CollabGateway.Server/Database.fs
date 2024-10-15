@@ -4,6 +4,7 @@ open System
 open Marten
 open CollabGateway.Shared.API
 open Weasel.Core
+open JasperFx.CodeGeneration
 open Npgsql
 
 type Event =
@@ -31,6 +32,7 @@ let configureMarten (options: StoreOptions) =
         | null | "" -> failwith "Environment variable GATEWAY_STORE is not set."
         | connStr -> connStr
     options.Connection(connectionString)
+    options.GeneratedCodeMode <- TypeLoadMode.Auto
     options.AutoCreateSchemaObjects <- AutoCreate.All
     options.Events.AddEventType(typeof<Event>)
     options.Schema.For<ContactForm>().DocumentAlias("contact_forms") |> ignore
