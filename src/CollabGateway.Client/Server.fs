@@ -24,13 +24,8 @@ module Cmd =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
 
-let serverUrl =
-    match Environment.GetEnvironmentVariable("SERVER_URL") with
-    | null | "" -> "http://localhost:5000"
-    | url -> url
 
 let service =
     Remoting.createApi()
-    |> Remoting.withBaseUrl(serverUrl)
     |> Remoting.withRouteBuilder Service.RouteBuilder
     |> Remoting.buildProxy<Service>

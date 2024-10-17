@@ -1,12 +1,12 @@
-POST https://api-inference.huggingface.co/models/rajammanabrolu/gpt-3-5-turbo-chat
+POST https://api-inference.huggingface.co/models/nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
 Content-Type: application/json
 Authorization: Bearer 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
 Accept: application/json
 
 {
-    "prompt": "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null.",
-    "inputs": "Houston Haynes\\nManaging Partner\\nRower Consulting\\nO: (404) 689-9467\\nA: 1 W Ct Square Suite 750,\\nDecatur, GA 30030",
-    "temperature": 0.2,
+    "prompt": "Extract the following information from the text and respond with a JSON object containing the keys: name, title, phone, address1, address2, city, state, zip, and country. For each key, infer a value from the inputs. If no corresponding information is found, use null. The JSON object should be well-formed and follow this structure: {'name': 'string', 'title': 'string', 'phone': 'string', 'address1': 'string', 'address2': 'string', 'city': 'string', 'state': 'string', 'zip': 'string', 'country': 'string'}.",
+    "inputs": "Houston Haynes Managing Partner Rower Consulting O: (404) 689-9467 A: 1 W Ct Square Suite 750, Decatur, GA 30030",
+    "temperature": 0.1,
     "max_tokens": 150,
-    "stop": ["Output:"]
+    "stop": ["}"]
 }

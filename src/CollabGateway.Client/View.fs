@@ -1,5 +1,8 @@
 ﻿module CollabGateway.Client.View
 
+open System
+open Browser.Dom
+open Fable.Remoting.Client
 open Feliz
 open Router
 open Elmish
@@ -12,6 +15,11 @@ type State = {
     Page: Page
     Toasts: Toast list
 }
+
+let service =
+    Remoting.createApi()
+    |> Remoting.withRouteBuilder Service.RouteBuilder
+    |> Remoting.buildProxy<Service>
 
 let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
@@ -54,12 +62,33 @@ let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
         ]
     ]
 
+let generateSessionToken () =
+    Guid.NewGuid().ToString()
+
+let getSessionToken () =
+    match window.sessionStorage.getItem("UserSessionToken") with
+    | null ->
+        let newToken = generateSessionToken()
+        window.sessionStorage.setItem("UserSessionToken", newToken)
+        newToken
+    | token -> token
+
+
 
 [<ReactComponent>]
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
 
-    let isMobileView () = Browser.Dom.window.innerWidth < 768.0
+    let processSession () =
+        let sessionToken = getSessionToken()
+        service.ProcessSessionToken (Guid.Parse sessionToken)
+        |> Async.StartImmediate
+
+    React.useEffectOnce(fun () ->
+        processSession()
+    )
+
+    let isMobileView () = window.innerWidth < 768.0
 
     let renderToast (toasts: Toast list) (dispatch: ViewMsg -> unit) =
         Html.div [
@@ -68,7 +97,7 @@ let AppView () =
         ]
 
     let initialSidebarState =
-        match Browser.Dom.window.localStorage.getItem("sidebarState") with
+        match window.localStorage.getItem("sidebarState") with
         | null -> not (isMobileView())
         | value -> value = "open"
 
@@ -77,16 +106,16 @@ let AppView () =
     let toggleSidebar () =
         let newState = not isOpen
         setIsOpen newState
-        Browser.Dom.window.localStorage.setItem("sidebarState", if newState then "open" else "closed")
+        window.localStorage.setItem("sidebarState", if newState then "open" else "closed")
 
     let initialTheme =
-        match Browser.Dom.window.localStorage.getItem("theme") with
+        match window.localStorage.getItem("theme") with
         | null -> "dark"
         | value -> value
 
     let theme, setTheme = React.useState initialTheme
     React.useEffectOnce(fun () ->
-        let html = Browser.Dom.document.documentElement
+        let html = document.documentElement
         html.setAttribute("data-theme", initialTheme)
     )
 
@@ -100,7 +129,7 @@ let AppView () =
             | _ -> "nord"
         html.setAttribute("data-theme", newTheme)
         setTheme newTheme
-        Browser.Dom.window.localStorage.setItem("theme", newTheme)
+        window.localStorage.setItem("theme", newTheme)
 
     let handleItemClick () =
         if isMobileView() then

@@ -3,18 +3,46 @@
 open System
 open System.Net
 open System.Net.Http
+open System.Linq
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Microsoft.Extensions.Logging
 open CollabGateway.Shared.API
+open CollabGateway.Shared.Events
 open CollabGateway.Shared.Errors
 open SendGrid
 open SendGrid.Helpers.Mail
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
+open Marten
 
+let processSessionToken (sessionToken: SessionToken) =
+    async {
+        use session = Database.store.LightweightSession()
+        let! tokens =
+            session.Query<SessionTokenEvent>()
+                   .Where(fun t -> t.SessionID = sessionToken)
+                   .ToListAsync()
+                   |> Async.AwaitTask
+        Console.WriteLine($"Session token count: %d{tokens.Count}")
+
+        let event =
+            if tokens.Count = 0 then
+                UserSessionInitiated { Id = Guid.NewGuid(); SessionID = sessionToken }
+            else
+                UserSessionResumed { Id = Guid.NewGuid(); SessionID = sessionToken }
+
+        session.Events.Append(sessionToken, event) |> ignore
+
+        // Ensure the SessionTokenEvent is stored
+        if tokens.Count = 0 then
+            let sessionTokenEvent = { Id = Guid.NewGuid(); SessionID = sessionToken }
+            session.Store(sessionTokenEvent)
+
+        do! session.SaveChangesAsync() |> Async.AwaitTask
+    }
 
 let formatJson string =
     let jObject = JObject.Parse(string)
@@ -109,6 +137,7 @@ let service = {
         }
         |> Async.AwaitTask
     ProcessContactForm = processContactForm
+    ProcessSessionToken = processSessionToken
 }
 
 let webApp : HttpHandler =

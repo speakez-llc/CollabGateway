@@ -1,5 +1,9 @@
 ﻿module CollabGateway.Shared.API
 
+open System
+
+type SessionToken = Guid
+
 type ChatMessage = {
     role: string
     content: string
@@ -14,6 +18,8 @@ type OpenAIRequest = {
     top_p: float
     stop: string option
 }
+
+type ClientIP = string
 
 type ContactForm = {
     Name : string
@@ -53,6 +59,7 @@ type Toast = {
 type Service = {
     GetMessage : bool -> Async<string>
     ProcessContactForm : ContactForm -> Async<string>
+    ProcessSessionToken : SessionToken -> Async<unit>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m

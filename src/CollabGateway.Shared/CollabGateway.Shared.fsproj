@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="Errors.fs" />
     <Compile Include="API.fs" />
+    <Compile Include="Events.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

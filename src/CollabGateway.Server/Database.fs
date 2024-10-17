@@ -3,17 +3,18 @@
 open System
 open Marten
 open CollabGateway.Shared.API
+open CollabGateway.Shared.Events
 open Weasel.Core
 open JasperFx.CodeGeneration
 open Npgsql
 
 type Event =
-    | ContactFormSubmitted of ContactForm
-    | SignUpFormSubmitted of SignUpForm
+    | ContactFormSubmitted of ContactFormEvent
+    | SignUpFormSubmitted of SignUpFormEvent
 
 type Document =
-    | ContactFormDocument of ContactForm
-    | SignUpFormDocument of SignUpForm
+    | ContactFormDocument of ContactFormEvent
+    | SignUpFormDocument of SignUpFormEvent
 
 module DatabaseTestHelpers =
     let execNonQuery connStr commandStr =
@@ -35,8 +36,6 @@ let configureMarten (options: StoreOptions) =
     options.GeneratedCodeMode <- TypeLoadMode.Auto
     options.AutoCreateSchemaObjects <- AutoCreate.All
     options.Events.AddEventType(typeof<Event>)
-    options.Schema.For<ContactForm>().DocumentAlias("contact_forms") |> ignore
-    options.Schema.For<SignUpForm>().DocumentAlias("sign_up_forms") |> ignore
 
 let store = DocumentStore.For(Action<StoreOptions>(configureMarten))
 
@@ -48,6 +47,6 @@ let saveEvent (event: Event) =
 let saveDocument (document: Document) =
     use session = store.LightweightSession()
     match document with
-    | ContactFormDocument form -> session.Store<ContactForm>(form)
-    | SignUpFormDocument form -> session.Store<SignUpForm>(form)
+    | ContactFormDocument form -> session.Store<ContactFormEvent>(form)
+    | SignUpFormDocument form -> session.Store<SignUpFormEvent>(form)
     session.SaveChanges()
