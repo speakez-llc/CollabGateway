@@ -25,6 +25,22 @@ let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
     { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
 
+let processPageVisited (pageName: string) =
+    let sessionToken = Guid.Parse (window.sessionStorage.getItem("UserSessionToken"))
+    service.ProcessPageVisited (sessionToken, pageName)
+        |> Async.StartImmediate
+
+let generateSessionToken () =
+    Guid.NewGuid().ToString()
+
+let getSessionToken () =
+    match window.sessionStorage.getItem("UserSessionToken") with
+    | null ->
+        let newToken = generateSessionToken()
+        window.sessionStorage.setItem("UserSessionToken", newToken)
+        newToken
+    | token -> token
+
 let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
     | UrlChanged page ->
@@ -38,6 +54,9 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with Toasts = toast :: state.Toasts }, hideToastCommand
     | HideToast toast ->
         { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
+    | ProcessPageVisited string ->
+        processPageVisited string
+        state, Cmd.none
 
 let getAlertClass level =
         match level with
@@ -61,18 +80,6 @@ let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
             ]
         ]
     ]
-
-let generateSessionToken () =
-    Guid.NewGuid().ToString()
-
-let getSessionToken () =
-    match window.sessionStorage.getItem("UserSessionToken") with
-    | null ->
-        let newToken = generateSessionToken()
-        window.sessionStorage.setItem("UserSessionToken", newToken)
-        newToken
-    | token -> token
-
 
 
 [<ReactComponent>]
@@ -137,14 +144,14 @@ let AppView () =
 
     let render =
         match state.Page with
-        | Page.Index -> Pages.Index.IndexView ()
-        | Page.Project -> Pages.Project.IndexView ()
-        | Page.CMSData -> Pages.CMSData.IndexView ()
-        | Page.SignUp -> Pages.SignUp.IndexView ()
-        | Page.Rower -> Pages.Rower.IndexView ()
-        | Page.SpeakEZ -> Pages.SpeakEZ.IndexView ()
+        | Page.Index -> Pages.Index.IndexView dispatch
+        | Page.Project -> Pages.Project.IndexView dispatch
+        | Page.CMSData -> Pages.CMSData.IndexView dispatch
+        | Page.SignUp -> Pages.SignUp.IndexView dispatch
+        | Page.Rower -> Pages.Rower.IndexView dispatch
+        | Page.SpeakEZ -> Pages.SpeakEZ.IndexView dispatch
         | Page.Contact -> Pages.Contact.IndexView dispatch
-        | Page.Partners -> Pages.Partners.IndexView ()
+        | Page.Partners -> Pages.Partners.IndexView dispatch
 
     let navigationWrapper =
         Html.div [

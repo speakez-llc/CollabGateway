@@ -96,6 +96,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish((fun () -> init ()), (fun msg model -> update msg model parentDispatch), [| |])
 
     React.useEffectOnce(fun () ->
+        parentDispatch (ProcessPageVisited "Contact")
+    )
+
+    React.useEffectOnce(fun () ->
         let fetchIP () = async {
             let! ip = getClientIP
             dispatch (UpdateClientIP ip)

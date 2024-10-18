@@ -1,12 +1,12 @@
 ﻿module CollabGateway.Client.Pages.Index
 
+open System
 open Feliz
-open Feliz.DaisyUI
 open Elmish
 open CollabGateway.Client.Server
-open UseElmish
-open Fable.Core.JsInterop
 open CollabGateway.Client.Router
+open CollabGateway.Client.ViewMsg
+open UseElmish
 
 type private State = {
     Message : string
@@ -25,8 +25,12 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
 
 [<ReactComponent>]
-let IndexView () =
+let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
+
+    React.useEffectOnce(fun () ->
+        parentDispatch (ProcessPageVisited "Index")
+    )
 
     React.fragment [
         Html.div [

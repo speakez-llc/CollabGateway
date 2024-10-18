@@ -23,6 +23,7 @@ type AsInfo = {
 }
 
 type GeoInfo = {
+    Id: Guid
     ip: string
     location: Location
     ``as``: AsInfo
@@ -31,7 +32,7 @@ type GeoInfo = {
 
 
 type ContactFormEvent = {
-    SessionID: SessionToken
+    Id: Guid
     Form: ContactForm
     UserGeoInfo: GeoInfo
 }
@@ -42,40 +43,43 @@ type SignUpFormEvent = {
     Form: SignUpForm
 }
 
-type SessionTokenEvent = {
+type BaseEvent = {
+    Id: Guid
+}
+
+type SessionEvent = {
     Id: Guid
     SessionID: SessionToken
 }
 
-type EventLabel =
-    | UserSessionInitiated of SessionTokenEvent
-    | UserSessionResumed of SessionTokenEvent
-    | UserSessionEnded of SessionTokenEvent
-    | TosAccepted of SessionToken
-    | TosRejected of SessionToken
-    | TosReset of SessionToken
-    | ThemeChanged of SessionToken
-    | IndexPageVisited of SessionToken
-    | IndexLearnMoreClicked of SessionToken
-    | IndexJoinWaitlistClicked of SessionToken
-    | ProductPageVisited of SessionToken
-    | ProductAboutTheDataClicked of SessionToken
-    | ProductJoinWaitlistClicked of SessionToken
-    | DataPageVisited of SessionToken
-    | DataJoinWaitlistClicked of SessionToken
-    | SignUpPageVisited of SessionToken
-    | SmartFormRequestSubmitted of string
-    | SmartFormResponseReceived of SignUpForm
-    | SmartFormErrorGenerated of string
-    | SignUpFormSubmitted of SignUpFormEvent
-    | SignUpFormResponseGenerated of string
-    | RowerPageVisited of SessionToken
-    | RowerJoinWaitlistClicked of SessionToken
-    | SpeakEZPageVisited of SessionToken
-    | SpeakEZJoinWaitlistClicked of SessionToken
-    | ContactPageVisited of SessionToken
-    | ContactFormSubmitted of GeoInfo
-    | ContactFormResponseReceived of string
-    | PartnersPageVisited of SessionToken
+type BaseEventCase =
+    | IndexPageVisited of BaseEvent
+    | ProjectPageVisited of BaseEvent
+    | DataPageVisited of BaseEvent
+    | SignupPageVisited of BaseEvent
+    | RowerPageVisited of BaseEvent
+    | SpeakEZPageVisited of BaseEvent
+    | ContactPageVisited of BaseEvent
+    | PartnersPageVisited of BaseEvent
+    member this.Id =
+        match this with
+        | IndexPageVisited e -> e.Id
+        | ProjectPageVisited e -> e.Id
+        | DataPageVisited e -> e.Id
+        | SignupPageVisited e -> e.Id
+        | RowerPageVisited e -> e.Id
+        | SpeakEZPageVisited e -> e.Id
+        | ContactPageVisited e -> e.Id
+        | PartnersPageVisited e -> e.Id
 
-
+type SessionEventCase =
+    | UserSessionInitiated of SessionEvent
+    | UserSessionResumed of SessionEvent
+    | UserSessionClosed of SessionEvent
+    | UserSessionEnded of SessionEvent
+    member this.Id =
+        match this with
+        | UserSessionInitiated e -> e.Id
+        | UserSessionResumed e -> e.Id
+        | UserSessionClosed e -> e.Id
+        | UserSessionEnded e -> e.Id

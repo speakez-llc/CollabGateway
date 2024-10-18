@@ -8,3 +8,4 @@ type ViewMsg =
     | ShowToast of Toast
     | HideToast of Toast
     | UrlChanged of Page
+    | ProcessPageVisited of string

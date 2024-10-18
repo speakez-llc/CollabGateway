@@ -3,7 +3,6 @@
 open System
 open System.Net
 open System.Net.Http
-open System.Linq
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -16,33 +15,44 @@ open SendGrid
 open SendGrid.Helpers.Mail
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
-open Marten
 
-let processSessionToken (sessionToken: SessionToken) =
-    async {
-        use session = Database.store.LightweightSession()
-        let! tokens =
-            session.Query<SessionTokenEvent>()
-                   .Where(fun t -> t.SessionID = sessionToken)
-                   .ToListAsync()
-                   |> Async.AwaitTask
-        Console.WriteLine($"Session token count: %d{tokens.Count}")
+type EventProcessingMessage =
+    | ProcessSessionToken of SessionToken
+    | ProcessPageVisited of SessionToken * string
 
-        let event =
-            if tokens.Count = 0 then
-                UserSessionInitiated { Id = Guid.NewGuid(); SessionID = sessionToken }
-            else
-                UserSessionResumed { Id = Guid.NewGuid(); SessionID = sessionToken }
-
-        session.Events.Append(sessionToken, event) |> ignore
-
-        // Ensure the SessionTokenEvent is stored
-        if tokens.Count = 0 then
-            let sessionTokenEvent = { Id = Guid.NewGuid(); SessionID = sessionToken }
-            session.Store(sessionTokenEvent)
-
-        do! session.SaveChangesAsync() |> Async.AwaitTask
+let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
+    let rec loop () = async {
+        let! msg = inbox.Receive()
+        match msg with
+        | ProcessSessionToken sessionToken ->
+            use session = Database.store.LightweightSession()
+            let streamState = session.Events.FetchStreamState(sessionToken)
+            let event =
+                if streamState = null then
+                    UserSessionInitiated { Id = Guid.NewGuid(); SessionID = sessionToken }
+                else
+                    UserSessionResumed { Id = Guid.NewGuid(); SessionID = sessionToken }
+            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessPageVisited (sessionToken, pageName) ->
+            use session = Database.store.LightweightSession()
+            let pageCase =
+                match pageName with
+                | "Index" -> IndexPageVisited { Id = Guid.NewGuid() }
+                | "Project" -> ProjectPageVisited { Id = Guid.NewGuid() }
+                | "CMSData" -> DataPageVisited { Id = Guid.NewGuid() }
+                | "SignUp" -> SignupPageVisited { Id = Guid.NewGuid() }
+                | "Rower" -> RowerPageVisited { Id = Guid.NewGuid() }
+                | "SpeakEZ" -> SpeakEZPageVisited { Id = Guid.NewGuid() }
+                | "Contact" -> ContactPageVisited { Id = Guid.NewGuid() }
+                | "Partners" -> PartnersPageVisited { Id = Guid.NewGuid() }
+            session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        return! loop ()
     }
+    loop ()
+)
+
 
 let formatJson string =
     let jObject = JObject.Parse(string)
@@ -129,6 +139,14 @@ let callAzureOpenAI (text: string) =
     }
     |> Async.AwaitTask
 
+let processSessionToken (sessionToken: SessionToken) = async {
+    eventProcessor.Post(ProcessSessionToken sessionToken)
+    }
+
+let processPageVisited (sessionToken: SessionToken, pageName: string) = async {
+    eventProcessor.Post(ProcessPageVisited (sessionToken, pageName))
+    }
+
 let service = {
     GetMessage = fun success ->
         task {
@@ -138,6 +156,7 @@ let service = {
         |> Async.AwaitTask
     ProcessContactForm = processContactForm
     ProcessSessionToken = processSessionToken
+    ProcessPageVisited = processPageVisited
 }
 
 let webApp : HttpHandler =

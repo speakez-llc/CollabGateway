@@ -1,11 +1,12 @@
 ﻿module CollabGateway.Client.Pages.SpeakEZ
 
+open System
 open Feliz
-open Feliz.DaisyUI
 open Elmish
 open CollabGateway.Client.Server
-open UseElmish
 open CollabGateway.Client.Router
+open CollabGateway.Client.ViewMsg
+open UseElmish
 
 
 type private State = {
@@ -25,8 +26,12 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
 
 [<ReactComponent>]
-let IndexView () =
+let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
+
+    React.useEffectOnce(fun () ->
+        parentDispatch (ProcessPageVisited "SpeakEZ")
+    )
 
     React.fragment [
         Html.div [

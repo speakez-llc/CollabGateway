@@ -60,6 +60,7 @@ type Service = {
     GetMessage : bool -> Async<string>
     ProcessContactForm : ContactForm -> Async<string>
     ProcessSessionToken : SessionToken -> Async<unit>
+    ProcessPageVisited : Guid * string -> Async<unit>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m
