@@ -91,6 +91,7 @@ let init () =
     let sessionToken = getSessionToken()
     service.ProcessSessionToken (Guid.Parse sessionToken)
     |> Async.StartImmediate
+    processUserClientIP()
     { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
 
 
