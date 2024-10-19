@@ -29,5 +29,6 @@ let configureMarten (options: StoreOptions) =
     options.Events.AddEventType(typeof<SessionEventCase>)
     options.Events.AddEventType(typeof<BaseEventCase>)
 
+
 let store = DocumentStore.For(Action<StoreOptions>(configureMarten))
 

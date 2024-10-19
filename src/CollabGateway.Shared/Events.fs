@@ -23,7 +23,6 @@ type AsInfo = {
 }
 
 type GeoInfo = {
-    Id: Guid
     ip: string
     location: Location
     ``as``: AsInfo
@@ -31,15 +30,19 @@ type GeoInfo = {
 }
 
 
+type ClientIPEvent = {
+    Id: Guid
+    UserClientIP: ClientIP
+    UserGeoInfo: GeoInfo
+}
+
 type ContactFormEvent = {
     Id: Guid
     Form: ContactForm
-    UserGeoInfo: GeoInfo
 }
 
 type SignUpFormEvent = {
     Id: Guid
-    SessionID: SessionToken
     Form: SignUpForm
 }
 
@@ -61,6 +64,7 @@ type BaseEventCase =
     | SpeakEZPageVisited of BaseEvent
     | ContactPageVisited of BaseEvent
     | PartnersPageVisited of BaseEvent
+    | OtherPageVisited of BaseEvent
     | HomeButtonClicked of BaseEvent
     | HomeProjectButtonClicked of BaseEvent
     | HomeSignUpButtonClicked of BaseEvent
@@ -77,6 +81,12 @@ type BaseEventCase =
     | SpeakEZSignUpButtonClicked of BaseEvent
     | ContactButtonClicked of BaseEvent
     | PartnersButtonClicked of BaseEvent
+    | RowerSiteButtonClicked of BaseEvent
+    | CuratorSiteButtonClicked of BaseEvent
+    | TableauSiteButtonClicked of BaseEvent
+    | PowerBISiteButtonClicked of BaseEvent
+    | ThoughtSpotSiteButtonClicked of BaseEvent
+    | SpeakEZSiteButtonClicked of BaseEvent
     | OtherButtonClicked of BaseEvent
     member this.Id =
         match this with
@@ -88,6 +98,7 @@ type BaseEventCase =
         | SpeakEZPageVisited e -> e.Id
         | ContactPageVisited e -> e.Id
         | PartnersPageVisited e -> e.Id
+        | OtherPageVisited e -> e.Id
         | HomeButtonClicked e -> e.Id
         | HomeProjectButtonClicked e -> e.Id
         | HomeSignUpButtonClicked e -> e.Id
@@ -104,6 +115,12 @@ type BaseEventCase =
         | SpeakEZSignUpButtonClicked e -> e.Id
         | ContactButtonClicked e -> e.Id
         | PartnersButtonClicked e -> e.Id
+        | RowerSiteButtonClicked e -> e.Id
+        | CuratorSiteButtonClicked e -> e.Id
+        | TableauSiteButtonClicked e -> e.Id
+        | PowerBISiteButtonClicked e -> e.Id
+        | ThoughtSpotSiteButtonClicked e -> e.Id
+        | SpeakEZSiteButtonClicked e -> e.Id
         | OtherButtonClicked e -> e.Id
 
 type SessionEventCase =
@@ -111,9 +128,13 @@ type SessionEventCase =
     | UserSessionResumed of SessionEvent
     | UserSessionClosed of SessionEvent
     | UserSessionEnded of SessionEvent
+    | UserClientIPDetected of ClientIPEvent
+    | UserClientIPUpdated of ClientIPEvent
     member this.Id =
         match this with
         | UserSessionInitiated e -> e.Id
         | UserSessionResumed e -> e.Id
         | UserSessionClosed e -> e.Id
         | UserSessionEnded e -> e.Id
+        | UserClientIPDetected e -> e.Id
+        | UserClientIPUpdated e -> e.Id

@@ -3,6 +3,7 @@
 open System
 open System.Net
 open System.Net.Http
+open System.Threading.Tasks
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -18,8 +19,29 @@ open Newtonsoft.Json.Linq
 
 type EventProcessingMessage =
     | ProcessSessionToken of SessionToken
+    | ProcessUserClientIP of SessionToken * ClientIP
     | ProcessPageVisited of SessionToken * string
     | ProcessButtonClicked of SessionToken * string
+    | ProcessSessionClose of SessionToken
+
+let getGeoInfo (clientIP: ClientIP) =
+    task {
+        let geoipifyToken = Environment.GetEnvironmentVariable("GEOIPIFY_TOKEN")
+        if String.IsNullOrEmpty(geoipifyToken) then
+            return failwith "GeoApify API key is not set."
+        else
+            let url = $"https://geo.ipify.org/api/v2/country,city?apiKey=%s{geoipifyToken}&ipAddress=%s{clientIP}"
+            use httpClient = new HttpClient()
+            let! response = httpClient.GetStringAsync(url)
+            sprintf $"GeoInfo response: %s{response}"
+            try
+                let geoInfo = JsonConvert.DeserializeObject<GeoInfo>(response)
+                return geoInfo
+            with
+            | ex -> return failwith $"Failed to deserialize GeoInfo: {ex.Message}"
+    }
+    |> Async.AwaitTask
+
 
 let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
@@ -35,6 +57,32 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                     UserSessionResumed { Id = Guid.NewGuid(); SessionID = sessionToken }
             session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessUserClientIP (sessionToken, clientIP) ->
+            use session = Database.store.LightweightSession()
+            let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
+            let unwrappedEvents =
+                allEvents
+                |> Seq.map (fun e -> e.Data :?> obj)
+            let sessionEvents = unwrappedEvents |> Seq.choose (function | :? SessionEventCase as e -> Some e | _ -> None)
+            let existingEvent =
+                sessionEvents
+                |> Seq.tryFind (function
+                    | UserClientIPDetected e when e.UserClientIP = clientIP -> true
+                    | UserClientIPUpdated e when e.UserClientIP = clientIP -> true
+                    | _ -> false)
+            match existingEvent with
+            | Some _ ->
+                Console.WriteLine $"No new event needed for IP: %s{clientIP} as it matches an existing event."
+            | None ->
+                Console.WriteLine $"Creating event for new IP: %s{clientIP}"
+                let! userGeoInfo = getGeoInfo clientIP
+                let event =
+                    if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true | _ -> false) then
+                        UserClientIPUpdated { Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                    else
+                        UserClientIPDetected { Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+                do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessPageVisited (sessionToken, pageName) ->
             use session = Database.store.LightweightSession()
             let pageCase =
@@ -47,6 +95,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | "SpeakEZ" -> SpeakEZPageVisited { Id = Guid.NewGuid() }
                 | "Contact" -> ContactPageVisited { Id = Guid.NewGuid() }
                 | "Partners" -> PartnersPageVisited { Id = Guid.NewGuid() }
+                | _ -> OtherPageVisited { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessButtonClicked (sessionToken, buttonName) ->
@@ -68,8 +117,19 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | "SpeakEZSignUp" -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid() }
                 | "Contact" -> ContactButtonClicked { Id = Guid.NewGuid() }
                 | "Partners" -> PartnersButtonClicked { Id = Guid.NewGuid() }
+                | "RowerSite" -> RowerSiteButtonClicked { Id = Guid.NewGuid() }
+                | "CuratorSite" -> CuratorSiteButtonClicked { Id = Guid.NewGuid() }
+                | "TableauSite" -> TableauSiteButtonClicked { Id = Guid.NewGuid() }
+                | "PowerBISite" -> PowerBISiteButtonClicked { Id = Guid.NewGuid() }
+                | "ThoughtSpotSite" -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid() }
+                | "SpeakEZSite" -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid() }
                 | _ -> OtherButtonClicked { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessSessionClose sessionToken ->
+            use session = Database.store.LightweightSession()
+            let event = UserSessionClosed { Id = Guid.NewGuid(); SessionID = sessionToken }
+            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()
     }
@@ -83,19 +143,6 @@ let formatJson string =
         .Replace(" ", "&nbsp;")
         .Replace("\n", "<br>")
 
-let getGeoInfo (clientIP: string) =
-    task {
-        let geoipifyToken = Environment.GetEnvironmentVariable("GEOIPIFY_TOKEN")
-        if String.IsNullOrEmpty(geoipifyToken) then
-            return "GeoApify API key is not set."
-        else
-            let url = $"https://geo.ipify.org/api/v2/country,city?apiKey=%s{geoipifyToken}&ipAddress=%s{clientIP}"
-            use httpClient = new HttpClient()
-            let! response = httpClient.GetStringAsync(url)
-            return response
-    }
-    |> Async.AwaitTask
-
 let processContactForm (contactForm: ContactForm) =
     task {
         try
@@ -104,15 +151,12 @@ let processContactForm (contactForm: ContactForm) =
                 return! ServerError.failwith (ServerError.Exception "SendGrid API key is not set.")
             else
                 let client = SendGridClient(apiKey)
-                let geoInfo = getGeoInfo contactForm.ClientIP |> Async.RunSynchronously
                 let from = EmailAddress("engineering@speakez.net", "Engineering Team")
                 let subject = "New Contact Form Submission"
                 let toAddress = EmailAddress("engineering@speakez.net", "Engineering Team")
-                let formattedGeoInfo = formatJson geoInfo
-                let plainTextContent = $"Name: %s{contactForm.Name}\nEmail: %s{contactForm.Email}\nMessage: %s{contactForm.MessageBody}\nClient IP: %s{contactForm.ClientIP}\nGeo Info: %s{geoInfo}"
-                let htmlContent = $"<strong>Name:</strong> %s{contactForm.Name}<br><strong>Email:</strong> %s{contactForm.Email}<br><strong>Message:</strong> %s{contactForm.MessageBody}<br><strong>Client IP:</strong> %s{contactForm.ClientIP}<br><strong>Geo Info:</strong><br>%s{formattedGeoInfo}"
+                let plainTextContent = $"Name: %s{contactForm.Name}\nEmail: %s{contactForm.Email}\nMessage: %s{contactForm.MessageBody}"
+                let htmlContent = $"<strong>Name:</strong> %s{contactForm.Name}<br><strong>Email:</strong> %s{contactForm.Email}<br><strong>Message:</strong> %s{contactForm.MessageBody}"
                 let msg = MailHelper.CreateSingleEmail(from, toAddress, subject, plainTextContent, htmlContent)
-
                 let! response = client.SendEmailAsync(msg)
                 if response.StatusCode = HttpStatusCode.OK || response.StatusCode = HttpStatusCode.Accepted then
                     return "Email sent successfully"
@@ -166,6 +210,10 @@ let processSessionToken (sessionToken: SessionToken) = async {
     eventProcessor.Post(ProcessSessionToken sessionToken)
     }
 
+let processSessionClose (sessionToken: SessionToken) = async {
+    eventProcessor.Post(ProcessSessionClose sessionToken)
+    }
+
 let processPageVisited (sessionToken: SessionToken, pageName: string) = async {
     eventProcessor.Post(ProcessPageVisited (sessionToken, pageName))
     }
@@ -173,6 +221,10 @@ let processPageVisited (sessionToken: SessionToken, pageName: string) = async {
 let processButtonClicked (sessionToken: SessionToken, buttonName: string) = async {
     eventProcessor.Post(ProcessButtonClicked (sessionToken, buttonName))
     }
+
+let processUserClientIP (sessionToken: SessionToken, clientIP: ClientIP) = async {
+    eventProcessor.Post(ProcessUserClientIP (sessionToken, clientIP))
+}
 
 let service = {
     GetMessage = fun success ->
@@ -183,8 +235,10 @@ let service = {
         |> Async.AwaitTask
     ProcessContactForm = processContactForm
     ProcessSessionToken = processSessionToken
+    ProcessSessionClose = processSessionClose
     ProcessPageVisited = processPageVisited
     ProcessButtonClicked = processButtonClicked
+    ProcessUserClientIP = processUserClientIP
 }
 
 let webApp : HttpHandler =

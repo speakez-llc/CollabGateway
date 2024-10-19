@@ -57,6 +57,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         Html.a [
                                             prop.href "https://www.rowerconsulting.com/"
                                             prop.target "_blank"
+                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "RowerSite"))
                                             prop.children [
                                                 Html.span [
                                                     prop.text "Main Website"
@@ -94,6 +95,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.interworks.com/curator"
                                                     prop.target "_blank"
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "CuratorSite"))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Curator"
@@ -127,6 +129,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.salesforce.com/products/tableau/"
                                                     prop.target "_blank"
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "TableauSite"))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Tableau"
@@ -166,6 +169,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://powerbi.microsoft.com/"
                                                     prop.target "_blank"
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "PowerBISite"))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Power BI"
@@ -199,6 +203,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.thoughtspot.com/"
                                                     prop.target "_blank"
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "ThoughtSpotSite"))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "ThoughtSpot"
@@ -234,6 +239,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         Html.a [
                                             prop.href "https://speakez.ai/"
                                             prop.target "_blank"
+                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "SpeakEZSite"))
                                             prop.children [
                                                 Html.span [
                                                     prop.text "SpeakEZ.ai"

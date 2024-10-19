@@ -4,6 +4,9 @@ open System
 
 type SessionToken = Guid
 
+type ClientIP = string
+type IpResponse = { ip: string }
+
 type ChatMessage = {
     role: string
     content: string
@@ -19,13 +22,11 @@ type OpenAIRequest = {
     stop: string option
 }
 
-type ClientIP = string
 
 type ContactForm = {
     Name : string
     Email : string
     MessageBody : string
-    ClientIP: string
 }
 
 type SignUpForm = {
@@ -60,8 +61,10 @@ type Service = {
     GetMessage : bool -> Async<string>
     ProcessContactForm : ContactForm -> Async<string>
     ProcessSessionToken : SessionToken -> Async<unit>
+    ProcessSessionClose : SessionToken -> Async<unit>
     ProcessPageVisited : Guid * string -> Async<unit>
     ProcessButtonClicked : Guid * string -> Async<unit>
+    ProcessUserClientIP : Guid * ClientIP -> Async<unit>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m

@@ -10,3 +10,6 @@ type ViewMsg =
     | UrlChanged of Page
     | ProcessPageVisited of string
     | ProcessButtonClicked of string
+    | ProcessSession
+    | ProcessSessionClose
+    | ProcessUserClientIP

@@ -4,6 +4,8 @@ open System
 open Browser.Dom
 open Fable.Remoting.Client
 open Feliz
+open Fable.Core
+open Thoth.Json
 open Router
 open Elmish
 open Feliz.UseElmish
@@ -21,17 +23,38 @@ let service =
     |> Remoting.withRouteBuilder Service.RouteBuilder
     |> Remoting.buildProxy<Service>
 
-let init () =
-    let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
-    { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
+let ipDecoder : Decoder<IpResponse> =
+    Decode.object (fun get ->
+        {
+            ip = get.Required.Field "ip" Decode.string
+        }
+    )
+
+let getClientIP =
+    async {
+        let url = "https://api.ipify.org?format=json"
+        try
+            let! response = Fetch.fetch url [] |> Async.AwaitPromise
+            let! json = response.text() |> Async.AwaitPromise
+            match Decode.fromString ipDecoder json with
+            | Ok ipResponse ->
+                return ipResponse.ip
+            | Result.Error error ->
+                return $"Error decoding IP: {error}"
+        with
+        | ex ->
+            Console.WriteLine($"Exception: {ex.Message}")
+            return $"Exception: {ex.Message}"
+    }
+
 
 let processPageVisited (pageName: string) =
-    let sessionToken = Guid.Parse (window.sessionStorage.getItem("UserSessionToken"))
+    let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
     service.ProcessPageVisited (sessionToken, pageName)
         |> Async.StartImmediate
 
 let processButtonClicked (buttonName: string) =
-    let sessionToken = Guid.Parse (window.sessionStorage.getItem("UserSessionToken"))
+    let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
     service.ProcessButtonClicked (sessionToken, buttonName)
         |> Async.StartImmediate
 
@@ -39,12 +62,37 @@ let generateSessionToken () =
     Guid.NewGuid().ToString()
 
 let getSessionToken () =
-    match window.sessionStorage.getItem("UserSessionToken") with
+    match window.localStorage.getItem("UserSessionToken") with
     | null ->
         let newToken = generateSessionToken()
-        window.sessionStorage.setItem("UserSessionToken", newToken)
+        window.localStorage.setItem("UserSessionToken", newToken)
         newToken
     | token -> token
+
+let processSession () =
+    let sessionToken = getSessionToken()
+    service.ProcessSessionToken (Guid.Parse sessionToken)
+    |> Async.StartImmediate
+
+let processSessionClose () =
+    let sessionToken = getSessionToken()
+    service.ProcessSessionClose (Guid.Parse sessionToken)
+    |> Async.StartImmediate
+
+let processUserClientIP () =
+    async {
+        let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
+        let! clientIP = getClientIP
+        do! service.ProcessUserClientIP (sessionToken, clientIP)
+    } |> Async.StartImmediate
+
+let init () =
+    let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
+    let sessionToken = getSessionToken()
+    service.ProcessSessionToken (Guid.Parse sessionToken)
+    |> Async.StartImmediate
+    { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
+
 
 let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
@@ -64,6 +112,15 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         state, Cmd.none
     | ProcessButtonClicked string ->
         processButtonClicked string
+        state, Cmd.none
+    | ProcessSession ->
+        processSession()
+        state, Cmd.ofMsg ProcessUserClientIP
+    | ProcessUserClientIP ->
+        processUserClientIP()
+        state, Cmd.none
+    | ProcessSessionClose ->
+        processSessionClose()
         state, Cmd.none
 
 let getAlertClass level =
@@ -89,19 +146,20 @@ let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
         ]
     ]
 
+let handleBeforeUnload (dispatch: ViewMsg -> unit) (e: Browser.Types.Event) =
+    dispatch ProcessSessionClose
+    ()
 
 [<ReactComponent>]
 let AppView () =
     let state, dispatch = React.useElmish(init, update)
 
-    let processSession () =
-        let sessionToken = getSessionToken()
-        service.ProcessSessionToken (Guid.Parse sessionToken)
-        |> Async.StartImmediate
-
-    React.useEffectOnce(fun () ->
-        processSession()
-    )
+    React.useEffect(fun () ->
+        let handler = handleBeforeUnload dispatch
+        window.addEventListener("beforeunload", handler)
+        fun () -> window.removeEventListener("beforeunload", handler)
+        |> ignore
+    , [||])
 
     let isMobileView () = window.innerWidth < 768.0
 
