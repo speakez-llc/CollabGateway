@@ -19,6 +19,7 @@ open Newtonsoft.Json.Linq
 type EventProcessingMessage =
     | ProcessSessionToken of SessionToken
     | ProcessPageVisited of SessionToken * string
+    | ProcessButtonClicked of SessionToken * string
 
 let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
@@ -38,7 +39,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             use session = Database.store.LightweightSession()
             let pageCase =
                 match pageName with
-                | "Index" -> IndexPageVisited { Id = Guid.NewGuid() }
+                | "Home" -> HomePageVisited { Id = Guid.NewGuid() }
                 | "Project" -> ProjectPageVisited { Id = Guid.NewGuid() }
                 | "CMSData" -> DataPageVisited { Id = Guid.NewGuid() }
                 | "SignUp" -> SignupPageVisited { Id = Guid.NewGuid() }
@@ -47,6 +48,28 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | "Contact" -> ContactPageVisited { Id = Guid.NewGuid() }
                 | "Partners" -> PartnersPageVisited { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessButtonClicked (sessionToken, buttonName) ->
+            use session = Database.store.LightweightSession()
+            let buttonCase =
+                match buttonName with
+                | "Home" -> HomeButtonClicked { Id = Guid.NewGuid() }
+                | "HomeProject" -> HomeProjectButtonClicked { Id = Guid.NewGuid() }
+                | "HomeSignUp" -> HomeSignUpButtonClicked { Id = Guid.NewGuid() }
+                | "Project" -> ProjectButtonClicked { Id = Guid.NewGuid() }
+                | "ProjectData" -> ProjectDataButtonClicked { Id = Guid.NewGuid() }
+                | "ProjectSignUp" -> ProjectSignUpButtonClicked { Id = Guid.NewGuid() }
+                | "CMSData" -> DataButtonClicked { Id = Guid.NewGuid() }
+                | "CMSDataSignUp" -> DataSignUpButtonClicked { Id = Guid.NewGuid() }
+                | "SignUp" -> SignUpButtonClicked { Id = Guid.NewGuid() }
+                | "Rower" -> RowerButtonClicked { Id = Guid.NewGuid() }
+                | "RowerSignUp" -> RowerSignUpButtonClicked { Id = Guid.NewGuid() }
+                | "SpeakEZ" -> SpeakEZButtonClicked { Id = Guid.NewGuid() }
+                | "SpeakEZSignUp" -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid() }
+                | "Contact" -> ContactButtonClicked { Id = Guid.NewGuid() }
+                | "Partners" -> PartnersButtonClicked { Id = Guid.NewGuid() }
+                | _ -> OtherButtonClicked { Id = Guid.NewGuid() }
+            session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()
     }
@@ -147,6 +170,10 @@ let processPageVisited (sessionToken: SessionToken, pageName: string) = async {
     eventProcessor.Post(ProcessPageVisited (sessionToken, pageName))
     }
 
+let processButtonClicked (sessionToken: SessionToken, buttonName: string) = async {
+    eventProcessor.Post(ProcessButtonClicked (sessionToken, buttonName))
+    }
+
 let service = {
     GetMessage = fun success ->
         task {
@@ -157,6 +184,7 @@ let service = {
     ProcessContactForm = processContactForm
     ProcessSessionToken = processSessionToken
     ProcessPageVisited = processPageVisited
+    ProcessButtonClicked = processButtonClicked
 }
 
 let webApp : HttpHandler =

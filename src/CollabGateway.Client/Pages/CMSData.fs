@@ -223,7 +223,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     prop.children [
                         Html.button [
                             prop.className "btn btn-primary text-lg text-gray-200"
-                            prop.onClick (fun e -> Router.goToUrl(e))
+                            prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked "RowerSignUp"))
                             prop.href "/signup"
                             prop.text "Join Our Waitlist"
                         ]

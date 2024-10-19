@@ -30,6 +30,11 @@ let processPageVisited (pageName: string) =
     service.ProcessPageVisited (sessionToken, pageName)
         |> Async.StartImmediate
 
+let processButtonClicked (buttonName: string) =
+    let sessionToken = Guid.Parse (window.sessionStorage.getItem("UserSessionToken"))
+    service.ProcessButtonClicked (sessionToken, buttonName)
+        |> Async.StartImmediate
+
 let generateSessionToken () =
     Guid.NewGuid().ToString()
 
@@ -56,6 +61,9 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
     | ProcessPageVisited string ->
         processPageVisited string
+        state, Cmd.none
+    | ProcessButtonClicked string ->
+        processButtonClicked string
         state, Cmd.none
 
 let getAlertClass level =
@@ -227,7 +235,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "#"
                                                         prop.title "Home"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Home"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.Home ] []
                                                             if isOpen then Html.span "Welcome" else Html.none
@@ -240,7 +248,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "project"
                                                         prop.title "About This Project"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Project"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.ChartArea ] []
                                                             if isOpen then Html.span "The Project" else Html.none
@@ -253,7 +261,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "cmsdata"
                                                         prop.title "About The Data"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "CMSData"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.Sitemap ] []
                                                             if isOpen then Html.span "The Data" else Html.none
@@ -266,7 +274,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "signup"
                                                         prop.title "The Waitlist"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "SignUp"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.FileSignature ] []
                                                             if isOpen then Html.span "Join Our Waitlist" else Html.none
@@ -278,7 +286,7 @@ let AppView () =
                                                 prop.children [
                                                     Html.a [
                                                         prop.href "rower"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Rower"); Router.goToUrl(e))
                                                         prop.children [
                                                             Html.img [
                                                                 prop.title "About Rower Consulting"
@@ -301,7 +309,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "speakez"
                                                         prop.title "About SpeakEZ.ai"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "SpeakEZ"); Router.goToUrl(e))
                                                         prop.children [
                                                             Html.img [
                                                                 prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
@@ -326,7 +334,7 @@ let AppView () =
                                                         ]
                                                         prop.href "contact"
                                                         prop.title "Contact Us"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Contact"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [
                                                                 Fa.Solid.Envelope
@@ -344,7 +352,7 @@ let AppView () =
                                                         ]
                                                         prop.href "partners"
                                                         prop.title "Partners & Links"
-                                                        prop.onClick (fun e -> handleItemClick(); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Partners"); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [
                                                                 Fa.Solid.InfoCircle

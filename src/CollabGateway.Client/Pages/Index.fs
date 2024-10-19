@@ -29,7 +29,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
 
     React.useEffectOnce(fun () ->
-        parentDispatch (ProcessPageVisited "Index")
+        parentDispatch (ProcessPageVisited "Home")
     )
 
     React.fragment [
@@ -83,13 +83,13 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.children [
                                                 Html.button [
                                                     prop.className "btn btn-secondary text-lg w-full md:w-auto text-gray-200"
-                                                    prop.onClick (fun e -> Router.goToUrl(e))
+                                                    prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked "HomeProject"))
                                                     prop.href "/project"
                                                     prop.text "Learn More"
                                                 ]
                                                 Html.button [
                                                     prop.className "btn btn-primary text-lg w-full md:w-auto text-gray-200"
-                                                    prop.onClick (fun e -> Router.goToUrl(e))
+                                                    prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked "HomeSignUp"))
                                                     prop.href "/signup"
                                                     prop.text "Join The Waitlist"
                                                 ]
