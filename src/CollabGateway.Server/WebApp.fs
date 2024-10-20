@@ -20,8 +20,8 @@ open Newtonsoft.Json.Linq
 type EventProcessingMessage =
     | ProcessSessionToken of SessionToken
     | ProcessUserClientIP of SessionToken * ClientIP
-    | ProcessPageVisited of SessionToken * string
-    | ProcessButtonClicked of SessionToken * string
+    | ProcessPageVisited of SessionToken * PageName
+    | ProcessButtonClicked of SessionToken * ButtonName
     | ProcessSessionClose of SessionToken
 
 let getGeoInfo (clientIP: ClientIP) =
@@ -33,7 +33,6 @@ let getGeoInfo (clientIP: ClientIP) =
             let url = $"https://geo.ipify.org/api/v2/country,city?apiKey=%s{geoipifyToken}&ipAddress=%s{clientIP}"
             use httpClient = new HttpClient()
             let! response = httpClient.GetStringAsync(url)
-            sprintf $"GeoInfo response: %s{response}"
             try
                 let geoInfo = JsonConvert.DeserializeObject<GeoInfo>(response)
                 return geoInfo
@@ -62,7 +61,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
             let unwrappedEvents =
                 allEvents
-                |> Seq.map (fun e -> e.Data :?> obj)
+                |> Seq.map (_.Data )
             let sessionEvents = unwrappedEvents |> Seq.choose (function | :? SessionEventCase as e -> Some e | _ -> None)
             let existingEvent =
                 sessionEvents
@@ -87,43 +86,41 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             use session = Database.store.LightweightSession()
             let pageCase =
                 match pageName with
-                | "Home" -> HomePageVisited { Id = Guid.NewGuid() }
-                | "Project" -> ProjectPageVisited { Id = Guid.NewGuid() }
-                | "CMSData" -> DataPageVisited { Id = Guid.NewGuid() }
-                | "SignUp" -> SignupPageVisited { Id = Guid.NewGuid() }
-                | "Rower" -> RowerPageVisited { Id = Guid.NewGuid() }
-                | "SpeakEZ" -> SpeakEZPageVisited { Id = Guid.NewGuid() }
-                | "Contact" -> ContactPageVisited { Id = Guid.NewGuid() }
-                | "Partners" -> PartnersPageVisited { Id = Guid.NewGuid() }
-                | _ -> OtherPageVisited { Id = Guid.NewGuid() }
+                | HomePage -> HomePageVisited { Id = Guid.NewGuid() }
+                | ProjectPage -> ProjectPageVisited { Id = Guid.NewGuid() }
+                | CMSDataPage -> DataPageVisited { Id = Guid.NewGuid() }
+                | SignUpPage -> SignupPageVisited { Id = Guid.NewGuid() }
+                | RowerPage -> RowerPageVisited { Id = Guid.NewGuid() }
+                | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid() }
+                | ContactPage -> ContactPageVisited { Id = Guid.NewGuid() }
+                | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessButtonClicked (sessionToken, buttonName) ->
             use session = Database.store.LightweightSession()
             let buttonCase =
                 match buttonName with
-                | "Home" -> HomeButtonClicked { Id = Guid.NewGuid() }
-                | "HomeProject" -> HomeProjectButtonClicked { Id = Guid.NewGuid() }
-                | "HomeSignUp" -> HomeSignUpButtonClicked { Id = Guid.NewGuid() }
-                | "Project" -> ProjectButtonClicked { Id = Guid.NewGuid() }
-                | "ProjectData" -> ProjectDataButtonClicked { Id = Guid.NewGuid() }
-                | "ProjectSignUp" -> ProjectSignUpButtonClicked { Id = Guid.NewGuid() }
-                | "CMSData" -> DataButtonClicked { Id = Guid.NewGuid() }
-                | "CMSDataSignUp" -> DataSignUpButtonClicked { Id = Guid.NewGuid() }
-                | "SignUp" -> SignUpButtonClicked { Id = Guid.NewGuid() }
-                | "Rower" -> RowerButtonClicked { Id = Guid.NewGuid() }
-                | "RowerSignUp" -> RowerSignUpButtonClicked { Id = Guid.NewGuid() }
-                | "SpeakEZ" -> SpeakEZButtonClicked { Id = Guid.NewGuid() }
-                | "SpeakEZSignUp" -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid() }
-                | "Contact" -> ContactButtonClicked { Id = Guid.NewGuid() }
-                | "Partners" -> PartnersButtonClicked { Id = Guid.NewGuid() }
-                | "RowerSite" -> RowerSiteButtonClicked { Id = Guid.NewGuid() }
-                | "CuratorSite" -> CuratorSiteButtonClicked { Id = Guid.NewGuid() }
-                | "TableauSite" -> TableauSiteButtonClicked { Id = Guid.NewGuid() }
-                | "PowerBISite" -> PowerBISiteButtonClicked { Id = Guid.NewGuid() }
-                | "ThoughtSpotSite" -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid() }
-                | "SpeakEZSite" -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid() }
-                | _ -> OtherButtonClicked { Id = Guid.NewGuid() }
+                | HomeButton -> HomeButtonClicked { Id = Guid.NewGuid() }
+                | HomeProjectButton -> HomeProjectButtonClicked { Id = Guid.NewGuid() }
+                | HomeSignUpButton -> HomeSignUpButtonClicked { Id = Guid.NewGuid() }
+                | ProjectButton -> ProjectButtonClicked { Id = Guid.NewGuid() }
+                | ProjectDataButton -> ProjectDataButtonClicked { Id = Guid.NewGuid() }
+                | ProjectSignUpButton -> ProjectSignUpButtonClicked { Id = Guid.NewGuid() }
+                | CMSDataButton -> DataButtonClicked { Id = Guid.NewGuid() }
+                | CMSDataSignUpButton -> DataSignUpButtonClicked { Id = Guid.NewGuid() }
+                | SignUpButton -> SignUpButtonClicked { Id = Guid.NewGuid() }
+                | RowerButton -> RowerButtonClicked { Id = Guid.NewGuid() }
+                | RowerSignUpButton -> RowerSignUpButtonClicked { Id = Guid.NewGuid() }
+                | SpeakEZButton -> SpeakEZButtonClicked { Id = Guid.NewGuid() }
+                | SpeakEZSignUpButton -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid() }
+                | ContactButton -> ContactButtonClicked { Id = Guid.NewGuid() }
+                | PartnersButton -> PartnersButtonClicked { Id = Guid.NewGuid() }
+                | RowerSiteButton -> RowerSiteButtonClicked { Id = Guid.NewGuid() }
+                | CuratorSiteButton -> CuratorSiteButtonClicked { Id = Guid.NewGuid() }
+                | TableauSiteButton -> TableauSiteButtonClicked { Id = Guid.NewGuid() }
+                | PowerBISiteButton -> PowerBISiteButtonClicked { Id = Guid.NewGuid() }
+                | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid() }
+                | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessSessionClose sessionToken ->
@@ -214,11 +211,11 @@ let processSessionClose (sessionToken: SessionToken) = async {
     eventProcessor.Post(ProcessSessionClose sessionToken)
     }
 
-let processPageVisited (sessionToken: SessionToken, pageName: string) = async {
+let processPageVisited (sessionToken: SessionToken, pageName: PageName) = async {
     eventProcessor.Post(ProcessPageVisited (sessionToken, pageName))
     }
 
-let processButtonClicked (sessionToken: SessionToken, buttonName: string) = async {
+let processButtonClicked (sessionToken: SessionToken, buttonName: ButtonName) = async {
     eventProcessor.Post(ProcessButtonClicked (sessionToken, buttonName))
     }
 

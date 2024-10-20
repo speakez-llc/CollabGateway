@@ -12,10 +12,12 @@ open Feliz.UseElmish
 open Fable.FontAwesome
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
+open CollabGateway.Client.CookiePolicyModal
 
 type State = {
     Page: Page
     Toasts: Toast list
+    CookiePolicyAccepted: bool option
 }
 
 let service =
@@ -48,12 +50,12 @@ let getClientIP =
     }
 
 
-let processPageVisited (pageName: string) =
+let processPageVisited (pageName: PageName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
     service.ProcessPageVisited (sessionToken, pageName)
         |> Async.StartImmediate
 
-let processButtonClicked (buttonName: string) =
+let processButtonClicked (buttonName: ButtonName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
     service.ProcessButtonClicked (sessionToken, buttonName)
         |> Async.StartImmediate
@@ -92,8 +94,7 @@ let init () =
     service.ProcessSessionToken (Guid.Parse sessionToken)
     |> Async.StartImmediate
     processUserClientIP()
-    { Page = nextPage; Toasts = [] }, Cmd.navigatePage nextPage
-
+    { Page = nextPage; Toasts = []; CookiePolicyAccepted = None }, Cmd.navigatePage nextPage
 
 let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
@@ -111,6 +112,10 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ProcessPageVisited string ->
         processPageVisited string
         state, Cmd.none
+    | ProcessButtonClicked DataPolicyAcceptButton ->
+        { state with CookiePolicyAccepted = Some true }, Cmd.none
+    | ProcessButtonClicked DataPolicyDeclineButton ->
+        { state with CookiePolicyAccepted = Some false }, Cmd.none
     | ProcessButtonClicked string ->
         processButtonClicked string
         state, Cmd.none
@@ -123,6 +128,8 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ProcessSessionClose ->
         processSessionClose()
         state, Cmd.none
+    | ResetCookiePolicy ->
+        { state with CookiePolicyAccepted = None }, Cmd.none
 
 let getAlertClass level =
         match level with
@@ -223,6 +230,7 @@ let AppView () =
     let navigationWrapper =
         Html.div [
             prop.className "flex flex-col h-screen"
+            prop.className (if state.CookiePolicyAccepted = None then "pointer-events-none" else "pointer-events-auto")
             prop.children [
                 // Top nav bar
                 Html.div [
@@ -294,7 +302,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "#"
                                                         prop.title "Home"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Home"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked HomeButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.Home ] []
                                                             if isOpen then Html.span "Welcome" else Html.none
@@ -307,7 +315,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "project"
                                                         prop.title "About This Project"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Project"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked ProjectButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.ChartArea ] []
                                                             if isOpen then Html.span "The Project" else Html.none
@@ -320,7 +328,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "cmsdata"
                                                         prop.title "About The Data"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "CMSData"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked CMSDataButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.Sitemap ] []
                                                             if isOpen then Html.span "The Data" else Html.none
@@ -333,7 +341,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "signup"
                                                         prop.title "The Waitlist"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "SignUp"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked SignUpButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [ Fa.Solid.FileSignature ] []
                                                             if isOpen then Html.span "Join Our Waitlist" else Html.none
@@ -345,7 +353,7 @@ let AppView () =
                                                 prop.children [
                                                     Html.a [
                                                         prop.href "rower"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Rower"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked RowerButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Html.img [
                                                                 prop.title "About Rower Consulting"
@@ -368,7 +376,7 @@ let AppView () =
                                                     Html.a [
                                                         prop.href "speakez"
                                                         prop.title "About SpeakEZ.ai"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "SpeakEZ"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked SpeakEZButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Html.img [
                                                                 prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
@@ -393,7 +401,7 @@ let AppView () =
                                                         ]
                                                         prop.href "contact"
                                                         prop.title "Contact Us"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Contact"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked ContactButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [
                                                                 Fa.Solid.Envelope
@@ -411,7 +419,7 @@ let AppView () =
                                                         ]
                                                         prop.href "partners"
                                                         prop.title "Partners & Links"
-                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked "Partners"); Router.goToUrl(e))
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked PartnersButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Fa.i [
                                                                 Fa.Solid.InfoCircle
@@ -459,6 +467,8 @@ let AppView () =
                     ]
                 ]
                 renderToast state.Toasts dispatch
+                if state.CookiePolicyAccepted <> Some true then
+                    CookiePolicyModal state.CookiePolicyAccepted dispatch
             ]
         ]
 

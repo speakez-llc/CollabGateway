@@ -4,8 +4,8 @@ open System
 open Feliz
 open Elmish
 open CollabGateway.Client.Server
-open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
+open CollabGateway.Shared.API
 open UseElmish
 
 
@@ -70,7 +70,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish((fun () -> init ()), (fun msg model -> update msg model parentDispatch), [| |])
 
     React.useEffectOnce(fun () ->
-        parentDispatch (ProcessPageVisited "Contact")
+        parentDispatch (ProcessPageVisited ContactPage)
     )
 
     let handleButtonClick (e: Browser.Types.Event) =

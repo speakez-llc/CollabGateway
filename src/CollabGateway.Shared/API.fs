@@ -2,8 +2,43 @@
 
 open System
 
-type SessionToken = Guid
+type PageName =
+    | HomePage
+    | ProjectPage
+    | CMSDataPage
+    | SignUpPage
+    | RowerPage
+    | SpeakEZPage
+    | ContactPage
+    | PartnersPage
 
+type ButtonName =
+    | DataPolicyAcceptButton
+    | DataPolicyDeclineButton
+    | DataPolicyResetButton
+    | HomeButton
+    | HomeProjectButton
+    | HomeSignUpButton
+    | ProjectButton
+    | ProjectDataButton
+    | ProjectSignUpButton
+    | CMSDataButton
+    | CMSDataSignUpButton
+    | SignUpButton
+    | RowerButton
+    | RowerSignUpButton
+    | SpeakEZButton
+    | SpeakEZSignUpButton
+    | ContactButton
+    | PartnersButton
+    | RowerSiteButton
+    | CuratorSiteButton
+    | TableauSiteButton
+    | PowerBISiteButton
+    | ThoughtSpotSiteButton
+    | SpeakEZSiteButton
+
+type SessionToken = Guid
 type ClientIP = string
 type IpResponse = { ip: string }
 
@@ -62,8 +97,8 @@ type Service = {
     ProcessContactForm : ContactForm -> Async<string>
     ProcessSessionToken : SessionToken -> Async<unit>
     ProcessSessionClose : SessionToken -> Async<unit>
-    ProcessPageVisited : Guid * string -> Async<unit>
-    ProcessButtonClicked : Guid * string -> Async<unit>
+    ProcessPageVisited : Guid * PageName -> Async<unit>
+    ProcessButtonClicked : Guid * ButtonName -> Async<unit>
     ProcessUserClientIP : Guid * ClientIP -> Async<unit>
 }
 with

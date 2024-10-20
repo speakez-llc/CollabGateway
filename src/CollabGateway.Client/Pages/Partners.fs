@@ -1,10 +1,10 @@
 ﻿module CollabGateway.Client.Pages.Partners
 
-open System
 open Feliz
 open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Client.ViewMsg
+open CollabGateway.Shared.API
 open UseElmish
 
 type private State = {
@@ -21,14 +21,14 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
     | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
-    | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
+    | MessageReceived (Result.Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
 
     React.useEffectOnce(fun () ->
-        parentDispatch (ProcessPageVisited "Partners")
+        parentDispatch (ProcessPageVisited PartnersPage)
     )
 
     React.fragment [
@@ -57,7 +57,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         Html.a [
                                             prop.href "https://www.rowerconsulting.com/"
                                             prop.target "_blank"
-                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "RowerSite"))
+                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked RowerSiteButton))
                                             prop.children [
                                                 Html.span [
                                                     prop.text "Main Website"
@@ -95,7 +95,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.interworks.com/curator"
                                                     prop.target "_blank"
-                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "CuratorSite"))
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked CuratorSiteButton))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Curator"
@@ -129,7 +129,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.salesforce.com/products/tableau/"
                                                     prop.target "_blank"
-                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "TableauSite"))
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked TableauSiteButton))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Tableau"
@@ -169,7 +169,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://powerbi.microsoft.com/"
                                                     prop.target "_blank"
-                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "PowerBISite"))
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked PowerBISiteButton))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "Power BI"
@@ -203,7 +203,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.a [
                                                     prop.href "https://www.thoughtspot.com/"
                                                     prop.target "_blank"
-                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "ThoughtSpotSite"))
+                                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked ThoughtSpotSiteButton))
                                                     prop.children [
                                                         Html.span [
                                                             prop.text "ThoughtSpot"
@@ -239,7 +239,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         Html.a [
                                             prop.href "https://speakez.ai/"
                                             prop.target "_blank"
-                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked "SpeakEZSite"))
+                                            prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked SpeakEZSiteButton))
                                             prop.children [
                                                 Html.span [
                                                     prop.text "SpeakEZ.ai"

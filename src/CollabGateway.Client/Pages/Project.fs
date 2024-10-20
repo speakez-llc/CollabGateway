@@ -5,6 +5,7 @@ open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Client.Router
 open CollabGateway.Client.ViewMsg
+open CollabGateway.Shared.API
 open UseElmish
 
 type private State = {
@@ -21,14 +22,14 @@ let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
     | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
-    | MessageReceived (Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
+    | MessageReceived (Result.Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
     let state, dispatch = React.useElmish(init, update, [| |])
 
     React.useEffectOnce(fun () ->
-        parentDispatch (ProcessPageVisited "Project")
+        parentDispatch (ProcessPageVisited ProjectPage)
     )
 
     React.fragment [
@@ -222,13 +223,13 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     prop.children [
                         Html.button [
                             prop.className "btn btn-secondary text-lg text-gray-200"
-                            prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked "ProjectData"))
+                            prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked ProjectDataButton))
                             prop.href "/cmsdata"
                             prop.text "About The Data"
                         ]
                         Html.button [
                             prop.className "btn btn-primary text-lg text-gray-200"
-                            prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked "ProjectSignUp"))
+                            prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked ProjectSignUpButton))
                             prop.href "/signup"
                             prop.text "Get On The List"
                         ]
