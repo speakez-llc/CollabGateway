@@ -1,7 +1,8 @@
 module CollabGateway.Client.ViewMsg
 
-open Router
+open CollabGateway.Shared.Events
 open CollabGateway.Shared.API
+open Router
 
 
 type ViewMsg =
@@ -14,3 +15,4 @@ type ViewMsg =
     | ProcessSessionClose
     | ProcessUserClientIP
     | DataPolicyChoiceRetrieved of DataPolicyChoice
+    | ProcessContactForm of ContactFormEvent

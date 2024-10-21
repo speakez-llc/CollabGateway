@@ -28,6 +28,7 @@ let configureMarten (options: StoreOptions) =
     options.AutoCreateSchemaObjects <- AutoCreate.All
     options.Events.AddEventType(typeof<SessionEventCase>)
     options.Events.AddEventType(typeof<BaseEventCase>)
+    options.Events.AddEventType(typeof<ContactFormEventCase>)
 
 
 let store = DocumentStore.For(Action<StoreOptions>(configureMarten))

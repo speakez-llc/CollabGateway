@@ -1,6 +1,7 @@
 ﻿module CollabGateway.Client.Pages.Contact
 
 open System
+open Browser.Dom
 open Feliz
 open Elmish
 open CollabGateway.Client.Server
@@ -53,7 +54,9 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             errors |> List.iter (fun error -> parentDispatch (ShowToast { Message = error; Level = AlertLevel.Warning }))
             model, Cmd.none
         else
-            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm model.ContactForm) FormSubmitted
+            let timeStamp = DateTime.UtcNow
+            let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
+            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm (sessionToken, timeStamp, model.ContactForm)) FormSubmitted
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
         parentDispatch (ShowToast { Message = "Message sent"; Level = AlertLevel.Success })

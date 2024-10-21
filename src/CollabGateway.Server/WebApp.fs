@@ -18,11 +18,12 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 
 type EventProcessingMessage =
-    | ProcessSessionToken of SessionToken
-    | ProcessUserClientIP of SessionToken * ClientIP
-    | ProcessPageVisited of SessionToken * PageName
-    | ProcessButtonClicked of SessionToken * ButtonName
-    | ProcessSessionClose of SessionToken
+    | ProcessSessionToken of SessionToken * EventDateTime
+    | ProcessUserClientIP of SessionToken * EventDateTime * ClientIP
+    | ProcessPageVisited of SessionToken * EventDateTime * PageName
+    | ProcessButtonClicked of SessionToken * EventDateTime * ButtonName
+    | ProcessSessionClose of SessionToken * EventDateTime
+    | ProcessContactForm of SessionToken * EventDateTime * ContactForm
 
 let getGeoInfo (clientIP: ClientIP) =
     task {
@@ -46,17 +47,17 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
         let! msg = inbox.Receive()
         match msg with
-        | ProcessSessionToken sessionToken ->
+        | ProcessSessionToken (sessionToken, timeStamp) ->
             use session = Database.store.LightweightSession()
             let streamState = session.Events.FetchStreamState(sessionToken)
             let event =
                 if streamState = null then
-                    UserSessionInitiated { Id = Guid.NewGuid(); SessionID = sessionToken }
+                    UserSessionInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
                 else
-                    UserSessionResumed { Id = Guid.NewGuid(); SessionID = sessionToken }
+                    UserSessionResumed { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
             session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessUserClientIP (sessionToken, clientIP) ->
+        | ProcessUserClientIP (sessionToken, timeStamp, clientIP) ->
             use session = Database.store.LightweightSession()
             let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
             let unwrappedEvents =
@@ -76,59 +77,64 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 let! userGeoInfo = getGeoInfo clientIP
                 let event =
                     if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true | _ -> false) then
-                        UserClientIPUpdated { Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                        UserClientIPUpdated { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                     else
-                        UserClientIPDetected { Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                        UserClientIPDetected { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                 session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
                 do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessPageVisited (sessionToken, pageName) ->
+        | ProcessPageVisited (sessionToken, timeStamp, pageName) ->
             use session = Database.store.LightweightSession()
             let pageCase =
                 match pageName with
-                | DataPolicyPage -> DataPolicyPageVisited { Id = Guid.NewGuid() }
-                | HomePage -> HomePageVisited { Id = Guid.NewGuid() }
-                | ProjectPage -> ProjectPageVisited { Id = Guid.NewGuid() }
-                | CMSDataPage -> DataPageVisited { Id = Guid.NewGuid() }
-                | SignUpPage -> SignupPageVisited { Id = Guid.NewGuid() }
-                | RowerPage -> RowerPageVisited { Id = Guid.NewGuid() }
-                | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid() }
-                | ContactPage -> ContactPageVisited { Id = Guid.NewGuid() }
-                | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid() }
+                | DataPolicyPage -> DataPolicyPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | HomePage -> HomePageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ProjectPage -> ProjectPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | CMSDataPage -> DataPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SignUpPage -> SignupPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | RowerPage -> RowerPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ContactPage -> ContactPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
             session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessButtonClicked (sessionToken, buttonName) ->
+        | ProcessButtonClicked (sessionToken, timeStamp, buttonName) ->
             use session = Database.store.LightweightSession()
             let buttonCase =
                 match buttonName with
-                | HomeButton -> HomeButtonClicked { Id = Guid.NewGuid() }
-                | HomeProjectButton -> HomeProjectButtonClicked { Id = Guid.NewGuid() }
-                | HomeSignUpButton -> HomeSignUpButtonClicked { Id = Guid.NewGuid() }
-                | ProjectButton -> ProjectButtonClicked { Id = Guid.NewGuid() }
-                | ProjectDataButton -> ProjectDataButtonClicked { Id = Guid.NewGuid() }
-                | ProjectSignUpButton -> ProjectSignUpButtonClicked { Id = Guid.NewGuid() }
-                | CMSDataButton -> DataButtonClicked { Id = Guid.NewGuid() }
-                | CMSDataSignUpButton -> DataSignUpButtonClicked { Id = Guid.NewGuid() }
-                | SignUpButton -> SignUpButtonClicked { Id = Guid.NewGuid() }
-                | RowerButton -> RowerButtonClicked { Id = Guid.NewGuid() }
-                | RowerSignUpButton -> RowerSignUpButtonClicked { Id = Guid.NewGuid() }
-                | SpeakEZButton -> SpeakEZButtonClicked { Id = Guid.NewGuid() }
-                | SpeakEZSignUpButton -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid() }
-                | ContactButton -> ContactButtonClicked { Id = Guid.NewGuid() }
-                | PartnersButton -> PartnersButtonClicked { Id = Guid.NewGuid() }
-                | RowerSiteButton -> RowerSiteButtonClicked { Id = Guid.NewGuid() }
-                | CuratorSiteButton -> CuratorSiteButtonClicked { Id = Guid.NewGuid() }
-                | TableauSiteButton -> TableauSiteButtonClicked { Id = Guid.NewGuid() }
-                | PowerBISiteButton -> PowerBISiteButtonClicked { Id = Guid.NewGuid() }
-                | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid() }
-                | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid() }
-                | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid() }
-                | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid() }
-                | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid() }
+                | HomeButton -> HomeButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | HomeProjectButton -> HomeProjectButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | HomeSignUpButton -> HomeSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ProjectButton -> ProjectButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ProjectDataButton -> ProjectDataButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ProjectSignUpButton -> ProjectSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | CMSDataButton -> DataButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | CMSDataSignUpButton -> DataSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SignUpButton -> SignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | RowerButton -> RowerButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | RowerSignUpButton -> RowerSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SpeakEZButton -> SpeakEZButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SpeakEZSignUpButton -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ContactButton -> ContactButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | PartnersButton -> PartnersButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | RowerSiteButton -> RowerSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | CuratorSiteButton -> CuratorSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | TableauSiteButton -> TableauSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | PowerBISiteButton -> PowerBISiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
             session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSessionClose sessionToken ->
+        | ProcessSessionClose (sessionToken, timeStamp) ->
             use session = Database.store.LightweightSession()
-            let event = UserSessionClosed { Id = Guid.NewGuid(); SessionID = sessionToken }
+            let event = UserSessionClosed { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
+            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessContactForm (sessionToken, timeStamp, contactForm) ->
+            use session = Database.store.LightweightSession()
+            let event = ContactFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = contactForm }
             session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()
@@ -142,7 +148,7 @@ let formatJson string =
         .Replace(" ", "&nbsp;")
         .Replace("\n", "<br>")
 
-let processContactForm (contactForm: ContactForm) =
+let transmitContactForm (contactForm: ContactForm) =
     task {
         try
             let apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
@@ -205,8 +211,8 @@ let callAzureOpenAI (text: string) =
     }
     |> Async.AwaitTask
 
-let processSessionToken (sessionToken: SessionToken) = async {
-    eventProcessor.Post(ProcessSessionToken sessionToken)
+let processSessionToken (sessionToken: SessionToken, timeStamp: EventDateTime) = async {
+    eventProcessor.Post(ProcessSessionToken (sessionToken, timeStamp))
     }
 
 let retrieveDataPolicyChoice (sessionToken: SessionToken) = async {
@@ -233,20 +239,26 @@ let retrieveDataPolicyChoice (sessionToken: SessionToken) = async {
     | _ -> return Unknown
 }
 
-let processSessionClose (sessionToken: SessionToken) = async {
-    eventProcessor.Post(ProcessSessionClose sessionToken)
+let processSessionClose (sessionToken: SessionToken, timeStamp: EventDateTime) = async {
+    eventProcessor.Post(ProcessSessionClose (sessionToken, timeStamp))
     }
 
-let processPageVisited (sessionToken: SessionToken, pageName: PageName) = async {
-    eventProcessor.Post(ProcessPageVisited (sessionToken, pageName))
+let processPageVisited (sessionToken: SessionToken, timeStamp: EventDateTime, pageName: PageName) = async {
+    eventProcessor.Post(ProcessPageVisited (sessionToken, timeStamp, pageName))
     }
 
-let processButtonClicked (sessionToken: SessionToken, buttonName: ButtonName) = async {
-    eventProcessor.Post(ProcessButtonClicked (sessionToken, buttonName))
+let processButtonClicked (sessionToken: SessionToken, timeStamp: EventDateTime, buttonName: ButtonName) = async {
+    eventProcessor.Post(ProcessButtonClicked (sessionToken, timeStamp, buttonName))
     }
 
-let processUserClientIP (sessionToken: SessionToken, clientIP: ClientIP) = async {
-    eventProcessor.Post(ProcessUserClientIP (sessionToken, clientIP))
+let processUserClientIP (sessionToken: SessionToken, timeStamp: EventDateTime, clientIP: ClientIP) = async {
+    eventProcessor.Post(ProcessUserClientIP (sessionToken, timeStamp, clientIP))
+}
+
+let processContactForm (sessionToken: SessionToken, timeStamp: EventDateTime, form: ContactForm) = async {
+    eventProcessor.Post(ProcessContactForm (sessionToken, timeStamp, form))
+    let! result = transmitContactForm form
+    return result
 }
 
 let service = {

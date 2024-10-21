@@ -32,27 +32,32 @@ type GeoInfo = {
 
 type ClientIPEvent = {
     Id: Guid
+    TimeStamp: DateTime
     UserClientIP: ClientIP
     UserGeoInfo: GeoInfo
 }
 
 type ContactFormEvent = {
     Id: Guid
+    TimeStamp: DateTime
     Form: ContactForm
 }
 
 type SignUpFormEvent = {
     Id: Guid
+    TimeStamp: DateTime
     Form: SignUpForm
 }
 
 type BaseEvent = {
     Id: Guid
+    TimeStamp: DateTime
 }
 
 type SessionEvent = {
     Id: Guid
     SessionID: SessionToken
+    TimeStamp: DateTime
 }
 
 type BaseEventCase =
@@ -100,6 +105,7 @@ type BaseEventCase =
         | SpeakEZPageVisited e -> e.Id
         | ContactPageVisited e -> e.Id
         | PartnersPageVisited e -> e.Id
+        | DataPolicyPageVisited e -> e.Id
         | HomeButtonClicked e -> e.Id
         | HomeProjectButtonClicked e -> e.Id
         | HomeSignUpButtonClicked e -> e.Id
@@ -142,3 +148,11 @@ type SessionEventCase =
         | UserSessionEnded e -> e.Id
         | UserClientIPDetected e -> e.Id
         | UserClientIPUpdated e -> e.Id
+
+type ContactFormEventCase =
+    | ContactFormSubmitted of ContactFormEvent
+    | SignUpFormSubmitted of SignUpFormEvent
+    member this.Id =
+        match this with
+        | ContactFormSubmitted e -> e.Id
+        | SignUpFormSubmitted e -> e.Id

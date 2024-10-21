@@ -53,12 +53,14 @@ let getClientIP () =
 
 let processPageVisited (pageName: PageName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-    service.ProcessPageVisited (sessionToken, pageName)
+    let dateTime = DateTime.UtcNow
+    service.ProcessPageVisited (sessionToken, dateTime, pageName)
         |> Async.StartImmediate
 
 let processButtonClicked (buttonName: ButtonName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-    service.ProcessButtonClicked (sessionToken, buttonName)
+    let dateTime = DateTime.UtcNow
+    service.ProcessButtonClicked (sessionToken, dateTime, buttonName)
         |> Async.StartImmediate
 
 let getSessionToken () =
@@ -71,19 +73,22 @@ let getSessionToken () =
 
 let processSession () =
     let sessionToken = getSessionToken()
-    service.ProcessSessionToken (Guid.Parse sessionToken)
+    let dateTime = DateTime.UtcNow
+    service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
     |> Async.StartImmediate
 
 let processSessionClose () =
     let sessionToken = getSessionToken()
-    service.ProcessSessionClose (Guid.Parse sessionToken)
+    let dateTime = DateTime.UtcNow
+    service.ProcessSessionClose (Guid.Parse sessionToken, dateTime)
     |> Async.StartImmediate
 
 let processUserClientIP () =
     async {
         let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
         let! clientIP = getClientIP()
-        do! service.ProcessUserClientIP (sessionToken, clientIP)
+        let dateTime = DateTime.UtcNow
+        do! service.ProcessUserClientIP (sessionToken, dateTime, clientIP)
     }
 
 let init () =
@@ -99,7 +104,8 @@ let init () =
     let processSessionCmd =
         Cmd.OfAsync.perform (fun () ->
             async {
-                do! service.ProcessSessionToken (Guid.Parse sessionToken)
+                let dateTime = DateTime.UtcNow
+                do! service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
             }) () (fun _ -> ProcessSession)
 
     let processUserClientIPCmd = Cmd.OfAsync.perform processUserClientIP () (fun _ -> ProcessUserClientIP)
