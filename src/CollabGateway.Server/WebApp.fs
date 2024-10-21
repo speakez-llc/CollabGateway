@@ -71,9 +71,8 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                     | _ -> false)
             match existingEvent with
             | Some _ ->
-                Console.WriteLine $"No new event needed for IP: %s{clientIP} as it matches an existing event."
+                Console.WriteLine $"No new event needed for IP: {clientIP} as it matches an existing event."
             | None ->
-                Console.WriteLine $"Creating event for new IP: %s{clientIP}"
                 let! userGeoInfo = getGeoInfo clientIP
                 let event =
                     if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true | _ -> false) then
@@ -86,6 +85,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             use session = Database.store.LightweightSession()
             let pageCase =
                 match pageName with
+                | DataPolicyPage -> DataPolicyPageVisited { Id = Guid.NewGuid() }
                 | HomePage -> HomePageVisited { Id = Guid.NewGuid() }
                 | ProjectPage -> ProjectPageVisited { Id = Guid.NewGuid() }
                 | CMSDataPage -> DataPageVisited { Id = Guid.NewGuid() }
@@ -121,6 +121,9 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | PowerBISiteButton -> PowerBISiteButtonClicked { Id = Guid.NewGuid() }
                 | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid() }
                 | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid() }
+                | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid() }
+                | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid() }
+                | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid() }
             session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessSessionClose sessionToken ->
@@ -132,7 +135,6 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     }
     loop ()
 )
-
 
 let formatJson string =
     let jObject = JObject.Parse(string)
@@ -207,6 +209,30 @@ let processSessionToken (sessionToken: SessionToken) = async {
     eventProcessor.Post(ProcessSessionToken sessionToken)
     }
 
+let retrieveDataPolicyChoice (sessionToken: SessionToken) = async {
+    use session = Database.store.LightweightSession()
+    let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
+    let eventsWithTimestamps =
+        allEvents
+        |> Seq.map (fun e -> e.Timestamp, e.Data)
+    let dataPolicyEvents =
+        eventsWithTimestamps
+        |> Seq.choose (fun (timestamp, data) ->
+            match data with
+            | :? BaseEventCase as e ->
+                match e with
+                | DataPolicyAcceptButtonClicked _ -> Some (timestamp, e)
+                | DataPolicyDeclineButtonClicked _ -> Some (timestamp, e)
+                | _ -> None
+            | _ -> None)
+        |> Seq.sortByDescending fst
+
+    match Seq.tryHead dataPolicyEvents with
+    | Some (_, DataPolicyAcceptButtonClicked _) -> return Accepted
+    | Some (_, DataPolicyDeclineButtonClicked _) -> return Declined
+    | _ -> return Unknown
+}
+
 let processSessionClose (sessionToken: SessionToken) = async {
     eventProcessor.Post(ProcessSessionClose sessionToken)
     }
@@ -230,6 +256,7 @@ let service = {
             else return ServerError.failwith (ServerError.Exception "OMG, something terrible happened")
         }
         |> Async.AwaitTask
+    RetrieveDataPolicyChoice = retrieveDataPolicyChoice
     ProcessContactForm = processContactForm
     ProcessSessionToken = processSessionToken
     ProcessSessionClose = processSessionClose

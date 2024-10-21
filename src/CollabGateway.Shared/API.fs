@@ -3,6 +3,7 @@
 open System
 
 type PageName =
+    | DataPolicyPage
     | HomePage
     | ProjectPage
     | CMSDataPage
@@ -37,6 +38,11 @@ type ButtonName =
     | PowerBISiteButton
     | ThoughtSpotSiteButton
     | SpeakEZSiteButton
+
+type DataPolicyChoice =
+    | Accepted
+    | Declined
+    | Unknown
 
 type SessionToken = Guid
 type ClientIP = string
@@ -94,6 +100,7 @@ type Toast = {
 
 type Service = {
     GetMessage : bool -> Async<string>
+    RetrieveDataPolicyChoice : SessionToken -> Async<DataPolicyChoice>
     ProcessContactForm : ContactForm -> Async<string>
     ProcessSessionToken : SessionToken -> Async<unit>
     ProcessSessionClose : SessionToken -> Async<unit>

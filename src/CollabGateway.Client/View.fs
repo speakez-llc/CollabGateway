@@ -12,12 +12,12 @@ open Feliz.UseElmish
 open Fable.FontAwesome
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
-open CollabGateway.Client.CookiePolicyModal
+open CollabGateway.Client.DataPolicyModal
 
 type State = {
     Page: Page
     Toasts: Toast list
-    CookiePolicyAccepted: bool option
+    DataPolicyChoice: DataPolicyChoice
 }
 
 let service =
@@ -32,7 +32,7 @@ let ipDecoder : Decoder<IpResponse> =
         }
     )
 
-let getClientIP =
+let getClientIP () =
     async {
         let url = "https://api.ipify.org?format=json"
         try
@@ -42,11 +42,12 @@ let getClientIP =
             | Ok ipResponse ->
                 return ipResponse.ip
             | Result.Error error ->
-                return $"Error decoding IP: {error}"
+                Console.WriteLine($"Error decoding IP: {error}")
+                return ""
         with
         | ex ->
             Console.WriteLine($"Exception: {ex.Message}")
-            return $"Exception: {ex.Message}"
+            return ""
     }
 
 
@@ -60,13 +61,10 @@ let processButtonClicked (buttonName: ButtonName) =
     service.ProcessButtonClicked (sessionToken, buttonName)
         |> Async.StartImmediate
 
-let generateSessionToken () =
-    Guid.NewGuid().ToString()
-
 let getSessionToken () =
     match window.localStorage.getItem("UserSessionToken") with
     | null ->
-        let newToken = generateSessionToken()
+        let newToken = Guid.NewGuid().ToString()
         window.localStorage.setItem("UserSessionToken", newToken)
         newToken
     | token -> token
@@ -84,22 +82,46 @@ let processSessionClose () =
 let processUserClientIP () =
     async {
         let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-        let! clientIP = getClientIP
+        let! clientIP = getClientIP()
         do! service.ProcessUserClientIP (sessionToken, clientIP)
-    } |> Async.StartImmediate
+    }
 
 let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
     let sessionToken = getSessionToken()
-    service.ProcessSessionToken (Guid.Parse sessionToken)
-    |> Async.StartImmediate
-    processUserClientIP()
-    { Page = nextPage; Toasts = []; CookiePolicyAccepted = None }, Cmd.navigatePage nextPage
+
+    let initialState = {
+        Page = nextPage
+        Toasts = []
+        DataPolicyChoice = Accepted
+    }
+
+    let processSessionCmd =
+        Cmd.OfAsync.perform (fun () ->
+            async {
+                do! service.ProcessSessionToken (Guid.Parse sessionToken)
+            }) () (fun _ -> ProcessSession)
+
+    let processUserClientIPCmd = Cmd.OfAsync.perform processUserClientIP () (fun _ -> ProcessUserClientIP)
+    let retrieveDataPolicyChoiceCmd = Cmd.OfAsync.perform (
+        fun () -> service.RetrieveDataPolicyChoice (Guid.Parse sessionToken)) () (
+        fun choice ->
+        match choice with
+        | Accepted -> DataPolicyChoiceRetrieved Accepted
+        | Declined -> DataPolicyChoiceRetrieved Declined
+        | Unknown -> DataPolicyChoiceRetrieved Unknown
+    )
+
+    let initialCmd = Cmd.batch [processSessionCmd; processUserClientIPCmd; retrieveDataPolicyChoiceCmd]
+
+    initialState, initialCmd
 
 let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     match msg with
     | UrlChanged page ->
         { state with Page = page }, Cmd.none
+    | DataPolicyChoiceRetrieved choice ->
+        { state with DataPolicyChoice = choice }, Cmd.none
     | ShowToast toast ->
         let hideToastCommand =
             async {
@@ -112,24 +134,29 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ProcessPageVisited string ->
         processPageVisited string
         state, Cmd.none
-    | ProcessButtonClicked DataPolicyAcceptButton ->
-        { state with CookiePolicyAccepted = Some true }, Cmd.none
-    | ProcessButtonClicked DataPolicyDeclineButton ->
-        { state with CookiePolicyAccepted = Some false }, Cmd.none
-    | ProcessButtonClicked string ->
-        processButtonClicked string
-        state, Cmd.none
+    | ProcessButtonClicked buttonName ->
+        match buttonName with
+        | DataPolicyAcceptButton ->
+            processButtonClicked DataPolicyAcceptButton
+            { state with DataPolicyChoice = Accepted }, Cmd.none
+        | DataPolicyDeclineButton ->
+            processButtonClicked DataPolicyDeclineButton
+            { state with DataPolicyChoice =  Declined }, Cmd.none
+        | DataPolicyResetButton ->
+            processButtonClicked DataPolicyResetButton
+            { state with DataPolicyChoice =  Unknown }, Cmd.none
+        | _ ->
+            processButtonClicked buttonName
+            state, Cmd.none
     | ProcessSession ->
         processSession()
         state, Cmd.ofMsg ProcessUserClientIP
     | ProcessUserClientIP ->
-        processUserClientIP()
+        processUserClientIP() |> ignore
         state, Cmd.none
     | ProcessSessionClose ->
         processSessionClose()
         state, Cmd.none
-    | ResetCookiePolicy ->
-        { state with CookiePolicyAccepted = None }, Cmd.none
 
 let getAlertClass level =
         match level with
@@ -230,7 +257,7 @@ let AppView () =
     let navigationWrapper =
         Html.div [
             prop.className "flex flex-col h-screen"
-            prop.className (if state.CookiePolicyAccepted = None then "pointer-events-none" else "pointer-events-auto")
+            prop.className (if state.DataPolicyChoice = Unknown then "pointer-events-none" else "pointer-events-auto")
             prop.children [
                 // Top nav bar
                 Html.div [
@@ -467,8 +494,8 @@ let AppView () =
                     ]
                 ]
                 renderToast state.Toasts dispatch
-                if state.CookiePolicyAccepted <> Some true then
-                    CookiePolicyModal state.CookiePolicyAccepted dispatch
+                if state.DataPolicyChoice <> Accepted then
+                    DataPolicyModal state.DataPolicyChoice dispatch
             ]
         ]
 

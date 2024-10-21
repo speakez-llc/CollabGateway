@@ -13,4 +13,4 @@ type ViewMsg =
     | ProcessSession
     | ProcessSessionClose
     | ProcessUserClientIP
-    | ResetCookiePolicy
+    | DataPolicyChoiceRetrieved of DataPolicyChoice

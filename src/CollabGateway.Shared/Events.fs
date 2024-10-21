@@ -64,7 +64,7 @@ type BaseEventCase =
     | SpeakEZPageVisited of BaseEvent
     | ContactPageVisited of BaseEvent
     | PartnersPageVisited of BaseEvent
-    | OtherPageVisited of BaseEvent
+    | DataPolicyPageVisited of BaseEvent
     | HomeButtonClicked of BaseEvent
     | HomeProjectButtonClicked of BaseEvent
     | HomeSignUpButtonClicked of BaseEvent
@@ -87,7 +87,9 @@ type BaseEventCase =
     | PowerBISiteButtonClicked of BaseEvent
     | ThoughtSpotSiteButtonClicked of BaseEvent
     | SpeakEZSiteButtonClicked of BaseEvent
-    | OtherButtonClicked of BaseEvent
+    | DataPolicyAcceptButtonClicked of BaseEvent
+    | DataPolicyDeclineButtonClicked of BaseEvent
+    | DataPolicyResetButtonClicked of BaseEvent
     member this.Id =
         match this with
         | HomePageVisited e -> e.Id
@@ -98,7 +100,6 @@ type BaseEventCase =
         | SpeakEZPageVisited e -> e.Id
         | ContactPageVisited e -> e.Id
         | PartnersPageVisited e -> e.Id
-        | OtherPageVisited e -> e.Id
         | HomeButtonClicked e -> e.Id
         | HomeProjectButtonClicked e -> e.Id
         | HomeSignUpButtonClicked e -> e.Id
@@ -121,7 +122,10 @@ type BaseEventCase =
         | PowerBISiteButtonClicked e -> e.Id
         | ThoughtSpotSiteButtonClicked e -> e.Id
         | SpeakEZSiteButtonClicked e -> e.Id
-        | OtherButtonClicked e -> e.Id
+        | DataPolicyAcceptButtonClicked e -> e.Id
+        | DataPolicyDeclineButtonClicked e -> e.Id
+        | DataPolicyResetButtonClicked e -> e.Id
+
 
 type SessionEventCase =
     | UserSessionInitiated of SessionEvent

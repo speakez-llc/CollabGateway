@@ -1,4 +1,4 @@
-﻿module CollabGateway.Client.CookiePolicyModal
+﻿module CollabGateway.Client.DataPolicyModal
 
 open Feliz
 open CollabGateway.Client.ViewMsg
@@ -7,7 +7,8 @@ open CollabGateway.Shared.API
 let closeTab () =
     Browser.Dom.window.close()
 
-let CookiePolicyModal (state: bool option) (dispatch: ViewMsg -> unit) =
+let DataPolicyModal (state: DataPolicyChoice) (parentDispatch: ViewMsg -> unit) =
+
     Html.div [
         prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
         prop.children [
@@ -26,7 +27,7 @@ let CookiePolicyModal (state: bool option) (dispatch: ViewMsg -> unit) =
                     Html.div [
                         prop.children [
                             match state with
-                            | Some false ->
+                            | Declined ->
                                 Html.p [
                                     prop.text "We're sorry we could not help you at this time, and hope that you may reconsider in the future. If you would like to continue the conversation outside of this website, please feel free to reach out any time."
                                 ]
@@ -62,21 +63,21 @@ let CookiePolicyModal (state: bool option) (dispatch: ViewMsg -> unit) =
                         prop.className "mt-4 flex justify-end"
                         prop.children [
                             match state with
-                            | Some false ->
+                            | Declined ->
                                 Html.button [
                                     prop.className "btn btn-primary"
-                                    prop.onClick (fun _ -> dispatch ResetCookiePolicy)
+                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked DataPolicyResetButton))
                                     prop.text "Reset"
                                 ]
                             | _ ->
                                 Html.button [
                                     prop.className "btn btn-secondary mr-2"
-                                    prop.onClick (fun _ -> dispatch (ProcessButtonClicked DataPolicyDeclineButton))
+                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked DataPolicyDeclineButton))
                                     prop.text "Decline"
                                 ]
                                 Html.button [
                                     prop.className "btn btn-primary"
-                                    prop.onClick (fun _ -> dispatch (ProcessButtonClicked DataPolicyAcceptButton))
+                                    prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked DataPolicyAcceptButton))
                                     prop.text "Accept"
                                 ]
                         ]

@@ -83,13 +83,13 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.children [
                                                 Html.button [
                                                     prop.className "btn btn-secondary text-lg w-full md:w-auto text-gray-200"
-                                                    prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked HomeProjectButton))
+                                                    prop.onClick (fun e -> parentDispatch (ProcessButtonClicked HomeProjectButton); Router.goToUrl(e))
                                                     prop.href "/project"
                                                     prop.text "Learn More"
                                                 ]
                                                 Html.button [
                                                     prop.className "btn btn-primary text-lg w-full md:w-auto text-gray-200"
-                                                    prop.onClick (fun e -> Router.goToUrl(e); parentDispatch (ProcessButtonClicked HomeSignUpButton))
+                                                    prop.onClick (fun e ->  parentDispatch (ProcessButtonClicked HomeSignUpButton); Router.goToUrl(e))
                                                     prop.href "/signup"
                                                     prop.text "Join The Waitlist"
                                                 ]
