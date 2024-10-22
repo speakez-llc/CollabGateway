@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react'
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-    plugins: [react({ jsxRuntime: 'classic'})], 
+    plugins: [react({ jsxRuntime: 'classic'})],
     root: "./src/CollabGateway.Client",
     server: {
         port: 8080,
+        host: true,
         proxy: {
             '/api': 'http://localhost:5000',
         }
