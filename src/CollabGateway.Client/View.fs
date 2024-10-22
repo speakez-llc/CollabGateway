@@ -53,13 +53,13 @@ let getClientIP () =
 
 let processPageVisited (pageName: PageName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-    let dateTime = DateTime.UtcNow
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
     service.ProcessPageVisited (sessionToken, dateTime, pageName)
         |> Async.StartImmediate
 
 let processButtonClicked (buttonName: ButtonName) =
     let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-    let dateTime = DateTime.UtcNow
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
     service.ProcessButtonClicked (sessionToken, dateTime, buttonName)
         |> Async.StartImmediate
 
@@ -73,13 +73,13 @@ let getSessionToken () =
 
 let processSession () =
     let sessionToken = getSessionToken()
-    let dateTime = DateTime.UtcNow
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
     service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
     |> Async.StartImmediate
 
 let processSessionClose () =
     let sessionToken = getSessionToken()
-    let dateTime = DateTime.UtcNow
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
     service.ProcessSessionClose (Guid.Parse sessionToken, dateTime)
     |> Async.StartImmediate
 
@@ -87,7 +87,7 @@ let processUserClientIP () =
     async {
         let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
         let! clientIP = getClientIP()
-        let dateTime = DateTime.UtcNow
+        let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
         do! service.ProcessUserClientIP (sessionToken, dateTime, clientIP)
     }
 
@@ -104,7 +104,7 @@ let init () =
     let processSessionCmd =
         Cmd.OfAsync.perform (fun () ->
             async {
-                let dateTime = DateTime.UtcNow
+                let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
                 do! service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
             }) () (fun _ -> ProcessSession)
 
