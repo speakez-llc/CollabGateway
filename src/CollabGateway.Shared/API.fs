@@ -44,7 +44,7 @@ type DataPolicyChoice =
     | Declined
     | Unknown
 
-type SessionToken = Guid
+type StreamToken = Guid
 
 type EventDateTime = DateTime
 type ClientIP = string
@@ -102,13 +102,13 @@ type Toast = {
 
 type Service = {
     GetMessage : bool -> Async<string>
-    RetrieveDataPolicyChoice : SessionToken -> Async<DataPolicyChoice>
-    ProcessContactForm : SessionToken * EventDateTime * ContactForm -> Async<string>
-    ProcessSessionToken : SessionToken * EventDateTime -> Async<unit>
-    ProcessSessionClose : SessionToken * EventDateTime -> Async<unit>
-    ProcessPageVisited : Guid * EventDateTime * PageName -> Async<unit>
-    ProcessButtonClicked : Guid * EventDateTime * ButtonName -> Async<unit>
-    ProcessUserClientIP : Guid * EventDateTime * ClientIP -> Async<unit>
+    RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
+    ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
+    ProcessStreamToken : StreamToken * EventDateTime -> Async<unit>
+    ProcessStreamClose : StreamToken * EventDateTime -> Async<unit>
+    ProcessPageVisited : StreamToken * EventDateTime * PageName -> Async<unit>
+    ProcessButtonClicked : StreamToken * EventDateTime * ButtonName -> Async<unit>
+    ProcessUserClientIP : StreamToken * EventDateTime * ClientIP -> Async<unit>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m

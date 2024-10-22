@@ -55,7 +55,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             model, Cmd.none
         else
             let timeStamp = DateTime.UtcNow
-            let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
+            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm (sessionToken, timeStamp, model.ContactForm)) FormSubmitted
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->

@@ -54,9 +54,9 @@ type BaseEvent = {
     TimeStamp: DateTime
 }
 
-type SessionEvent = {
+type StreamEvent = {
     Id: Guid
-    SessionID: SessionToken
+    StreamID: StreamToken
     TimeStamp: DateTime
 }
 
@@ -134,18 +134,18 @@ type BaseEventCase =
 
 
 type SessionEventCase =
-    | UserSessionInitiated of SessionEvent
-    | UserSessionResumed of SessionEvent
-    | UserSessionClosed of SessionEvent
-    | UserSessionEnded of SessionEvent
+    | UserStreamInitiated of StreamEvent
+    | UserStreamResumed of StreamEvent
+    | UserStreamClosed of StreamEvent
+    | UserStreamEnded of StreamEvent
     | UserClientIPDetected of ClientIPEvent
     | UserClientIPUpdated of ClientIPEvent
     member this.Id =
         match this with
-        | UserSessionInitiated e -> e.Id
-        | UserSessionResumed e -> e.Id
-        | UserSessionClosed e -> e.Id
-        | UserSessionEnded e -> e.Id
+        | UserStreamInitiated e -> e.Id
+        | UserStreamResumed e -> e.Id
+        | UserStreamClosed e -> e.Id
+        | UserStreamEnded e -> e.Id
         | UserClientIPDetected e -> e.Id
         | UserClientIPUpdated e -> e.Id
 

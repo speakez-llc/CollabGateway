@@ -18,12 +18,12 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 
 type EventProcessingMessage =
-    | ProcessSessionToken of SessionToken * EventDateTime
-    | ProcessUserClientIP of SessionToken * EventDateTime * ClientIP
-    | ProcessPageVisited of SessionToken * EventDateTime * PageName
-    | ProcessButtonClicked of SessionToken * EventDateTime * ButtonName
-    | ProcessSessionClose of SessionToken * EventDateTime
-    | ProcessContactForm of SessionToken * EventDateTime * ContactForm
+    | ProcessStreamToken of StreamToken * EventDateTime
+    | ProcessUserClientIP of StreamToken * EventDateTime * ClientIP
+    | ProcessPageVisited of StreamToken * EventDateTime * PageName
+    | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
+    | ProcessSessionClose of StreamToken * EventDateTime
+    | ProcessContactForm of StreamToken * EventDateTime * ContactForm
 
 let getGeoInfo (clientIP: ClientIP) =
     task {
@@ -47,19 +47,19 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
         let! msg = inbox.Receive()
         match msg with
-        | ProcessSessionToken (sessionToken, timeStamp) ->
+        | ProcessStreamToken (streamToken, timeStamp) ->
             use session = Database.store.LightweightSession()
-            let streamState = session.Events.FetchStreamState(sessionToken)
+            let streamState = session.Events.FetchStreamState(streamToken)
             let event =
                 if streamState = null then
-                    UserSessionInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
+                    UserStreamInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
                 else
-                    UserSessionResumed { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
-            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+                    UserStreamResumed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessUserClientIP (sessionToken, timeStamp, clientIP) ->
+        | ProcessUserClientIP (streamToken, timeStamp, clientIP) ->
             use session = Database.store.LightweightSession()
-            let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
+            let! allEvents = session.Events.FetchStream(streamToken) |> Task.FromResult |> Async.AwaitTask
             let unwrappedEvents =
                 allEvents
                 |> Seq.map (_.Data )
@@ -80,9 +80,9 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                         UserClientIPUpdated { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                     else
                         UserClientIPDetected { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
-                session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+                session.Events.Append(streamToken, [| event :> obj |]) |> ignore
                 do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessPageVisited (sessionToken, timeStamp, pageName) ->
+        | ProcessPageVisited (streamToken, timeStamp, pageName) ->
             use session = Database.store.LightweightSession()
             let pageCase =
                 match pageName with
@@ -95,9 +95,9 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | ContactPage -> ContactPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-            session.Events.Append(sessionToken, [| pageCase :> obj |]) |> ignore
+            session.Events.Append(streamToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessButtonClicked (sessionToken, timeStamp, buttonName) ->
+        | ProcessButtonClicked (streamToken, timeStamp, buttonName) ->
             use session = Database.store.LightweightSession()
             let buttonCase =
                 match buttonName with
@@ -125,17 +125,17 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-            session.Events.Append(sessionToken, [| buttonCase :> obj |]) |> ignore
+            session.Events.Append(streamToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSessionClose (sessionToken, timeStamp) ->
+        | ProcessSessionClose (streamToken, timeStamp) ->
             use session = Database.store.LightweightSession()
-            let event = UserSessionClosed { Id = Guid.NewGuid(); TimeStamp = timeStamp; SessionID = sessionToken }
-            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+            let event = UserStreamClosed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessContactForm (sessionToken, timeStamp, contactForm) ->
+        | ProcessContactForm (streamToken, timeStamp, contactForm) ->
             use session = Database.store.LightweightSession()
             let event = ContactFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = contactForm }
-            session.Events.Append(sessionToken, [| event :> obj |]) |> ignore
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()
     }
@@ -211,13 +211,10 @@ let callAzureOpenAI (text: string) =
     }
     |> Async.AwaitTask
 
-let processSessionToken (sessionToken: SessionToken, timeStamp: EventDateTime) = async {
-    eventProcessor.Post(ProcessSessionToken (sessionToken, timeStamp))
-    }
 
-let retrieveDataPolicyChoice (sessionToken: SessionToken) = async {
+let retrieveDataPolicyChoice (streamToken: StreamToken) = async {
     use session = Database.store.LightweightSession()
-    let! allEvents = session.Events.FetchStream(sessionToken) |> Task.FromResult |> Async.AwaitTask
+    let! allEvents = session.Events.FetchStream(streamToken) |> Task.FromResult |> Async.AwaitTask
     let eventsWithTimestamps =
         allEvents
         |> Seq.map (fun e -> e.Timestamp, e.Data)
@@ -238,25 +235,29 @@ let retrieveDataPolicyChoice (sessionToken: SessionToken) = async {
     | Some (_, DataPolicyDeclineButtonClicked _) -> return Declined
     | _ -> return Unknown
 }
-
-let processSessionClose (sessionToken: SessionToken, timeStamp: EventDateTime) = async {
-    eventProcessor.Post(ProcessSessionClose (sessionToken, timeStamp))
+let processStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = async {
+    eventProcessor.Post(ProcessStreamToken (streamToken, timeStamp))
     }
 
-let processPageVisited (sessionToken: SessionToken, timeStamp: EventDateTime, pageName: PageName) = async {
-    eventProcessor.Post(ProcessPageVisited (sessionToken, timeStamp, pageName))
+let processStreamClose (streamToken: StreamToken, timeStamp: EventDateTime) = async {
+    eventProcessor.Post(ProcessSessionClose (streamToken, timeStamp))
     }
 
-let processButtonClicked (sessionToken: SessionToken, timeStamp: EventDateTime, buttonName: ButtonName) = async {
-    eventProcessor.Post(ProcessButtonClicked (sessionToken, timeStamp, buttonName))
+let processPageVisited (streamToken: StreamToken, timeStamp: EventDateTime, pageName: PageName) = async {
+    eventProcessor.Post(ProcessPageVisited (streamToken, timeStamp, pageName))
     }
 
-let processUserClientIP (sessionToken: SessionToken, timeStamp: EventDateTime, clientIP: ClientIP) = async {
-    eventProcessor.Post(ProcessUserClientIP (sessionToken, timeStamp, clientIP))
+let processButtonClicked (streamToken: StreamToken, timeStamp: EventDateTime, buttonName: ButtonName) = async {
+    Console.WriteLine $"Button handler: {buttonName}"
+    eventProcessor.Post(ProcessButtonClicked (streamToken, timeStamp, buttonName))
+    }
+
+let processUserClientIP (streamToken: StreamToken, timeStamp: EventDateTime, clientIP: ClientIP) = async {
+    eventProcessor.Post(ProcessUserClientIP (streamToken, timeStamp, clientIP))
 }
 
-let processContactForm (sessionToken: SessionToken, timeStamp: EventDateTime, form: ContactForm) = async {
-    eventProcessor.Post(ProcessContactForm (sessionToken, timeStamp, form))
+let processContactForm (streamToken: StreamToken, timeStamp: EventDateTime, form: ContactForm) = async {
+    eventProcessor.Post(ProcessContactForm (streamToken, timeStamp, form))
     let! result = transmitContactForm form
     return result
 }
@@ -270,8 +271,8 @@ let service = {
         |> Async.AwaitTask
     RetrieveDataPolicyChoice = retrieveDataPolicyChoice
     ProcessContactForm = processContactForm
-    ProcessSessionToken = processSessionToken
-    ProcessSessionClose = processSessionClose
+    ProcessStreamToken = processStreamToken
+    ProcessStreamClose = processStreamClose
     ProcessPageVisited = processPageVisited
     ProcessButtonClicked = processButtonClicked
     ProcessUserClientIP = processUserClientIP

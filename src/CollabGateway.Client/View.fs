@@ -52,48 +52,59 @@ let getClientIP () =
 
 
 let processPageVisited (pageName: PageName) =
-    let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
-    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessPageVisited (sessionToken, dateTime, pageName)
-        |> Async.StartImmediate
+    async {
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
+        service.ProcessPageVisited (streamToken, dateTime, pageName)
+            |> Async.StartImmediate
+    }
 
 let processButtonClicked (buttonName: ButtonName) =
-    let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
+    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
     let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessButtonClicked (sessionToken, dateTime, buttonName)
+    service.ProcessButtonClicked (streamToken, dateTime, buttonName)
         |> Async.StartImmediate
 
-let getSessionToken () =
-    match window.localStorage.getItem("UserSessionToken") with
+let establishStreamToken () =
+    match window.localStorage.getItem("UserStreamToken") with
     | null ->
         let newToken = Guid.NewGuid().ToString()
-        window.localStorage.setItem("UserSessionToken", newToken)
+        window.localStorage.setItem("UserStreamToken", newToken)
         newToken
     | token -> token
 
-let processSession () =
-    let sessionToken = getSessionToken()
-    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
-    |> Async.StartImmediate
+let processStream () =
+    async {
+        let streamToken = Guid.Parse(establishStreamToken())
+        let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
+        service.ProcessStreamToken (streamToken, dateTime)
+        |> Async.StartImmediate
+    }
 
-let processSessionClose () =
-    let sessionToken = getSessionToken()
+let processStreamClose () =
+    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
     let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessSessionClose (Guid.Parse sessionToken, dateTime)
+    service.ProcessStreamClose (streamToken, dateTime)
     |> Async.StartImmediate
 
 let processUserClientIP () =
     async {
-        let sessionToken = Guid.Parse (window.localStorage.getItem("UserSessionToken"))
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
         let! clientIP = getClientIP()
         let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-        do! service.ProcessUserClientIP (sessionToken, dateTime, clientIP)
+        do! service.ProcessUserClientIP (streamToken, dateTime, clientIP)
+    }
+
+let retrieveDataPolicyChoice () =
+    async {
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        let! choice = service.RetrieveDataPolicyChoice streamToken
+        return choice
     }
 
 let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
-    let sessionToken = getSessionToken()
+    let streamToken = establishStreamToken()
 
     let initialState = {
         Page = nextPage
@@ -101,24 +112,17 @@ let init () =
         DataPolicyChoice = Accepted
     }
 
-    let processSessionCmd =
+    let processStreamCmd =
         Cmd.OfAsync.perform (fun () ->
             async {
                 let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-                do! service.ProcessSessionToken (Guid.Parse sessionToken, dateTime)
-            }) () (fun _ -> ProcessSession)
+                do! service.ProcessStreamToken (Guid.Parse streamToken, dateTime)
+            }) () (fun _ -> ProcessStream)
 
     let processUserClientIPCmd = Cmd.OfAsync.perform processUserClientIP () (fun _ -> ProcessUserClientIP)
-    let retrieveDataPolicyChoiceCmd = Cmd.OfAsync.perform (
-        fun () -> service.RetrieveDataPolicyChoice (Guid.Parse sessionToken)) () (
-        fun choice ->
-        match choice with
-        | Accepted -> DataPolicyChoiceRetrieved Accepted
-        | Declined -> DataPolicyChoiceRetrieved Declined
-        | Unknown -> DataPolicyChoiceRetrieved Unknown
-    )
+    let retrieveDataPolicyChoiceCmd = Cmd.OfAsync.perform retrieveDataPolicyChoice () DataPolicyChoiceRetrieved
 
-    let initialCmd = Cmd.batch [processSessionCmd; processUserClientIPCmd; retrieveDataPolicyChoiceCmd]
+    let initialCmd = Cmd.batch [processStreamCmd; processUserClientIPCmd; retrieveDataPolicyChoiceCmd]
 
     initialState, initialCmd
 
@@ -137,31 +141,31 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with Toasts = toast :: state.Toasts }, hideToastCommand
     | HideToast toast ->
         { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
-    | ProcessPageVisited string ->
-        processPageVisited string
+    | ProcessPageVisited pageName ->
+        processPageVisited pageName |> ignore
         state, Cmd.none
     | ProcessButtonClicked buttonName ->
         match buttonName with
         | DataPolicyAcceptButton ->
-            processButtonClicked DataPolicyAcceptButton
+            processButtonClicked DataPolicyAcceptButton |> ignore
             { state with DataPolicyChoice = Accepted }, Cmd.none
         | DataPolicyDeclineButton ->
-            processButtonClicked DataPolicyDeclineButton
+            processButtonClicked DataPolicyDeclineButton |> ignore
             { state with DataPolicyChoice =  Declined }, Cmd.none
         | DataPolicyResetButton ->
-            processButtonClicked DataPolicyResetButton
+            processButtonClicked DataPolicyResetButton |> ignore
             { state with DataPolicyChoice =  Unknown }, Cmd.none
         | _ ->
-            processButtonClicked buttonName
+            processButtonClicked buttonName |> ignore
             state, Cmd.none
-    | ProcessSession ->
-        processSession()
+    | ProcessStream ->
+        processStream() |> ignore
         state, Cmd.ofMsg ProcessUserClientIP
     | ProcessUserClientIP ->
         processUserClientIP() |> ignore
         state, Cmd.none
-    | ProcessSessionClose ->
-        processSessionClose()
+    | ProcessStreamClose ->
+        processStreamClose()
         state, Cmd.none
 
 let getAlertClass level =
@@ -188,7 +192,7 @@ let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
     ]
 
 let handleBeforeUnload (dispatch: ViewMsg -> unit) (e: Browser.Types.Event) =
-    dispatch ProcessSessionClose
+    dispatch ProcessStreamClose
     ()
 
 [<ReactComponent>]
@@ -234,7 +238,7 @@ let AppView () =
     )
 
     let toggleTheme () =
-        let html = Browser.Dom.document.documentElement
+        let html = document.documentElement
         let currentTheme = html.getAttribute("data-theme")
         let newTheme =
             match currentTheme with

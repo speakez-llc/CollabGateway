@@ -11,8 +11,7 @@ type ViewMsg =
     | UrlChanged of Page
     | ProcessPageVisited of PageName
     | ProcessButtonClicked of ButtonName
-    | ProcessSession
-    | ProcessSessionClose
+    | ProcessStream
+    | ProcessStreamClose
     | ProcessUserClientIP
     | DataPolicyChoiceRetrieved of DataPolicyChoice
-    | ProcessContactForm of ContactFormEvent
