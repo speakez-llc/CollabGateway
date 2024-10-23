@@ -49,6 +49,12 @@ type SignUpFormEvent = {
     Form: SignUpForm
 }
 
+type SmartFormSubmittedEvent = {
+    Id: Guid
+    TimeStamp: DateTime
+    ClipboardInput: SmartFormRawContent
+}
+
 type BaseEvent = {
     Id: Guid
     TimeStamp: DateTime
@@ -80,6 +86,7 @@ type BaseEventCase =
     | DataSignUpButtonClicked of BaseEvent
     | SignUpButtonClicked of BaseEvent
     | SmartFormButtonClicked of BaseEvent
+    | SmartFormSubmittedButtonClicked of BaseEvent
     | RowerButtonClicked of BaseEvent
     | RowerSignUpButtonClicked of BaseEvent
     | SpeakEZButtonClicked of BaseEvent
@@ -116,6 +123,7 @@ type BaseEventCase =
         | DataSignUpButtonClicked e -> e.Id
         | SignUpButtonClicked e -> e.Id
         | SmartFormButtonClicked e -> e.Id
+        | SmartFormSubmittedButtonClicked e -> e.Id
         | RowerButtonClicked e -> e.Id
         | RowerSignUpButtonClicked e -> e.Id
         | SpeakEZButtonClicked e -> e.Id
@@ -152,7 +160,11 @@ type SessionEventCase =
 type ContactFormEventCase =
     | ContactFormSubmitted of ContactFormEvent
     | SignUpFormSubmitted of SignUpFormEvent
+    | SmartFormSubmitted of SmartFormSubmittedEvent
+    | SmartFormResultReturned of SignUpFormEvent
     member this.Id =
         match this with
         | ContactFormSubmitted e -> e.Id
         | SignUpFormSubmitted e -> e.Id
+        | SmartFormSubmitted e -> e.Id
+        | SmartFormResultReturned e -> e.Id

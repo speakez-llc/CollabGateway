@@ -45,10 +45,10 @@ type DataPolicyChoice =
     | Unknown
 
 type StreamToken = Guid
-
 type EventDateTime = DateTime
 type ClientIP = string
 type IpResponse = { ip: string }
+type SmartFormRawContent = string
 
 type ChatMessage = {
     role: string
@@ -85,7 +85,6 @@ type SignUpForm = {
     StateProvince : string
     PostCode : string
     Country : string
-    ClientIP: string
 }
 
 
@@ -103,12 +102,14 @@ type Toast = {
 type Service = {
     GetMessage : bool -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
     ProcessStreamToken : StreamToken * EventDateTime -> Async<unit>
     ProcessStreamClose : StreamToken * EventDateTime -> Async<unit>
     ProcessPageVisited : StreamToken * EventDateTime * PageName -> Async<unit>
     ProcessButtonClicked : StreamToken * EventDateTime * ButtonName -> Async<unit>
     ProcessUserClientIP : StreamToken * EventDateTime * ClientIP -> Async<unit>
+    ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
+    ProcessSmartForm : StreamToken * EventDateTime * SmartFormRawContent -> Async<SignUpForm>
+    ProcessSignUpForm : StreamToken * EventDateTime * SignUpForm -> Async<string>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m

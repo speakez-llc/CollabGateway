@@ -24,6 +24,9 @@ type EventProcessingMessage =
     | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
     | ProcessSessionClose of StreamToken * EventDateTime
     | ProcessContactForm of StreamToken * EventDateTime * ContactForm
+    | ProcessSignUpForm of StreamToken * EventDateTime * SignUpForm
+    | ProcessSmartFormInput of StreamToken * EventDateTime * SmartFormRawContent
+    | ProcessSmartFormResult of StreamToken * EventDateTime * SignUpForm
 
 let getGeoInfo (clientIP: ClientIP) =
     task {
@@ -137,6 +140,21 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             let event = ContactFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = contactForm }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessSignUpForm (streamToken, timeStamp, signUpForm) ->
+            use session = Database.store.LightweightSession()
+            let event = SignUpFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = signUpForm }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessSmartFormInput (streamToken, timeStamp, smartFormRawContent) ->
+            use session = Database.store.LightweightSession()
+            let event = SmartFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; ClipboardInput =  smartFormRawContent }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessSmartFormResult (streamToken, timeStamp, form) ->
+            use session = Database.store.LightweightSession()
+            let event = SmartFormResultReturned { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = form }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()
     }
     loop ()
@@ -173,6 +191,53 @@ let transmitContactForm (contactForm: ContactForm) =
     }
     |> Async.AwaitTask
 
+let transmitSignUpForm (contactForm: SignUpForm) =
+    task {
+        try
+            let apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
+            if String.IsNullOrEmpty(apiKey) then
+                return! ServerError.failwith (ServerError.Exception "SendGrid API key is not set.")
+            else
+                let client = SendGridClient(apiKey)
+                let from = EmailAddress("engineering@speakez.net", "Engineering Team")
+                let subject = "New SignUp Form Submission"
+                let toAddress = EmailAddress("engineering@speakez.net", "Engineering Team")
+                let plainTextContent = $"Name: %s{contactForm.Name}\n
+                                            Email: %s{contactForm.Email}\n
+                                            Job Title: %s{contactForm.JobTitle}\n
+                                            Phone: %s{contactForm.Phone}\n
+                                            Department: %s{contactForm.Department}\n
+                                            Company: %s{contactForm.Company}\n
+                                            Street Address 1: %s{contactForm.StreetAddress1}\n
+                                            Street Address 2: %s{contactForm.StreetAddress2}\n
+                                            City: %s{contactForm.City}\n
+                                            State/Province: %s{contactForm.StateProvince}\n
+                                            Post Code: %s{contactForm.PostCode}\n
+                                            Country: %s{contactForm.Country}"
+                let htmlContent = $"<strong>Name:</strong> %s{contactForm.Name}<br>
+                                    <strong>Email:</strong> %s{contactForm.Email}<br>
+                                    <strong>Job Title:</strong> %s{contactForm.JobTitle}<br>
+                                    <strong>Phone:</strong> %s{contactForm.Phone}<br>
+                                    <strong>Department:</strong> %s{contactForm.Department}<br>
+                                    <strong>Company:</strong> %s{contactForm.Company}<br>
+                                    <strong>Street Address 1:</strong> %s{contactForm.StreetAddress1}<br>
+                                    <strong>Street Address 2:</strong> %s{contactForm.StreetAddress2}<br>
+                                    <strong>City:</strong> %s{contactForm.City}<br>
+                                    <strong>State/Province:</strong> %s{contactForm.StateProvince}<br>
+                                    <strong>Post Code:</strong> %s{contactForm.PostCode}<br>
+                                    <strong>Country:</strong> %s{contactForm.Country}"
+                let msg = MailHelper.CreateSingleEmail(from, toAddress, subject, plainTextContent, htmlContent)
+                let! response = client.SendEmailAsync(msg)
+                if response.StatusCode = HttpStatusCode.OK || response.StatusCode = HttpStatusCode.Accepted then
+                    return "Email sent successfully"
+                else
+                    return! ServerError.failwith (ServerError.Exception $"Failed to send email: {response.StatusCode}")
+        with
+        | ex ->
+            return! ServerError.failwith (ServerError.Exception $"Failed to send email: {ex.Message}")
+    }
+    |> Async.AwaitTask
+
 let validateClipboardText (text: string) =
     if String.IsNullOrWhiteSpace(text) then
         false
@@ -180,19 +245,34 @@ let validateClipboardText (text: string) =
         // Add more validation logic if needed
         true
 
-let callAzureOpenAI (text: string) =
+let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: SmartFormRawContent) : Async<SignUpForm> =
     task {
         let apiKey = Environment.GetEnvironmentVariable("AZUREOPENAI_API_KEY")
         if String.IsNullOrEmpty(apiKey) then
             return! ServerError.failwith (ServerError.Exception "Azure OpenAI API key is not set.")
         else
+            eventProcessor.Post(ProcessSmartFormInput (streamToken, timeStamp, text))
             let url = "https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview"
             use httpClient = new HttpClient()
             httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
             let requestPayload = {
                 messages = [
-                    { role = "system"; content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. Only return one value for each key. For fields without any corresponding information in inputs, use the value null." }
-                    { role = "user"; content = text }
+                    {
+                        role = "system"
+                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
+                    };
+                    {
+                        role = "user"
+                        content = "Houston Haynes Managing Partner Rower Consulting O: (404) 689-9467 A: 1 W Ct Square Suite 750, Decatur, GA 30030 W: https://www.rowerconsulting.com E: hhaynes@rowerconsulting.com"
+                    };
+                    {
+                        role = "assistant"
+                        content = "{\n    \"Name\": \"Houston Haynes\",\n    \"Email\": \"hhaynes@rowerconsulting.com\",\n    \"Company\": \"Rower Consulting\",\n    \"JobTitle\": \"Managing Partner\",\n    \"Phone\": \"(404) 689-9467\",\n    \"StreetAddress1\": \"1 W Ct Square\",\n    \"StreetAddress2\": \"Suite 750\",\n    \"City\": \"Decatur\",\n    \"StateProvince\": \"GA\",\n    \"PostCode\": \"30030\",\n    \"Country\": null\n}"
+                    };
+                    {
+                        role = "user";
+                        content = text
+                    }
                 ]
                 max_tokens = 800
                 temperature = 0.7
@@ -205,7 +285,12 @@ let callAzureOpenAI (text: string) =
             let! response = httpClient.PostAsync(url, content)
             let! responseBody = response.Content.ReadAsStringAsync()
             if response.StatusCode = HttpStatusCode.OK then
-                return responseBody
+                let jsonResponse = JObject.Parse(responseBody)
+                let messageContent = jsonResponse.SelectToken("choices[0].message.content").ToString()
+                let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
+                Console.WriteLine $"Smart form result: {formatJson messageContent}"
+                eventProcessor.Post(ProcessSmartFormResult (streamToken, timeStamp, form))
+                return form
             else
                 return! ServerError.failwith (ServerError.Exception $"Failed to call Azure OpenAI API: {response.StatusCode} - {responseBody}")
     }
@@ -262,6 +347,12 @@ let processContactForm (streamToken: StreamToken, timeStamp: EventDateTime, form
     return result
 }
 
+let processSignUpForm (streamToken: StreamToken, timeStamp: EventDateTime, form: SignUpForm) = async {
+    eventProcessor.Post(ProcessSignUpForm (streamToken, timeStamp, form))
+    let! result = transmitSignUpForm form
+    return result
+}
+
 let service = {
     GetMessage = fun success ->
         task {
@@ -276,6 +367,8 @@ let service = {
     ProcessPageVisited = processPageVisited
     ProcessButtonClicked = processButtonClicked
     ProcessUserClientIP = processUserClientIP
+    ProcessSmartForm = processSmartForm
+    ProcessSignUpForm = processSignUpForm
 }
 
 let webApp : HttpHandler =
