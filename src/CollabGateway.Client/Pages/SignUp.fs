@@ -122,14 +122,18 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         parentDispatch (ShowToast { Message = "Failed to send contact form"; Level = AlertLevel.Error })
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | ProcessSmartFormRawContent clipboardText ->
-        let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-        let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (sessionToken, DateTime.UtcNow, clipboardText)) SmartFormProcessed
-        { model with IsProcessing = true }, cmd
+        if clipboardText = "" then
+            parentDispatch (ShowToast { Message = "No text in clipboard"; Level = AlertLevel.Error })
+            model, Cmd.none
+        else
+            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (sessionToken, DateTime.UtcNow, clipboardText)) SmartFormProcessed
+            { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true }, cmd
     | FormProcessed (Ok response) ->
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)
         { model with SignUpForm = parsedForm; IsProcessing = false }, Cmd.none
     | FormProcessed (Result.Error ex) ->
-        parentDispatch (ShowToast { Message = $"Failed to process smart form: {ex}"; Level = AlertLevel.Error })
+        parentDispatch (ShowToast { Message = $"Failed to process form: {ex}"; Level = AlertLevel.Error })
         { model with IsProcessing = false }, Cmd.none
     | SmartFormProcessed (Ok response) ->
         parentDispatch (ShowToast { Message = "Smart Form Processing Completed"; Level = AlertLevel.Info })
@@ -510,14 +514,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                         prop.children [
                                                             Html.div [
                                                                 prop.className "loading loading-ring loading-md text-warning animate-spin"
-                                                                prop.style [
-                                                                    style.fontSize (length.px 24)
-                                                                    style.marginLeft (length.px 10)
-                                                                ]
                                                             ]
                                                             Html.span [
-                                                                prop.className "text-warning"
-                                                                prop.text "Processing"
+                                                                prop.className "text-warning text-l"
+                                                                prop.text "Processing Clipboard"
                                                             ]
                                                         ]
                                                     ]

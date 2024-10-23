@@ -259,7 +259,7 @@ let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: 
                 messages = [
                     {
                         role = "system"
-                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
+                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
                     };
                     {
                         role = "user"
@@ -288,11 +288,10 @@ let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: 
                 let jsonResponse = JObject.Parse(responseBody)
                 let messageContent = jsonResponse.SelectToken("choices[0].message.content").ToString()
                 let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
-                Console.WriteLine $"Smart form result: {formatJson messageContent}"
                 eventProcessor.Post(ProcessSmartFormResult (streamToken, timeStamp, form))
                 return form
             else
-                return! ServerError.failwith (ServerError.Exception $"Failed to call Azure OpenAI API: {response.StatusCode} - {responseBody}")
+                return! ServerError.failwith (ServerError.Exception $"Call failed to inference: {response.StatusCode} - {responseBody}")
     }
     |> Async.AwaitTask
 

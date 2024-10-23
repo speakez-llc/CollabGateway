@@ -1,5 +1,6 @@
 module CollabGateway.Server.Program
 
+open System
 open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
@@ -7,8 +8,13 @@ open Giraffe
 open Microsoft.AspNetCore.Cors.Infrastructure
 open CollabGateway.Server.Database
 
+let clientOrigin =
+    match Environment.GetEnvironmentVariable("CLIENT_ORIGIN") with
+    | null -> "http://localhost:8080"
+    | url -> url
+
 let private configureCors (builder: CorsPolicyBuilder) =
-    builder.WithOrigins("http://localhost:8080", "https://rower.speakez.tech", "https://rower-stg.speakez.tech")
+    builder.WithOrigins(clientOrigin)
            .AllowAnyHeader()
            .AllowAnyMethod()
            .AllowCredentials()
