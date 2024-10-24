@@ -1,6 +1,6 @@
 ﻿module CollabGateway.Client.Server
 
-open System
+open Fable.Core.JsInterop
 open Fable.SimpleJson
 open Fable.Remoting.Client
 open CollabGateway.Shared.Errors
@@ -24,12 +24,13 @@ module Cmd =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
 let baseURL =
-    match Environment.GetEnvironmentVariable("BASE_URL") with
-    | null -> "http://localhost:5000"
-    | url -> url
+    let envVar (var: string) =
+        importMember<string option>($"process.env.{var}") |> Option.defaultValue "http://localhost:5000"
+
+    envVar "BASE_URL"
 
 let service =
     Remoting.createApi()
-    |> Remoting.withBaseUrl baseURL
+    |> Remoting.withBaseUrl(baseURL)
     |> Remoting.withRouteBuilder Service.RouteBuilder
     |> Remoting.buildProxy<Service>
