@@ -24,10 +24,10 @@ module Cmd =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
 let baseURL =
-    let envVar (var: string) =
-        importMember<string option>($"import.meta.env.{var}") |> Option.defaultValue "http://localhost:5000"
-
-    envVar "BASE_URL"
+    let envVar : string option = importMember("process.env.BASE_URL")
+    match envVar with
+    | Some url -> url
+    | None -> "http://localhost:5000"
 
 let service =
     Remoting.createApi()
