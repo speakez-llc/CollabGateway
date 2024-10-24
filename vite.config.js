@@ -8,10 +8,10 @@ export default defineConfig({
         port: 8080,
         host: true,
         proxy: {
-            '/api': process.env.BASE_URL || 'http://localhost:5000',
+            '/api': import.meta.env.VITE_BASE_URL || 'http://localhost:5000',
         }
     },
     build: {
-        outDir:"../../publish/app/public"
+        outDir: "../../publish/app/public"
     }
 })
