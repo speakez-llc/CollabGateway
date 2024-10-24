@@ -50,7 +50,6 @@ let getClientIP () =
             return ""
     }
 
-
 let processPageVisited (pageName: PageName) =
     async {
         let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
