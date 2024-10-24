@@ -1,7 +1,6 @@
 ﻿import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-/** @type {import('vite').UserConfig} */
 export default defineConfig({
     plugins: [react({ jsxRuntime: 'classic'})],
     root: "./src/CollabGateway.Client",
@@ -9,7 +8,7 @@ export default defineConfig({
         port: 8080,
         host: true,
         proxy: {
-            '/api': 'http://localhost:5000',
+            '/api': import.meta.env.BASE_URL || 'http://localhost:5000',
         }
     },
     build: {

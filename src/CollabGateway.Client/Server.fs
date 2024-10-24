@@ -25,7 +25,7 @@ module Cmd =
 
 let baseURL =
     let envVar (var: string) =
-        importMember<string option>($"process.env.{var}") |> Option.defaultValue "http://localhost:5000"
+        importMember<string option>($"import.meta.env.{var}") |> Option.defaultValue "http://localhost:5000"
 
     envVar "BASE_URL"
 
