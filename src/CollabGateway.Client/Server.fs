@@ -24,7 +24,7 @@ module Cmd =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
 let baseURL =
-    let envVar = importMember<string option>("process.env.VITE_BASE_URL")
+    let envVar = importMember<string option>("import.meta.env.VITE_BASE_URL")
     match envVar with
     | Some url -> url
     | None -> "http://localhost:5000"
