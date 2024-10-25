@@ -15,7 +15,10 @@ export default defineConfig(({ mode }) => {
             }
         },
         build: {
-            outDir: "../../publish/app/public"
+            outDir: "../../publish/app/public",
+            rollupOptions: {
+                external: ['process.env']
+            }
         },
         define: {
             'process.env': {
