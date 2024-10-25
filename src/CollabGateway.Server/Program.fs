@@ -45,4 +45,4 @@ let app =
     builder.Build()
     |> configureApp
 
-app.Run()
+app.Run("http://*:5000")
