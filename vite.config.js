@@ -2,8 +2,8 @@
 import react from '@vitejs/plugin-react'
 
 export default ({ mode }) => {
-    // Load environment variables based on the current mode
     const env = loadEnv(mode, process.cwd())
+    console.log('VITE_BASE_URL: ', env.VITE_BASE_URL)
 
     return defineConfig({
         plugins: [react({ jsxRuntime: 'classic' })],
