@@ -87,7 +87,6 @@ type SignUpForm = {
     Country : string
 }
 
-
 type AlertLevel =
     | Success
     | Error
