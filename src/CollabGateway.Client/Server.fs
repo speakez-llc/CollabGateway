@@ -1,7 +1,6 @@
 ﻿module CollabGateway.Client.Server
 
 open Fable.Core
-open Fable.Core.JsInterop
 open Fable.SimpleJson
 open Fable.Remoting.Client
 open CollabGateway.Shared.Errors

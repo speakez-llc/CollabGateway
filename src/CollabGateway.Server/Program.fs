@@ -9,8 +9,8 @@ open CollabGateway.Server.Database
 
 let clientOrigin =
     match Environment.GetEnvironmentVariable("CLIENT_ORIGIN") with
-    | null -> "http://localhost:8080"
-    | url -> url
+    | null -> [| "http://localhost:8080" |]
+    | urls -> urls.Split(',')
 
 let private configureCors (builder: CorsPolicyBuilder) =
     builder.WithOrigins(clientOrigin)
