@@ -8,29 +8,23 @@ open Giraffe
 open Microsoft.AspNetCore.Cors.Infrastructure
 open CollabGateway.Server.Database
 
-let clientOrigin =
-    match Environment.GetEnvironmentVariable("CLIENT_ORIGIN") with
-    | null -> "http://localhost:8080"
-    | url -> url
-
 let private configureCors (builder: CorsPolicyBuilder) =
-    builder.WithOrigins(clientOrigin)
+    builder.AllowAnyOrigin()
            .AllowAnyHeader()
            .AllowAnyMethod()
-           .AllowCredentials()
     |> ignore
 
 let private configureWeb (builder: WebApplicationBuilder) =
     builder.Services.AddGiraffe() |> ignore
     builder.Services.AddLogging() |> ignore
     builder.Services.AddCors(fun options ->
-        options.AddPolicy("AllowClient", configureCors)
+        options.AddPolicy("AllowAll", configureCors)
     ) |> ignore
     builder.Services.AddSingleton(store) |> ignore
     builder
 
 let private configureApp (app: WebApplication) =
-    app.UseCors("AllowClient") |> ignore
+    app.UseCors("AllowAll") |> ignore
     app.UseStaticFiles() |> ignore
     app.UseGiraffe WebApp.webApp
     app
