@@ -1,5 +1,6 @@
 ﻿module CollabGateway.Client.Server
 
+open Fable.Core
 open Fable.Core.JsInterop
 open Fable.SimpleJson
 open Fable.Remoting.Client
@@ -23,11 +24,11 @@ module Cmd =
         let eitherAsResult fn resultMsg =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
+[<Emit("import.meta.env.VITE_BASE_URL")>]
+let VITE_BASE_URL: string = jsNative
+
 let baseURL =
-    let envVar = importMember<string option>("import.meta.env.VITE_BASE_URL")
-    match envVar with
-    | Some url -> url
-    | None -> "http://localhost:5000"
+    if VITE_BASE_URL <> null then VITE_BASE_URL else "http://localhost:5000"
 
 let service =
     Remoting.createApi()
