@@ -8,7 +8,7 @@ export default defineConfig({
         port: 8080,
         host: true,
         proxy: {
-            '/api': process.env.VITE_BASE_URL || 'http://localhost:5000',
+            '/api': context.env.VITE_BASE_URL || 'http://localhost:5000',
         }
     },
     build: {
