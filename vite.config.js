@@ -16,6 +16,11 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             outDir: "../../publish/app/public"
+        },
+        define: {
+            'process.env': {
+                VITE_BASE_URL: JSON.stringify(env.VITE_BASE_URL)
+            }
         }
     }
 })
