@@ -8,5 +8,8 @@
     <Compile Include="API.fs" />
     <Compile Include="Events.fs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="7.31.0" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -31,7 +31,10 @@ let private configureWeb (builder: WebApplicationBuilder) =
 let private configureApp (app: WebApplication) =
     app.UseCors("AllowClient") |> ignore
     app.UseStaticFiles() |> ignore
-    app.UseGiraffe WebApp.webApp
+    app.UseGiraffe ( choose [
+        WebApp.webApp
+        Notifications.notificationManager
+    ])
     app
 
 let private builderOptions = WebApplicationOptions(WebRootPath = "public")

@@ -1,6 +1,8 @@
 ﻿module CollabGateway.Shared.API
 
 open System
+open Marten.Events.Aggregation
+open Marten.Events.Projections
 
 type PageName =
     | DataPolicyPage
@@ -97,6 +99,24 @@ type Toast = {
     Message: string
     Level: AlertLevel
 }
+type UserSummaryAggregate = {
+    UserName: string option
+    UserEmail: string option
+    StreamInitiated: EventDateTime
+    DataPolicyDecision: DataPolicyChoice * EventDateTime option
+    ContactFormSubmitted: EventDateTime option
+    ContactForm: ContactForm option
+    SignUpFormSubmitted: EventDateTime option
+    SignUpForm: SignUpForm option
+}
+
+type FullUserStreamProjection() =
+    inherit SingleStreamProjection<(string * EventDateTime * obj option) list>()
+    member val State: (string * EventDateTime * obj option) list = [] with get, set
+
+type UserNameProjection() =
+    inherit MultiStreamProjection<string option, StreamToken>()
+    member val State: (string option * StreamToken) list = [] with get, set
 
 type Service = {
     GetMessage : bool -> Async<string>
@@ -109,6 +129,9 @@ type Service = {
     ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
     ProcessSmartForm : StreamToken * EventDateTime * SmartFormRawContent -> Async<SignUpForm>
     ProcessSignUpForm : StreamToken * EventDateTime * SignUpForm -> Async<string>
+    RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
+    RetrieveFullUserStream : StreamToken -> Async<FullUserStreamProjection>
+    RetrieveAllUserNames : unit -> Async<UserNameProjection>
 }
 with
     static member RouteBuilder _ m = sprintf "/api/service/%s" m

@@ -29,7 +29,6 @@ type GeoInfo = {
     isp: string
 }
 
-
 type ClientIPEvent = {
     Id: Guid
     TimeStamp: DateTime
@@ -55,7 +54,15 @@ type SmartFormSubmittedEvent = {
     ClipboardInput: SmartFormRawContent
 }
 
-type BaseEvent = {
+type PageEvent = {
+    Id: Guid
+    TimeStamp: DateTime
+}
+type ButtonEvent = {
+    Id: Guid
+    TimeStamp: DateTime
+}
+type DataPolicyEvent = {
     Id: Guid
     TimeStamp: DateTime
 }
@@ -66,42 +73,16 @@ type StreamEvent = {
     TimeStamp: DateTime
 }
 
-type BaseEventCase =
-    | HomePageVisited of BaseEvent
-    | ProjectPageVisited of BaseEvent
-    | DataPageVisited of BaseEvent
-    | SignupPageVisited of BaseEvent
-    | RowerPageVisited of BaseEvent
-    | SpeakEZPageVisited of BaseEvent
-    | ContactPageVisited of BaseEvent
-    | PartnersPageVisited of BaseEvent
-    | DataPolicyPageVisited of BaseEvent
-    | HomeButtonClicked of BaseEvent
-    | HomeProjectButtonClicked of BaseEvent
-    | HomeSignUpButtonClicked of BaseEvent
-    | ProjectButtonClicked of BaseEvent
-    | ProjectDataButtonClicked of BaseEvent
-    | ProjectSignUpButtonClicked of BaseEvent
-    | DataButtonClicked of BaseEvent
-    | DataSignUpButtonClicked of BaseEvent
-    | SignUpButtonClicked of BaseEvent
-    | SmartFormButtonClicked of BaseEvent
-    | SmartFormSubmittedButtonClicked of BaseEvent
-    | RowerButtonClicked of BaseEvent
-    | RowerSignUpButtonClicked of BaseEvent
-    | SpeakEZButtonClicked of BaseEvent
-    | SpeakEZSignUpButtonClicked of BaseEvent
-    | ContactButtonClicked of BaseEvent
-    | PartnersButtonClicked of BaseEvent
-    | RowerSiteButtonClicked of BaseEvent
-    | CuratorSiteButtonClicked of BaseEvent
-    | TableauSiteButtonClicked of BaseEvent
-    | PowerBISiteButtonClicked of BaseEvent
-    | ThoughtSpotSiteButtonClicked of BaseEvent
-    | SpeakEZSiteButtonClicked of BaseEvent
-    | DataPolicyAcceptButtonClicked of BaseEvent
-    | DataPolicyDeclineButtonClicked of BaseEvent
-    | DataPolicyResetButtonClicked of BaseEvent
+type PageEventCase =
+    | HomePageVisited of PageEvent
+    | ProjectPageVisited of PageEvent
+    | DataPageVisited of PageEvent
+    | SignupPageVisited of PageEvent
+    | RowerPageVisited of PageEvent
+    | SpeakEZPageVisited of PageEvent
+    | ContactPageVisited of PageEvent
+    | PartnersPageVisited of PageEvent
+    | DataPolicyPageVisited of PageEvent
     member this.Id =
         match this with
         | HomePageVisited e -> e.Id
@@ -113,6 +94,36 @@ type BaseEventCase =
         | ContactPageVisited e -> e.Id
         | PartnersPageVisited e -> e.Id
         | DataPolicyPageVisited e -> e.Id
+
+type ButtonEventCase =
+    | HomeButtonClicked of ButtonEvent
+    | HomeProjectButtonClicked of ButtonEvent
+    | HomeSignUpButtonClicked of ButtonEvent
+    | ProjectButtonClicked of ButtonEvent
+    | ProjectDataButtonClicked of ButtonEvent
+    | ProjectSignUpButtonClicked of ButtonEvent
+    | DataButtonClicked of ButtonEvent
+    | DataSignUpButtonClicked of ButtonEvent
+    | SignUpButtonClicked of ButtonEvent
+    | SmartFormButtonClicked of ButtonEvent
+    | SmartFormSubmittedButtonClicked of ButtonEvent
+    | RowerButtonClicked of ButtonEvent
+    | RowerSignUpButtonClicked of ButtonEvent
+    | SpeakEZButtonClicked of ButtonEvent
+    | SpeakEZSignUpButtonClicked of ButtonEvent
+    | ContactButtonClicked of ButtonEvent
+    | PartnersButtonClicked of ButtonEvent
+    | RowerSiteButtonClicked of ButtonEvent
+    | CuratorSiteButtonClicked of ButtonEvent
+    | TableauSiteButtonClicked of ButtonEvent
+    | PowerBISiteButtonClicked of ButtonEvent
+    | ThoughtSpotSiteButtonClicked of ButtonEvent
+    | SpeakEZSiteButtonClicked of ButtonEvent
+    | DataPolicyAcceptButtonClicked of ButtonEvent
+    | DataPolicyDeclineButtonClicked of ButtonEvent
+    | DataPolicyResetButtonClicked of ButtonEvent
+    member this.Id =
+        match this with
         | HomeButtonClicked e -> e.Id
         | HomeProjectButtonClicked e -> e.Id
         | HomeSignUpButtonClicked e -> e.Id
@@ -140,24 +151,37 @@ type BaseEventCase =
         | DataPolicyDeclineButtonClicked e -> e.Id
         | DataPolicyResetButtonClicked e -> e.Id
 
-
-type SessionEventCase =
+type StreamEventCase =
     | UserStreamInitiated of StreamEvent
     | UserStreamResumed of StreamEvent
     | UserStreamClosed of StreamEvent
     | UserStreamEnded of StreamEvent
-    | UserClientIPDetected of ClientIPEvent
-    | UserClientIPUpdated of ClientIPEvent
     member this.Id =
         match this with
         | UserStreamInitiated e -> e.Id
         | UserStreamResumed e -> e.Id
         | UserStreamClosed e -> e.Id
         | UserStreamEnded e -> e.Id
+
+type DataPolicyEventCase =
+    | DataPolicyAccepted of DataPolicyEvent
+    | DataPolicyDeclined of DataPolicyEvent
+    | DataPolicyReset of DataPolicyEvent
+    member this.Id =
+        match this with
+        | DataPolicyAccepted e -> e.Id
+        | DataPolicyDeclined e -> e.Id
+        | DataPolicyReset e -> e.Id
+
+type ClientIPEventCase =
+    | UserClientIPDetected of ClientIPEvent
+    | UserClientIPUpdated of ClientIPEvent
+    member this.Id =
+        match this with
         | UserClientIPDetected e -> e.Id
         | UserClientIPUpdated e -> e.Id
 
-type ContactFormEventCase =
+type FormEventCase =
     | ContactFormSubmitted of ContactFormEvent
     | SignUpFormSubmitted of SignUpFormEvent
     | SmartFormSubmitted of SmartFormSubmittedEvent
@@ -168,3 +192,22 @@ type ContactFormEventCase =
         | SignUpFormSubmitted e -> e.Id
         | SmartFormSubmitted e -> e.Id
         | SmartFormResultReturned e -> e.Id
+
+type EventCaseType =
+    | PageEventCase of PageEventCase
+    | ButtonEventCase of ButtonEventCase
+    | StreamEventCase of StreamEventCase
+    | FormEventCase of FormEventCase
+    | ClientIPEventCase of ClientIPEventCase
+
+type EventProcessingMessage =
+    | ProcessStreamToken of StreamToken * EventDateTime
+    | ProcessUserClientIP of StreamToken * EventDateTime * ClientIP
+    | ProcessPageVisited of StreamToken * EventDateTime * PageName
+    | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
+    | ProcessSessionClose of StreamToken * EventDateTime
+    | ProcessContactForm of StreamToken * EventDateTime * ContactForm
+    | ProcessSignUpForm of StreamToken * EventDateTime * SignUpForm
+    | ProcessSmartFormInput of StreamToken * EventDateTime * SmartFormRawContent
+    | ProcessSmartFormResult of StreamToken * EventDateTime * SignUpForm
+
