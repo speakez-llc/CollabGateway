@@ -182,7 +182,7 @@ let processStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = as
     }
 
 let processStreamClose (streamToken: StreamToken, timeStamp: EventDateTime) = async {
-    Database.eventProcessor.Post(ProcessSessionClose (streamToken, timeStamp))
+    Database.eventProcessor.Post(ProcessStreamClose (streamToken, timeStamp))
     }
 
 let processPageVisited (streamToken: StreamToken, timeStamp: EventDateTime, pageName: PageName) = async {
