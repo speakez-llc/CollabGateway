@@ -73,12 +73,6 @@ type StreamEvent = {
     TimeStamp: DateTime
 }
 
-type SessionEvent = {
-    Id: Guid
-    StreamID: StreamToken
-    TimeStamp: DateTime
-}
-
 type PageEventCase =
     | HomePageVisited of PageEvent
     | ProjectPageVisited of PageEvent
@@ -215,7 +209,7 @@ type EventProcessingMessage =
     | ProcessUserClientIP of StreamToken * EventDateTime * ClientIP
     | ProcessPageVisited of StreamToken * EventDateTime * PageName
     | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
-    | ProcessSessionClose of StreamToken * EventDateTime
+    | ProcessStreamClose of StreamToken * EventDateTime
     | ProcessContactForm of StreamToken * EventDateTime * ContactForm
     | ProcessSignUpForm of StreamToken * EventDateTime * SignUpForm
     | ProcessSmartFormInput of StreamToken * EventDateTime * SmartFormRawContent

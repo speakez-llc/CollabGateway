@@ -141,7 +141,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | ActivityButton -> SummaryActivityButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
             session.Events.Append(streamToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSessionClose (streamToken, timeStamp) ->
+        | ProcessStreamClose (streamToken, timeStamp) ->
             use session = store.LightweightSession()
             let event = UserStreamClosed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore

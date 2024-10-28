@@ -42,6 +42,7 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
                             | ContactPageVisited _ -> "Contact Page Visited"
                             | PartnersPageVisited _ -> "Partners Page Visited"
                             | DataPolicyPageVisited _ -> "Data Policy Page Visited"
+                            | SummaryActivityPageVisited _ -> "Summary Activity Page Visited"
                         (name, None)
                     | :? ButtonEventCase as eventCase ->
                         let name =
@@ -72,6 +73,7 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
                             | DataPolicyAcceptButtonClicked _ -> "Data Policy Accept Button Clicked"
                             | DataPolicyDeclineButtonClicked _ -> "Data Policy Decline Button Clicked"
                             | DataPolicyResetButtonClicked _ -> "Data Policy Reset Button Clicked"
+                            | SummaryActivityButtonClicked _ -> "Summary Activity Button Clicked"
                         (name, None)
                     | :? FormEventCase as eventCase ->
                         let name, content =
