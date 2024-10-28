@@ -4,9 +4,6 @@ open Feliz
 open CollabGateway.Client.ViewMsg
 open CollabGateway.Shared.API
 
-let closeTab () =
-    Browser.Dom.window.close()
-
 let DataPolicyModal (state: DataPolicyChoice) (parentDispatch: ViewMsg -> unit) =
 
     Html.div [

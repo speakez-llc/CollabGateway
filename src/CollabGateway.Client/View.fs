@@ -146,16 +146,16 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ProcessButtonClicked buttonName ->
         match buttonName with
         | DataPolicyAcceptButton ->
-            processButtonClicked DataPolicyAcceptButton |> ignore
+            processButtonClicked DataPolicyAcceptButton
             { state with DataPolicyChoice = Accepted }, Cmd.none
         | DataPolicyDeclineButton ->
-            processButtonClicked DataPolicyDeclineButton |> ignore
+            processButtonClicked DataPolicyDeclineButton
             { state with DataPolicyChoice =  Declined }, Cmd.none
         | DataPolicyResetButton ->
-            processButtonClicked DataPolicyResetButton |> ignore
+            processButtonClicked DataPolicyResetButton
             { state with DataPolicyChoice =  Unknown }, Cmd.none
         | _ ->
-            processButtonClicked buttonName |> ignore
+            processButtonClicked buttonName
             state, Cmd.none
     | ProcessStream ->
         processStream() |> ignore
@@ -261,6 +261,7 @@ let AppView () =
         | Page.Rower -> Pages.Rower.IndexView dispatch
         | Page.SpeakEZ -> Pages.SpeakEZ.IndexView dispatch
         | Page.Contact -> Pages.Contact.IndexView dispatch
+        | Page.Activity -> Pages.Activity.IndexView dispatch
         | Page.Partners -> Pages.Partners.IndexView dispatch
 
     let navigationWrapper =
@@ -443,6 +444,24 @@ let AppView () =
                                                                 Fa.Solid.Envelope
                                                             ] []
                                                             if isOpen then Html.span "Contact Us" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                            Html.li [
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.style [
+                                                            style.marginLeft (length.px -2)
+                                                        ]
+                                                        prop.href "activity"
+                                                        prop.title "Your Summary"
+                                                        prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked ActivityButton); Router.goToUrl(e))
+                                                        prop.children [
+                                                            Fa.i [
+                                                                Fa.Solid.UserCheck
+                                                            ] []
+                                                            if isOpen then Html.span "Your Summary" else Html.none
                                                         ]
                                                     ]
                                                 ]

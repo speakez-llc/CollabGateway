@@ -228,7 +228,7 @@ let service = {
     ProcessSignUpForm = processSignUpForm
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
     RetrieveFullUserStream = Projections.retrieveFullUserStreamProjection
-    RetrieveAllUsers = Projections.retrieveAllStreamTokensAndNames
+    RetrieveAllUserNames = Projections.retrieveUserStreamProjection
 }
 
 let webApp : HttpHandler =

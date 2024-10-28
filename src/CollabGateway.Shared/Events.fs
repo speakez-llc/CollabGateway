@@ -73,6 +73,12 @@ type StreamEvent = {
     TimeStamp: DateTime
 }
 
+type SessionEvent = {
+    Id: Guid
+    StreamID: StreamToken
+    TimeStamp: DateTime
+}
+
 type PageEventCase =
     | HomePageVisited of PageEvent
     | ProjectPageVisited of PageEvent
@@ -83,6 +89,7 @@ type PageEventCase =
     | ContactPageVisited of PageEvent
     | PartnersPageVisited of PageEvent
     | DataPolicyPageVisited of PageEvent
+    | SummaryActivityPageVisited of PageEvent
     member this.Id =
         match this with
         | HomePageVisited e -> e.Id
@@ -94,6 +101,7 @@ type PageEventCase =
         | ContactPageVisited e -> e.Id
         | PartnersPageVisited e -> e.Id
         | DataPolicyPageVisited e -> e.Id
+        | SummaryActivityPageVisited e -> e.Id
 
 type ButtonEventCase =
     | HomeButtonClicked of ButtonEvent
@@ -122,6 +130,7 @@ type ButtonEventCase =
     | DataPolicyAcceptButtonClicked of ButtonEvent
     | DataPolicyDeclineButtonClicked of ButtonEvent
     | DataPolicyResetButtonClicked of ButtonEvent
+    | SummaryActivityButtonClicked of ButtonEvent
     member this.Id =
         match this with
         | HomeButtonClicked e -> e.Id
@@ -150,6 +159,7 @@ type ButtonEventCase =
         | DataPolicyAcceptButtonClicked e -> e.Id
         | DataPolicyDeclineButtonClicked e -> e.Id
         | DataPolicyResetButtonClicked e -> e.Id
+        | SummaryActivityButtonClicked e -> e.Id
 
 type StreamEventCase =
     | UserStreamInitiated of StreamEvent

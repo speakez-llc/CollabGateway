@@ -1,6 +1,5 @@
 ﻿module CollabGateway.Client.Pages.Rower
 
-open System
 open Feliz
 open Elmish
 open CollabGateway.Client.Server

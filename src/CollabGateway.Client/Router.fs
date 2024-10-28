@@ -13,6 +13,7 @@ type Page =
     | SpeakEZ
     | Contact
     | Partners
+    | Activity
 
 [<RequireQualifiedAccess>]
 module Page =
@@ -26,6 +27,7 @@ module Page =
         | [ "speakez" ] -> Page.SpeakEZ
         | [ "contact" ] -> Page.Contact
         | [ "partners" ] -> Page.Partners
+        | [ "activity" ] -> Page.Activity
         | [ ] -> Page.Index
         | _ -> defaultPage
 
@@ -40,6 +42,7 @@ module Page =
         | Page.SpeakEZ -> [ "speakez" ] |> noQueryString
         | Page.Contact -> [ "contact" ] |> noQueryString
         | Page.Partners -> [ "partners" ] |> noQueryString
+        | Page.Activity -> [ "activity" ] |> noQueryString
 
 [<RequireQualifiedAccess>]
 module Router =

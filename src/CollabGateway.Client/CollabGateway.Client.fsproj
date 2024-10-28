@@ -21,6 +21,7 @@
         <Compile Include="Pages\Partners.fs" />
         <Compile Include="Pages\SpeakEZ.fs" />
         <Compile Include="Pages\Contact.fs" />
+        <Compile Include="Pages\Activity.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />
     </ItemGroup>

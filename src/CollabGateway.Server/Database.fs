@@ -2,7 +2,6 @@
 
 open System
 open System.Net.Http
-open System.Threading.Tasks
 open Marten
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
@@ -62,7 +61,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
         match msg with
         | ProcessStreamToken (streamToken, timeStamp) ->
             use session = store.LightweightSession()
-            let streamState = session.Events.FetchStreamState(streamToken)
+            let streamState = session.Events.FetchStreamStateAsync(streamToken)
             let event =
                 if streamState = null then
                     UserStreamInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
@@ -72,7 +71,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessUserClientIP (streamToken, timeStamp, clientIP) ->
             use session = store.LightweightSession()
-            let! allEvents = session.Events.FetchStream(streamToken) |> Task.FromResult |> Async.AwaitTask
+            let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
             let unwrappedEvents =
                 allEvents
                 |> Seq.map (_.Data )
@@ -108,6 +107,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | ContactPage -> ContactPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ActivityPage -> SummaryActivityPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
             session.Events.Append(streamToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessButtonClicked (streamToken, timeStamp, buttonName) ->
@@ -138,6 +138,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
                 | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | ActivityButton -> SummaryActivityButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
             session.Events.Append(streamToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessSessionClose (streamToken, timeStamp) ->
