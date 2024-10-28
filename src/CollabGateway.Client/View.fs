@@ -3,13 +3,13 @@
 open System
 open Browser.Dom
 open Fable.Remoting.Client
-open Feliz
 open Fable.Core
-open Thoth.Json
-open Router
-open Elmish
+open Feliz
 open Feliz.UseElmish
+open Elmish
+open Thoth.Json
 open Fable.FontAwesome
+open Router
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
 open CollabGateway.Client.DataPolicyModal
@@ -133,10 +133,11 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with DataPolicyChoice = choice }, Cmd.none
     | ShowToast toast ->
         let hideToastCommand =
-            async {
-                do! Async.Sleep 4000
-                return HideToast toast
-            } |> Cmd.OfAsync.result
+            Cmd.OfAsync.perform (fun () ->
+                async {
+                    do! Async.Sleep 4000
+                    return HideToast toast
+                }) () id
         { state with Toasts = toast :: state.Toasts }, hideToastCommand
     | HideToast toast ->
         { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none

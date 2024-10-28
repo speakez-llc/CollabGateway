@@ -41,19 +41,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     prop.className "text-2xl mt-8 font-bold mx-auto"
                     prop.text state.Message
                 ]
-                Html.div [
-                    prop.className "card w-full bg-base-200 rounded-3xl"
-                    prop.children [
-                        Html.div [
-                            prop.className "card-body"
-                            prop.children [
-                                Html.p [
-                                    prop.text "As a result of collaboration between Rower Consulting, Interworks Curator, SpeakEZ Platform Services and other providers and vendors we present a cohesive solution to showcase how to continue return-of-value on existing software investments while establishing a clear path for bringing in high-leverage additions to a solution portfolio. The result of this effort is a fully functional portal site demonstrating in real time how this approach can help an organization's bottom line."
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
                 // Animated SVG
                 Html.div [
                     prop.className "card rounded-3xl shadow-lg overflow-hidden w-full"
@@ -75,8 +62,11 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "flex flex-col space-y-4 mt-4 items-center md:items-end"
                                     prop.children [
                                         Html.p [
+                                            prop.text "Thank you for taking the time to review this site. Rower Consulting & SpeakEZ Platform Services are proud to present a showcase that demonstrates return-of-value on your existing software investments while establishing a clear path for bringing in high-leverage additions to your company's solution portfolio. This fully functional portal site demonstrates in real time how this hybrid approach can help advance an organization's mission while protecting the bottom line."
+                                        ]
+                                        Html.p [
                                             prop.className "text-left"
-                                            prop.text "A showcase of this scale may seem challenging to take in all at once. That's why Rower Consulting and SpeakEZ Platform Services is offering to provide a guided tour through this technology landscape to show how it can help your business' bottom line. Feel free to review the information presented throughout this site. When you're ready to see for yourself, sign up for our waitlist - and get ready to experience the future hands-on!"
+                                            prop.text "A showcase of this scale may seem challenging to take in all at once. That's why, aside from the preamble in this gateway site, we are offering a guided tour through this technology landscape. Feel free to review the information presented throughout this site. When you're ready to see for yourself, sign up for our waitlist - and get ready to experience the future hands-on!"
                                         ]
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto"
