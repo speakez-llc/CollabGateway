@@ -152,8 +152,8 @@ let getLatestSignUpFormSubmitted (streamToken: StreamToken): Async<(SignUpForm *
             match Seq.tryHead events with
             | Some eventCase ->
                 match eventCase with
-                | SignUpFormSubmitted { Form = form } -> Some (form, (unwrapEventTimeStamp eventCase))
-                | _ -> None
+                | SignUpFormSubmitted { Form = form } -> Some (form, unwrapEventTimeStamp eventCase)
+                | _ -> findLatestForm (Seq.tail events)
             | None -> None
 
         return findLatestForm allFormEvents
