@@ -148,12 +148,15 @@ let getLatestSignUpFormSubmitted (streamToken: StreamToken): Async<(SignUpForm *
                 | _ -> None)
             |> Seq.sortByDescending (fun e -> unwrapEventTimeStamp e)
 
-        match Seq.tryHead allFormEvents with
-        | Some eventCase ->
-            match eventCase with
-            | SignUpFormSubmitted { Form = form } -> return Some (form, (unwrapEventTimeStamp eventCase))
-            | _ -> return None
-        | None -> return None
+        let rec findLatestForm events =
+            match Seq.tryHead events with
+            | Some eventCase ->
+                match eventCase with
+                | SignUpFormSubmitted { Form = form } -> Some (form, (unwrapEventTimeStamp eventCase))
+                | _ -> None
+            | None -> None
+
+        return findLatestForm allFormEvents
     }
 
 let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAggregate> =
