@@ -61,7 +61,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
         match msg with
         | ProcessStreamToken (streamToken, timeStamp) ->
             use session = store.LightweightSession()
-            let streamState = session.Events.FetchStreamStateAsync(streamToken)
+            let! streamState = session.Events.FetchStreamStateAsync(streamToken) |> Async.AwaitTask
             let event =
                 if streamState = null then
                     UserStreamInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
