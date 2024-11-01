@@ -22,8 +22,6 @@ let formatJson string =
         .Replace(" ", "&nbsp;")
         .Replace("\n", "<br>")
 
-
-
 let validateClipboardText (text: string) =
     if String.IsNullOrWhiteSpace(text) then
         false
@@ -81,15 +79,11 @@ let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: 
     }
     |> Async.AwaitTask
 
-
-
-
-
 let establishStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = async {
     Database.eventProcessor.Post(EstablishStreamToken (streamToken, timeStamp))
     }
 
-let appendUnsubscribeStatus (streamToken: StreamToken, dateTime: EventDateTime, eventToken: ValidationToken, emailAddress: EmailAddress, status: UnsubscribeStatus) = async {
+let appendUnsubscribeStatus (streamToken: StreamToken, dateTime: EventDateTime, eventToken: ValidationToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
     Database.eventProcessor.Post(ProcessUnsubscribeStatus (streamToken, dateTime, eventToken, emailAddress, status))
     }
 
@@ -151,7 +145,7 @@ let service = {
     ProcessSignUpForm = processSignUpForm
     RetrieveDataPolicyChoice = Aggregates.retrieveDataPolicyChoice
     RetrieveEmailStatus = Aggregates.retrieveEmailStatus
-    RetrieveUnsubscribeStatus = Aggregates.retrieveUnsubscribeStatus
+    RetrieveUnsubscribeStatus = Aggregates.retrieveSubscribeStatus
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
     RetrieveFullUserStream = Projections.retrieveFullUserStreamProjection
     RetrieveAllUserNames = Projections.retrieveUserStreamProjection

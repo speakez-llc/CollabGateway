@@ -98,7 +98,7 @@ type AlertLevel =
     | Warning
     | Info
 
-type UnsubscribeStatus =
+type SubscribeStatus =
     | Open
     | Unsubscribed
 
@@ -118,7 +118,7 @@ type UserSummaryAggregate = {
     ContactFormSubmitted: (EventDateTime * ContactForm) option
     SignUpFormSubmitted: (EventDateTime * SignUpForm) option
     EmailStatus: (EventDateTime * EmailAddress * EmailStatus) list option
-    UnsubscribeStatus: (EventDateTime * EmailAddress * UnsubscribeStatus) list option
+    SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) list option
 }
 
 type FullUserStreamProjection = (string * EventDateTime * obj option) list
@@ -128,8 +128,8 @@ type UserNameProjection = (string option * StreamToken) list
 type Service = {
     EstablishStreamToken : StreamToken * EventDateTime -> Async<unit>
     EstablishUserClientIP : StreamToken * EventDateTime * ClientIP -> Async<unit>
-    AppendUnsubscribeStatus : StreamToken * EventDateTime * ValidationToken * EmailAddress * UnsubscribeStatus -> Async<unit>
     AppendEmailStatus : StreamToken * EventDateTime * ValidationToken * EmailAddress * EmailStatus -> Async<unit>
+    AppendUnsubscribeStatus : StreamToken * EventDateTime * ValidationToken * EmailAddress * SubscribeStatus -> Async<unit>
     FlagWebmailDomain : string -> Async<bool>
     ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
     ProcessStreamClose : StreamToken * EventDateTime -> Async<unit>
@@ -138,8 +138,8 @@ type Service = {
     ProcessSmartForm : StreamToken * EventDateTime * SmartFormRawContent -> Async<SignUpForm>
     ProcessSignUpForm : StreamToken * EventDateTime * SignUpForm -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list>
-    RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * UnsubscribeStatus) list>
+    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list option>
+    RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) list option>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
     RetrieveFullUserStream : StreamToken -> Async<FullUserStreamProjection>
     RetrieveAllUserNames : unit -> Async<UserNameProjection>

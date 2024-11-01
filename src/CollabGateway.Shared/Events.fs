@@ -62,12 +62,12 @@ type FormStatusEvent = {
     Status: EmailStatus
 }
 
-type UnsubscribeStatusEvent = {
+type SubscribeStatusEvent = {
     Id: Guid
     TimeStamp: EventDateTime
     EventToken: EventToken
     EmailAddress: EmailAddress
-    Status: UnsubscribeStatus
+    Status: SubscribeStatus
 }
 
 type PageEvent = {
@@ -207,7 +207,7 @@ type FormEventCase =
     | SmartFormSubmitted of SmartFormSubmittedEvent
     | SmartFormResultReturned of SignUpFormEvent
     | EmailStatusAppended of FormStatusEvent
-    | UnsubscribeStatusAppended of UnsubscribeStatusEvent
+    | SubscribeStatusAppended of SubscribeStatusEvent
     member this.Id =
         match this with
         | ContactFormSubmitted e -> e.Id
@@ -215,7 +215,7 @@ type FormEventCase =
         | SmartFormSubmitted e -> e.Id
         | SmartFormResultReturned e -> e.Id
         | EmailStatusAppended e -> e.Id
-        | UnsubscribeStatusAppended e -> e.Id
+        | SubscribeStatusAppended e -> e.Id
 
 type EventCaseType =
     | PageEventCase of PageEventCase
@@ -227,7 +227,7 @@ type EventCaseType =
 type EventProcessingMessage =
     | EstablishStreamToken of StreamToken * EventDateTime
     | EstablishUserClientIP of StreamToken * EventDateTime * ClientIP
-    | ProcessUnsubscribeStatus of StreamToken * EventDateTime * EventToken * EmailAddress * UnsubscribeStatus
+    | ProcessUnsubscribeStatus of StreamToken * EventDateTime * EventToken * EmailAddress * SubscribeStatus
     | ProcessEmailStatus of StreamToken * EventDateTime * EventToken * EmailAddress * EmailStatus
     | ProcessPageVisited of StreamToken * EventDateTime * PageName
     | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
