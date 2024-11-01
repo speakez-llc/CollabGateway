@@ -48,7 +48,10 @@ type DataPolicyChoice =
 
 type StreamToken = Guid
 type EventDateTime = DateTime
+type EventToken = Guid
+type ValidationToken = Guid
 type ClientIP = string
+type EmailAddress = string
 type IpResponse = { ip: string }
 type SmartFormRawContent = string
 
@@ -95,15 +98,27 @@ type AlertLevel =
     | Warning
     | Info
 
+type UnsubscribeStatus =
+    | Open
+    | Unsubscribed
+
+type EmailStatus =
+    | Open
+    | Verified
+    | Evicted
+
+
 type Toast = {
     Message: string
     Level: AlertLevel
 }
 type UserSummaryAggregate = {
     StreamInitiated: EventDateTime
-    DataPolicyDecision: (DataPolicyChoice * EventDateTime) option
-    ContactFormSubmitted: (ContactForm * EventDateTime) option
-    SignUpFormSubmitted: (SignUpForm * EventDateTime) option
+    DataPolicyDecision: (EventDateTime * DataPolicyChoice) option
+    ContactFormSubmitted: (EventDateTime * ContactForm) option
+    SignUpFormSubmitted: (EventDateTime * SignUpForm) option
+    EmailStatus: (EventDateTime * EmailAddress * EmailStatus) list option
+    UnsubscribeStatus: (EventDateTime * EmailAddress * UnsubscribeStatus) list option
 }
 
 type FullUserStreamProjection = (string * EventDateTime * obj option) list
@@ -111,16 +126,20 @@ type FullUserStreamProjection = (string * EventDateTime * obj option) list
 type UserNameProjection = (string option * StreamToken) list
 
 type Service = {
-    GetMessage : bool -> Async<string>
-    RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    ProcessStreamToken : StreamToken * EventDateTime -> Async<unit>
+    EstablishStreamToken : StreamToken * EventDateTime -> Async<unit>
+    EstablishUserClientIP : StreamToken * EventDateTime * ClientIP -> Async<unit>
+    AppendUnsubscribeStatus : StreamToken * EventDateTime * ValidationToken * EmailAddress * UnsubscribeStatus -> Async<unit>
+    AppendEmailStatus : StreamToken * EventDateTime * ValidationToken * EmailAddress * EmailStatus -> Async<unit>
+    FlagWebmailDomain : string -> Async<bool>
+    ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
     ProcessStreamClose : StreamToken * EventDateTime -> Async<unit>
     ProcessPageVisited : StreamToken * EventDateTime * PageName -> Async<unit>
     ProcessButtonClicked : StreamToken * EventDateTime * ButtonName -> Async<unit>
-    ProcessUserClientIP : StreamToken * EventDateTime * ClientIP -> Async<unit>
-    ProcessContactForm : StreamToken * EventDateTime * ContactForm -> Async<string>
     ProcessSmartForm : StreamToken * EventDateTime * SmartFormRawContent -> Async<SignUpForm>
     ProcessSignUpForm : StreamToken * EventDateTime * SignUpForm -> Async<string>
+    RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
+    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list>
+    RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * UnsubscribeStatus) list>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
     RetrieveFullUserStream : StreamToken -> Async<FullUserStreamProjection>
     RetrieveAllUserNames : unit -> Async<UserNameProjection>

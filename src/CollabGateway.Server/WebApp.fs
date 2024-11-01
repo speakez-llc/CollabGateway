@@ -3,7 +3,6 @@
 open System
 open System.Net
 open System.Net.Http
-open System.Threading.Tasks
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -12,10 +11,10 @@ open Microsoft.Extensions.Logging
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 open CollabGateway.Shared.Errors
-open SendGrid
-open SendGrid.Helpers.Mail
+open CollabGateway.Server.SendGridHelpers
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
+open Npgsql
 
 let formatJson string =
     let jObject = JObject.Parse(string)
@@ -23,77 +22,7 @@ let formatJson string =
         .Replace(" ", "&nbsp;")
         .Replace("\n", "<br>")
 
-let transmitContactForm (contactForm: ContactForm) =
-    task {
-        try
-            let apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
-            if String.IsNullOrEmpty(apiKey) then
-                return! ServerError.failwith (ServerError.Exception "SendGrid API key is not set.")
-            else
-                let client = SendGridClient(apiKey)
-                let from = EmailAddress("engineering@speakez.net", "Engineering Team")
-                let subject = "New Contact Form Submission"
-                let toAddress = EmailAddress("engineering@speakez.net", "Engineering Team")
-                let plainTextContent = $"Name: %s{contactForm.Name}\nEmail: %s{contactForm.Email}\nMessage: %s{contactForm.MessageBody}"
-                let htmlContent = $"<strong>Name:</strong> %s{contactForm.Name}<br><strong>Email:</strong> %s{contactForm.Email}<br><strong>Message:</strong> %s{contactForm.MessageBody}"
-                let msg = MailHelper.CreateSingleEmail(from, toAddress, subject, plainTextContent, htmlContent)
-                let! response = client.SendEmailAsync(msg)
-                if response.StatusCode = HttpStatusCode.OK || response.StatusCode = HttpStatusCode.Accepted then
-                    return "Email sent successfully"
-                else
-                    return! ServerError.failwith (ServerError.Exception $"Failed to send email: {response.StatusCode}")
-        with
-        | ex ->
-            return! ServerError.failwith (ServerError.Exception $"Failed to send email: {ex.Message}")
-    }
-    |> Async.AwaitTask
 
-let transmitSignUpForm (contactForm: SignUpForm) =
-    task {
-        try
-            let apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
-            if String.IsNullOrEmpty(apiKey) then
-                return! ServerError.failwith (ServerError.Exception "SendGrid API key is not set.")
-            else
-                let client = SendGridClient(apiKey)
-                let from = EmailAddress("engineering@speakez.net", "Engineering Team")
-                let subject = "New SignUp Form Submission"
-                let toAddress = EmailAddress("engineering@speakez.net", "Engineering Team")
-                let plainTextContent = $"Name: %s{contactForm.Name}\n
-                                            Email: %s{contactForm.Email}\n
-                                            Job Title: %s{contactForm.JobTitle}\n
-                                            Phone: %s{contactForm.Phone}\n
-                                            Department: %s{contactForm.Department}\n
-                                            Company: %s{contactForm.Company}\n
-                                            Street Address 1: %s{contactForm.StreetAddress1}\n
-                                            Street Address 2: %s{contactForm.StreetAddress2}\n
-                                            City: %s{contactForm.City}\n
-                                            State/Province: %s{contactForm.StateProvince}\n
-                                            Post Code: %s{contactForm.PostCode}\n
-                                            Country: %s{contactForm.Country}"
-                let htmlContent = $"<strong>Name:</strong> %s{contactForm.Name}<br>
-                                    <strong>Email:</strong> %s{contactForm.Email}<br>
-                                    <strong>Job Title:</strong> %s{contactForm.JobTitle}<br>
-                                    <strong>Phone:</strong> %s{contactForm.Phone}<br>
-                                    <strong>Department:</strong> %s{contactForm.Department}<br>
-                                    <strong>Company:</strong> %s{contactForm.Company}<br>
-                                    <strong>Street Address 1:</strong> %s{contactForm.StreetAddress1}<br>
-                                    <strong>Street Address 2:</strong> %s{contactForm.StreetAddress2}<br>
-                                    <strong>City:</strong> %s{contactForm.City}<br>
-                                    <strong>State/Province:</strong> %s{contactForm.StateProvince}<br>
-                                    <strong>Post Code:</strong> %s{contactForm.PostCode}<br>
-                                    <strong>Country:</strong> %s{contactForm.Country}"
-                let msg = MailHelper.CreateSingleEmail(from, toAddress, subject, plainTextContent, htmlContent)
-                let! response = client.SendEmailAsync(msg)
-                if response.StatusCode = HttpStatusCode.OK || response.StatusCode = HttpStatusCode.Accepted then
-                    return "Email sent successfully"
-                else
-                    return! ServerError.failwith (ServerError.Exception $"Failed to send email: {response.StatusCode}")
-        with
-        | ex ->
-            return! ServerError.failwith (ServerError.Exception $"Failed to send email: {ex.Message}")
-    }
-    |> Async.AwaitTask
 
 let validateClipboardText (text: string) =
     if String.IsNullOrWhiteSpace(text) then
@@ -153,32 +82,19 @@ let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: 
     |> Async.AwaitTask
 
 
-let retrieveDataPolicyChoice (streamToken: StreamToken) = async {
-    use session = Database.store.LightweightSession()
-    let! allEvents = session.Events.FetchStream(streamToken) |> Task.FromResult |> Async.AwaitTask
-    let eventsWithTimestamps =
-        allEvents
-        |> Seq.map (fun e -> e.Timestamp, e.Data)
-    let dataPolicyEvents =
-        eventsWithTimestamps
-        |> Seq.choose (fun (timestamp, data) ->
-            match data with
-            | :? ButtonEventCase as e ->
-                match e with
-                | DataPolicyAcceptButtonClicked _ -> Some (timestamp, e)
-                | DataPolicyDeclineButtonClicked _ -> Some (timestamp, e)
-                | _ -> None
-            | _ -> None)
-        |> Seq.sortByDescending fst
 
-    match Seq.tryHead dataPolicyEvents with
-    | Some (_, DataPolicyAcceptButtonClicked _) -> return Accepted
-    | Some (_, DataPolicyDeclineButtonClicked _) -> return Declined
-    | _ -> return Unknown
-}
 
-let processStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = async {
-    Database.eventProcessor.Post(ProcessStreamToken (streamToken, timeStamp))
+
+let establishStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = async {
+    Database.eventProcessor.Post(EstablishStreamToken (streamToken, timeStamp))
+    }
+
+let appendUnsubscribeStatus (streamToken: StreamToken, dateTime: EventDateTime, eventToken: ValidationToken, emailAddress: EmailAddress, status: UnsubscribeStatus) = async {
+    Database.eventProcessor.Post(ProcessUnsubscribeStatus (streamToken, dateTime, eventToken, emailAddress, status))
+    }
+
+let appendEmailStatus (streamToken: StreamToken, timeStamp: EventDateTime, eventToken: ValidationToken, email: EmailAddress, status: EmailStatus) = async {
+    Database.eventProcessor.Post(ProcessEmailStatus (streamToken, timeStamp, eventToken, email, status))
     }
 
 let processStreamClose (streamToken: StreamToken, timeStamp: EventDateTime) = async {
@@ -195,7 +111,7 @@ let processButtonClicked (streamToken: StreamToken, timeStamp: EventDateTime, bu
     }
 
 let processUserClientIP (streamToken: StreamToken, timeStamp: EventDateTime, clientIP: ClientIP) = async {
-    Database.eventProcessor.Post(ProcessUserClientIP (streamToken, timeStamp, clientIP))
+    Database.eventProcessor.Post(EstablishUserClientIP (streamToken, timeStamp, clientIP))
 }
 
 let processContactForm (streamToken: StreamToken, timeStamp: EventDateTime, form: ContactForm) = async {
@@ -210,22 +126,32 @@ let processSignUpForm (streamToken: StreamToken, timeStamp: EventDateTime, form:
     return result
 }
 
+let flagEmailDomain (domain: string) = async {
+    let connStr = Environment.GetEnvironmentVariable("GATEWAY_STORE")
+    use conn = new NpgsqlConnection(connStr)
+    use cmd = new NpgsqlCommand($"SELECT COUNT(*) FROM public.\"FreeEmailProviders\" WHERE \"Domain\" = @domain", conn)
+    cmd.Parameters.AddWithValue("@domain", domain) |> ignore
+    do! conn.OpenAsync() |> Async.AwaitTask
+    let! result = cmd.ExecuteScalarAsync() |> Async.AwaitTask
+    let count = result :?> int64
+    return count > 0L
+}
+
 let service = {
-    GetMessage = fun success ->
-        task {
-            if success then return "Hi from Server!"
-            else return ServerError.failwith (ServerError.Exception "OMG, something terrible happened")
-        }
-        |> Async.AwaitTask
-    RetrieveDataPolicyChoice = retrieveDataPolicyChoice
+    EstablishStreamToken = establishStreamToken
+    EstablishUserClientIP = processUserClientIP
+    AppendUnsubscribeStatus = appendUnsubscribeStatus
+    AppendEmailStatus = appendEmailStatus
+    FlagWebmailDomain = flagEmailDomain
     ProcessContactForm = processContactForm
-    ProcessStreamToken = processStreamToken
     ProcessStreamClose = processStreamClose
     ProcessPageVisited = processPageVisited
     ProcessButtonClicked = processButtonClicked
-    ProcessUserClientIP = processUserClientIP
     ProcessSmartForm = processSmartForm
     ProcessSignUpForm = processSignUpForm
+    RetrieveDataPolicyChoice = Aggregates.retrieveDataPolicyChoice
+    RetrieveEmailStatus = Aggregates.retrieveEmailStatus
+    RetrieveUnsubscribeStatus = Aggregates.retrieveUnsubscribeStatus
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
     RetrieveFullUserStream = Projections.retrieveFullUserStreamProjection
     RetrieveAllUserNames = Projections.retrieveUserStreamProjection

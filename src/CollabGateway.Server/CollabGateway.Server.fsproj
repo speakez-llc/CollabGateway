@@ -5,13 +5,14 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Database.fs" />
-    <Compile Include="Notifications.fs" />
-    <Compile Include="Aggregates.fs" />
-    <Compile Include="Projections.fs" />
-    <Compile Include="Remoting.fs" />
-    <Compile Include="WebApp.fs" />
-    <Compile Include="Program.fs" />
+      <Compile Include="SendGridHelpers.fs" />
+      <Compile Include="Database.fs" />
+      <Compile Include="Notifications.fs" />
+      <Compile Include="Projections.fs" />
+      <Compile Include="Aggregates.fs" />
+      <Compile Include="Remoting.fs" />
+      <Compile Include="WebApp.fs" />
+      <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CollabGateway.Shared\CollabGateway.Shared.fsproj" />
@@ -32,6 +33,11 @@
     <PackageReference Include="SendGrid" Version="9.24.1" />
     <PackageReference Include="WolverineFx" Version="3.0.1" />
     <PackageReference Include="WolverineFx.Marten" Version="3.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="FreeEmailDomains.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

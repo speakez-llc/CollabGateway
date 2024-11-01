@@ -31,46 +31,62 @@ type GeoInfo = {
 
 type ClientIPEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
     UserClientIP: ClientIP
     UserGeoInfo: GeoInfo
 }
 
 type ContactFormEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
     Form: ContactForm
 }
 
 type SignUpFormEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
     Form: SignUpForm
 }
 
 type SmartFormSubmittedEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
     ClipboardInput: SmartFormRawContent
+}
+
+type FormStatusEvent = {
+    Id: Guid
+    TimeStamp: EventDateTime
+    EventToken: EventToken
+    EmailAddress: EmailAddress
+    Status: EmailStatus
+}
+
+type UnsubscribeStatusEvent = {
+    Id: Guid
+    TimeStamp: EventDateTime
+    EventToken: EventToken
+    EmailAddress: EmailAddress
+    Status: UnsubscribeStatus
 }
 
 type PageEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
 }
 type ButtonEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
 }
 type DataPolicyEvent = {
     Id: Guid
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
 }
 
 type StreamEvent = {
     Id: Guid
     StreamID: StreamToken
-    TimeStamp: DateTime
+    TimeStamp: EventDateTime
 }
 
 type PageEventCase =
@@ -190,12 +206,16 @@ type FormEventCase =
     | SignUpFormSubmitted of SignUpFormEvent
     | SmartFormSubmitted of SmartFormSubmittedEvent
     | SmartFormResultReturned of SignUpFormEvent
+    | EmailStatusAppended of FormStatusEvent
+    | UnsubscribeStatusAppended of UnsubscribeStatusEvent
     member this.Id =
         match this with
         | ContactFormSubmitted e -> e.Id
         | SignUpFormSubmitted e -> e.Id
         | SmartFormSubmitted e -> e.Id
         | SmartFormResultReturned e -> e.Id
+        | EmailStatusAppended e -> e.Id
+        | UnsubscribeStatusAppended e -> e.Id
 
 type EventCaseType =
     | PageEventCase of PageEventCase
@@ -205,8 +225,10 @@ type EventCaseType =
     | ClientIPEventCase of ClientIPEventCase
 
 type EventProcessingMessage =
-    | ProcessStreamToken of StreamToken * EventDateTime
-    | ProcessUserClientIP of StreamToken * EventDateTime * ClientIP
+    | EstablishStreamToken of StreamToken * EventDateTime
+    | EstablishUserClientIP of StreamToken * EventDateTime * ClientIP
+    | ProcessUnsubscribeStatus of StreamToken * EventDateTime * EventToken * EmailAddress * UnsubscribeStatus
+    | ProcessEmailStatus of StreamToken * EventDateTime * EventToken * EmailAddress * EmailStatus
     | ProcessPageVisited of StreamToken * EventDateTime * PageName
     | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
     | ProcessStreamClose of StreamToken * EventDateTime

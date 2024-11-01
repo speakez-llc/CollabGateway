@@ -1,6 +1,7 @@
 ﻿module CollabGateway.Server.Database
 
 open System
+open System.IO
 open System.Net.Http
 open Marten
 open CollabGateway.Shared.API
@@ -11,16 +12,58 @@ open JasperFx.CodeGeneration
 open Npgsql
 
 module DatabaseTestHelpers =
-    let execNonQuery connStr commandStr =
-        use conn = new NpgsqlConnection(connStr)
-        use cmd = new NpgsqlCommand(commandStr, conn)
-        conn.Open()
-        cmd.ExecuteNonQuery()
+    let execNonQueryAsync connStr commandStr =
+        task {
+            use conn = new NpgsqlConnection(connStr)
+            use cmd = new NpgsqlCommand(commandStr, conn)
+            do! conn.OpenAsync()
+            do! cmd.ExecuteNonQueryAsync() |> Task.map (fun _ -> ())
+        }
 
-    let createDatabase connStr databaseName =
-        let commandStr = $"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = '%s{databaseName}') THEN CREATE DATABASE \"%s{databaseName}\" ENCODING = 'UTF8'; END IF; END $$;"
-        execNonQuery connStr commandStr |> ignore
+    let connStr = Environment.GetEnvironmentVariable("GATEWAY_STORE")
 
+    let parseDatabase (connectionString: string) =
+        let parts = connectionString.Split(';')
+        let databasePart = parts |> Array.find (_.StartsWith("Database="))
+        databasePart.Split('=') |> Array.last
+
+    let createFreeEmailDomainTableAsync databaseName =
+        let commandStr = $"CREATE TABLE IF NOT EXISTS \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\" UUID PRIMARY KEY, \"Domain\" TEXT UNIQUE);"
+        execNonQueryAsync connStr commandStr
+
+    let createFreeEmailDomainTable databaseName =
+        let commandStr = $"CREATE TABLE IF NOT EXISTS \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\" UUID PRIMARY KEY, \"Domain\" TEXT UNIQUE);"
+        execNonQueryAsync connStr commandStr |> ignore
+
+    let getTableRowCountAsync connStr databaseName =
+        task {
+            let commandStr = $"SELECT COUNT(*) FROM \"%s{databaseName}\".public.\"FreeEmailProviders\";"
+            use conn = new NpgsqlConnection(connStr)
+            use cmd = new NpgsqlCommand(commandStr, conn)
+            do! conn.OpenAsync()
+            let! result = cmd.ExecuteScalarAsync() |> Async.AwaitTask
+            return result :?> int64
+        }
+
+    let upsertFreeEmailDomainsAsync =
+        task {
+            let filePath = "FreeEmailDomains.txt"
+            let databaseName = parseDatabase connStr
+            do! createFreeEmailDomainTableAsync databaseName
+            let! fileLines = File.ReadAllLinesAsync(filePath) |> Async.AwaitTask
+            let domains = fileLines |> Array.filter (fun line -> not (String.IsNullOrWhiteSpace(line))) |> Set.ofArray |> Set.toArray
+            let fileRowCount = domains.Length |> int64
+            let! tableRowCount = getTableRowCountAsync connStr databaseName
+            if tableRowCount < fileRowCount then
+                Console.WriteLine $"Upserting FreeEmailProviders table with {fileRowCount - tableRowCount} new rows."
+                for domainName in domains do
+                    let commandStr = $"INSERT INTO \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\", \"Domain\") VALUES ('%s{Guid.NewGuid().ToString()}', '%s{domainName}') ON CONFLICT (\"Domain\") DO NOTHING;"
+                    do! execNonQueryAsync connStr commandStr
+            else
+                Console.WriteLine "No new rows to upsert."
+        }
+
+    upsertFreeEmailDomainsAsync |> ignore
 
 let configureMarten (options: StoreOptions) =
     let connectionString =
@@ -59,7 +102,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
         let! msg = inbox.Receive()
         match msg with
-        | ProcessStreamToken (streamToken, timeStamp) ->
+        | EstablishStreamToken (streamToken, timeStamp) ->
             use session = store.LightweightSession()
             let! streamState = session.Events.FetchStreamStateAsync(streamToken) |> Async.AwaitTask
             let event =
@@ -69,7 +112,7 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                     UserStreamResumed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessUserClientIP (streamToken, timeStamp, clientIP) ->
+        | EstablishUserClientIP (streamToken, timeStamp, clientIP) ->
             use session = store.LightweightSession()
             let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
             let unwrappedEvents =
@@ -88,12 +131,22 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             | None ->
                 let! userGeoInfo = getGeoInfo clientIP
                 let event =
-                    if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true | _ -> false) then
+                    if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true) then
                         UserClientIPUpdated { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                     else
                         UserClientIPDetected { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                 session.Events.Append(streamToken, [| event :> obj |]) |> ignore
                 do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessEmailStatus (streamToken, timeStamp, eventToken, emailAddress, status) ->
+            use session = store.LightweightSession()
+            let event = EmailStatusAppended { Id = Guid.NewGuid(); TimeStamp = timeStamp; EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
+        | ProcessUnsubscribeStatus(streamToken, timeStamp, eventToken, emailAddress, status) ->
+            use session = store.LightweightSession()
+            let event = UnsubscribeStatusAppended { Id = Guid.NewGuid(); TimeStamp = timeStamp; EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            session.Events.Append(streamToken, [| event :> obj |]) |> ignore
+            do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessPageVisited (streamToken, timeStamp, pageName) ->
             use session = store.LightweightSession()
             let pageCase =
@@ -170,4 +223,3 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     }
     loop ()
 )
-
