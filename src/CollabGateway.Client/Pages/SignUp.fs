@@ -79,7 +79,7 @@ let private closeAccordion label model =
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
-    | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
+    | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name -> { model with State.SignUpForm.Name = name }, Cmd.none
     | UpdateEmail email -> { model with State.SignUpForm.Email = email }, Cmd.none
     | UpdateJobTitle jobTitle -> { model with State.SignUpForm.JobTitle = jobTitle }, Cmd.none
@@ -112,7 +112,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         else
             let timeStamp = DateTime.UtcNow
             let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (sessionToken, timeStamp, model.SignUpForm)) FormSubmitted
+            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (timeStamp, sessionToken, model.SignUpForm)) FormSubmitted
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
         parentDispatch (ShowToast { Message = "Contact form sent"; Level = AlertLevel.Success })
@@ -127,7 +127,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             model, Cmd.none
         else
             let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (sessionToken, DateTime.UtcNow, clipboardText)) SmartFormProcessed
+            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, sessionToken,clipboardText)) SmartFormProcessed
             { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true }, cmd
     | FormProcessed (Ok response) ->
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)

@@ -102,17 +102,17 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {
         let! msg = inbox.Receive()
         match msg with
-        | EstablishStreamToken (streamToken, timeStamp) ->
+        | EstablishStreamToken (timeStamp, streamToken) ->
             use session = store.LightweightSession()
             let! streamState = session.Events.FetchStreamStateAsync(streamToken) |> Async.AwaitTask
             let event =
                 if streamState = null then
-                    UserStreamInitiated { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
+                    UserStreamInitiated { TimeStamp = timeStamp; Id = Guid.NewGuid();  StreamID = streamToken }
                 else
-                    UserStreamResumed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
+                    UserStreamResumed { TimeStamp = timeStamp; Id = Guid.NewGuid(); StreamID = streamToken }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | EstablishUserClientIP (streamToken, timeStamp, clientIP) ->
+        | EstablishUserClientIP (timeStamp, streamToken, clientIP) ->
             use session = store.LightweightSession()
             let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
             let unwrappedEvents =
@@ -132,91 +132,91 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 let! userGeoInfo = getGeoInfo clientIP
                 let event =
                     if sessionEvents |> Seq.exists (function | UserClientIPDetected _ | UserClientIPUpdated _ -> true) then
-                        UserClientIPUpdated { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                        UserClientIPUpdated {  TimeStamp = timeStamp; Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                     else
-                        UserClientIPDetected { Id = Guid.NewGuid(); TimeStamp = timeStamp; UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
+                        UserClientIPDetected { TimeStamp = timeStamp; Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                 session.Events.Append(streamToken, [| event :> obj |]) |> ignore
                 do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessEmailStatus (streamToken, timeStamp, eventToken, emailAddress, status) ->
+        | ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status) ->
             use session = store.LightweightSession()
-            let event = EmailStatusAppended { Id = Guid.NewGuid(); TimeStamp = timeStamp; EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            let event = EmailStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); EventToken = eventToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessUnsubscribeStatus(streamToken, timeStamp, eventToken, emailAddress, status) ->
+        | ProcessUnsubscribeStatus(timeStamp, streamToken, eventToken, emailAddress, status) ->
             use session = store.LightweightSession()
-            let event = SubscribeStatusAppended { Id = Guid.NewGuid(); TimeStamp = timeStamp; EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            let event = SubscribeStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); EventToken = eventToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessPageVisited (streamToken, timeStamp, pageName) ->
+        | ProcessPageVisited (timeStamp, streamToken, pageName) ->
             use session = store.LightweightSession()
             let pageCase =
                 match pageName with
-                | DataPolicyPage -> DataPolicyPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | HomePage -> HomePageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ProjectPage -> ProjectPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | CMSDataPage -> DataPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SignUpPage -> SignupPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | RowerPage -> RowerPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SpeakEZPage -> SpeakEZPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ContactPage -> ContactPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | PartnersPage -> PartnersPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ActivityPage -> SummaryActivityPageVisited { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | DataPolicyPage -> DataPolicyPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | HomePage -> HomePageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ProjectPage -> ProjectPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | CMSDataPage -> DataPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SignUpPage -> SignupPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | RowerPage -> RowerPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SpeakEZPage -> SpeakEZPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ContactPage -> ContactPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | PartnersPage -> PartnersPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ActivityPage -> SummaryActivityPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
             session.Events.Append(streamToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessButtonClicked (streamToken, timeStamp, buttonName) ->
+        | ProcessButtonClicked (timeStamp, streamToken, buttonName) ->
             use session = store.LightweightSession()
             let buttonCase =
                 match buttonName with
-                | HomeButton -> HomeButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | HomeProjectButton -> HomeProjectButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | HomeSignUpButton -> HomeSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ProjectButton -> ProjectButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ProjectDataButton -> ProjectDataButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ProjectSignUpButton -> ProjectSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | CMSDataButton -> DataButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | CMSDataSignUpButton -> DataSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SignUpButton -> SignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | RowerButton -> RowerButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | RowerSignUpButton -> RowerSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SpeakEZButton -> SpeakEZButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SpeakEZSignUpButton -> SpeakEZSignUpButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ContactButton -> ContactButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | PartnersButton -> PartnersButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | RowerSiteButton -> RowerSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | CuratorSiteButton -> CuratorSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | TableauSiteButton -> TableauSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | PowerBISiteButton -> PowerBISiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | DataPolicyResetButton -> DataPolicyResetButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
-                | ActivityButton -> SummaryActivityButtonClicked { Id = Guid.NewGuid(); TimeStamp = timeStamp }
+                | HomeButton -> HomeButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | HomeProjectButton -> HomeProjectButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | HomeSignUpButton -> HomeSignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ProjectButton -> ProjectButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ProjectDataButton -> ProjectDataButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ProjectSignUpButton -> ProjectSignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | CMSDataButton -> DataButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | CMSDataSignUpButton -> DataSignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SignUpButton -> SignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | RowerButton -> RowerButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | RowerSignUpButton -> RowerSignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SpeakEZButton -> SpeakEZButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SpeakEZSignUpButton -> SpeakEZSignUpButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ContactButton -> ContactButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | PartnersButton -> PartnersButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | RowerSiteButton -> RowerSiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | CuratorSiteButton -> CuratorSiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | TableauSiteButton -> TableauSiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | PowerBISiteButton -> PowerBISiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ThoughtSpotSiteButton -> ThoughtSpotSiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SpeakEZSiteButton -> SpeakEZSiteButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | DataPolicyAcceptButton -> DataPolicyAcceptButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | DataPolicyResetButton -> DataPolicyResetButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ActivityButton -> SummaryActivityButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
             session.Events.Append(streamToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessStreamClose (streamToken, timeStamp) ->
+        | ProcessStreamClose (timeStamp, streamToken) ->
             use session = store.LightweightSession()
-            let event = UserStreamClosed { Id = Guid.NewGuid(); TimeStamp = timeStamp; StreamID = streamToken }
+            let event = UserStreamClosed { TimeStamp = timeStamp; Id = Guid.NewGuid(); StreamID = streamToken }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessContactForm (streamToken, timeStamp, contactForm) ->
+        | ProcessContactForm (timeStamp, streamToken, contactForm) ->
             use session = store.LightweightSession()
-            let event = ContactFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = contactForm }
+            let event = ContactFormSubmitted { TimeStamp = timeStamp; Id = Guid.NewGuid(); Form = contactForm }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSignUpForm (streamToken, timeStamp, signUpForm) ->
+        | ProcessSignUpForm (timeStamp, streamToken, signUpForm) ->
             use session = store.LightweightSession()
-            let event = SignUpFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = signUpForm }
+            let event = SignUpFormSubmitted { TimeStamp = timeStamp; Id = Guid.NewGuid(); Form = signUpForm }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSmartFormInput (streamToken, timeStamp, smartFormRawContent) ->
+        | ProcessSmartFormInput (timeStamp, streamToken, smartFormRawContent) ->
             use session = store.LightweightSession()
-            let event = SmartFormSubmitted { Id = Guid.NewGuid(); TimeStamp = timeStamp; ClipboardInput =  smartFormRawContent }
+            let event = SmartFormSubmitted { TimeStamp = timeStamp; Id = Guid.NewGuid(); ClipboardInput =  smartFormRawContent }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessSmartFormResult (streamToken, timeStamp, form) ->
+        | ProcessSmartFormResult (timeStamp, streamToken, form) ->
             use session = store.LightweightSession()
-            let event = SmartFormResultReturned { Id = Guid.NewGuid(); TimeStamp = timeStamp; Form = form }
+            let event = SmartFormResultReturned { TimeStamp = timeStamp; Id = Guid.NewGuid(); Form = form }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         return! loop ()

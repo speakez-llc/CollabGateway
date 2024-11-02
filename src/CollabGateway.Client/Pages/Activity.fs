@@ -183,17 +183,17 @@ let renderTimeline (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
         timelineItem 0 (userSummary.StreamInitiated.ToString("yyyy-MM-dd HH:mm:ss")) "Your First Visit" ""
 
         match userSummary.DataPolicyDecision with
-        | Some (choice, date) ->
+        | Some (date, choice) ->
             timelineItem 1 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Data Policy Agreement" (choice.ToString())
         | _ -> Html.none
 
         match userSummary.ContactFormSubmitted with
-        | Some (form, date) ->
+        | Some (date, form) ->
             timelineItem 0 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Latest Contact Form Sent" form
         | None -> Html.none
 
         match userSummary.SignUpFormSubmitted with
-        | Some (form, date) ->
+        | Some (date, form) ->
             timelineItem 1 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Latest Sign Up Form Sent" form
         | None -> Html.none
     ]

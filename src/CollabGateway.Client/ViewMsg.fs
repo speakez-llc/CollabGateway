@@ -6,8 +6,8 @@ open Router
 
 
 type ViewMsg =
-    | ShowToast of Toast
-    | HideToast of Toast
+    | ShowToast of string * AlertLevel
+    | HideToast of int
     | UrlChanged of Page
     | ProcessPageVisited of PageName
     | ProcessButtonClicked of ButtonName

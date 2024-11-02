@@ -16,6 +16,10 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open Npgsql
 
+let getMessage (input: string): Async<string> =
+    async {
+        return $"Received message: {input}"
+    }
 let formatJson string =
     let jObject = JObject.Parse(string)
     JsonConvert.SerializeObject(jObject, Formatting.Indented)
@@ -29,13 +33,13 @@ let validateClipboardText (text: string) =
         // Add more validation logic if needed
         true
 
-let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: SmartFormRawContent) : Async<SignUpForm> =
+let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: SmartFormRawContent) : Async<SignUpForm> =
     task {
         let apiKey = Environment.GetEnvironmentVariable("AZUREOPENAI_API_KEY")
         if String.IsNullOrEmpty(apiKey) then
             return! ServerError.failwith (ServerError.Exception "Azure OpenAI API key is not set.")
         else
-            Database.eventProcessor.Post(ProcessSmartFormInput (streamToken, timeStamp, text))
+            Database.eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
             let url = "https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview"
             use httpClient = new HttpClient()
             httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
@@ -72,50 +76,50 @@ let processSmartForm (streamToken: StreamToken, timeStamp: EventDateTime, text: 
                 let jsonResponse = JObject.Parse(responseBody)
                 let messageContent = jsonResponse.SelectToken("choices[0].message.content").ToString()
                 let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
-                Database.eventProcessor.Post(ProcessSmartFormResult (streamToken, timeStamp, form))
+                Database.eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
                 return form
             else
                 return! ServerError.failwith (ServerError.Exception $"Call failed to inference: {response.StatusCode} - {responseBody}")
     }
     |> Async.AwaitTask
 
-let establishStreamToken (streamToken: StreamToken, timeStamp: EventDateTime) = async {
-    Database.eventProcessor.Post(EstablishStreamToken (streamToken, timeStamp))
+let establishStreamToken (timeStamp: EventDateTime, streamToken: StreamToken) = async {
+    Database.eventProcessor.Post(EstablishStreamToken (timeStamp, streamToken))
     }
 
-let appendUnsubscribeStatus (streamToken: StreamToken, dateTime: EventDateTime, eventToken: ValidationToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
-    Database.eventProcessor.Post(ProcessUnsubscribeStatus (streamToken, dateTime, eventToken, emailAddress, status))
+let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: ValidationToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
+    Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, eventToken, emailAddress, status))
     }
 
-let appendEmailStatus (streamToken: StreamToken, timeStamp: EventDateTime, eventToken: ValidationToken, email: EmailAddress, status: EmailStatus) = async {
-    Database.eventProcessor.Post(ProcessEmailStatus (streamToken, timeStamp, eventToken, email, status))
+let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: ValidationToken, email: EmailAddress, status: EmailStatus) = async {
+    Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, email, status))
     }
 
-let processStreamClose (streamToken: StreamToken, timeStamp: EventDateTime) = async {
-    Database.eventProcessor.Post(ProcessStreamClose (streamToken, timeStamp))
+let processStreamClose (timeStamp: EventDateTime, streamToken: StreamToken) = async {
+    Database.eventProcessor.Post(ProcessStreamClose (timeStamp, streamToken))
     }
 
-let processPageVisited (streamToken: StreamToken, timeStamp: EventDateTime, pageName: PageName) = async {
-    Database.eventProcessor.Post(ProcessPageVisited (streamToken, timeStamp, pageName))
+let processPageVisited (timeStamp: EventDateTime, streamToken: StreamToken, pageName: PageName) = async {
+    Database.eventProcessor.Post(ProcessPageVisited (timeStamp, streamToken, pageName))
     }
 
-let processButtonClicked (streamToken: StreamToken, timeStamp: EventDateTime, buttonName: ButtonName) = async {
+let processButtonClicked (timeStamp: EventDateTime, streamToken: StreamToken, buttonName: ButtonName) = async {
     Console.WriteLine $"Button handler: {buttonName}"
-    Database.eventProcessor.Post(ProcessButtonClicked (streamToken, timeStamp, buttonName))
+    Database.eventProcessor.Post(ProcessButtonClicked (timeStamp, streamToken, buttonName))
     }
 
-let processUserClientIP (streamToken: StreamToken, timeStamp: EventDateTime, clientIP: ClientIP) = async {
-    Database.eventProcessor.Post(EstablishUserClientIP (streamToken, timeStamp, clientIP))
+let processUserClientIP (timeStamp: EventDateTime,streamToken: StreamToken,  clientIP: ClientIP) = async {
+    Database.eventProcessor.Post(EstablishUserClientIP (timeStamp, streamToken, clientIP))
 }
 
-let processContactForm (streamToken: StreamToken, timeStamp: EventDateTime, form: ContactForm) = async {
-    Database.eventProcessor.Post(ProcessContactForm (streamToken, timeStamp, form))
+let processContactForm (timeStamp: EventDateTime,streamToken: StreamToken,  form: ContactForm) = async {
+    Database.eventProcessor.Post(ProcessContactForm (timeStamp, streamToken, form))
     let! result = transmitContactForm form
     return result
 }
 
-let processSignUpForm (streamToken: StreamToken, timeStamp: EventDateTime, form: SignUpForm) = async {
-    Database.eventProcessor.Post(ProcessSignUpForm (streamToken, timeStamp, form))
+let processSignUpForm (timeStamp: EventDateTime, streamToken: StreamToken, form: SignUpForm) = async {
+    Database.eventProcessor.Post(ProcessSignUpForm (timeStamp, streamToken, form))
     let! result = transmitSignUpForm form
     return result
 }
@@ -132,6 +136,7 @@ let flagEmailDomain (domain: string) = async {
 }
 
 let service = {
+    GetMessage = getMessage
     EstablishStreamToken = establishStreamToken
     EstablishUserClientIP = processUserClientIP
     AppendUnsubscribeStatus = appendUnsubscribeStatus

@@ -4,8 +4,6 @@ open System.Threading.Tasks
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 
-
-
 let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserStreamProjection> =
     async {
         use session = Database.store.LightweightSession()

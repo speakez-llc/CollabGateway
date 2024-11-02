@@ -75,16 +75,19 @@ let getDateInitiated (streamToken: StreamToken): Async<EventDateTime> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
-        let userStreamInitiatedEvent =
+        let dateInitiatedOption =
             allEvents
-            |> Seq.pick (fun e ->
+            |> Seq.tryPick (fun e ->
                 match e.Data with
                 | :? StreamEventCase as eventCase ->
                     match eventCase with
-                    | UserStreamInitiated { TimeStamp = ts } -> Some ts
+                    | UserStreamInitiated { TimeStamp = timeStamp } -> Some timeStamp
                     | _ -> None
                 | _ -> None)
-        return userStreamInitiatedEvent
+
+        match dateInitiatedOption with
+        | Some dateInitiated -> return dateInitiated
+        | None -> return failwith "No UserStreamInitiated event found for the given StreamToken."
     }
 
 let retrieveDataPolicyChoice (streamToken: StreamToken) = async {

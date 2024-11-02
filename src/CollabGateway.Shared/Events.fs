@@ -225,15 +225,15 @@ type EventCaseType =
     | ClientIPEventCase of ClientIPEventCase
 
 type EventProcessingMessage =
-    | EstablishStreamToken of StreamToken * EventDateTime
-    | EstablishUserClientIP of StreamToken * EventDateTime * ClientIP
-    | ProcessUnsubscribeStatus of StreamToken * EventDateTime * EventToken * EmailAddress * SubscribeStatus
-    | ProcessEmailStatus of StreamToken * EventDateTime * EventToken * EmailAddress * EmailStatus
-    | ProcessPageVisited of StreamToken * EventDateTime * PageName
-    | ProcessButtonClicked of StreamToken * EventDateTime * ButtonName
-    | ProcessStreamClose of StreamToken * EventDateTime
-    | ProcessContactForm of StreamToken * EventDateTime * ContactForm
-    | ProcessSignUpForm of StreamToken * EventDateTime * SignUpForm
-    | ProcessSmartFormInput of StreamToken * EventDateTime * SmartFormRawContent
-    | ProcessSmartFormResult of StreamToken * EventDateTime * SignUpForm
+    | EstablishStreamToken of EventDateTime * StreamToken
+    | EstablishUserClientIP of EventDateTime * StreamToken * ClientIP
+    | ProcessUnsubscribeStatus of EventDateTime * StreamToken * EventToken * EmailAddress * SubscribeStatus
+    | ProcessEmailStatus of EventDateTime * StreamToken * EventToken * EmailAddress * EmailStatus
+    | ProcessPageVisited of EventDateTime * StreamToken * PageName
+    | ProcessButtonClicked of EventDateTime * StreamToken * ButtonName
+    | ProcessStreamClose of EventDateTime * StreamToken
+    | ProcessContactForm of EventDateTime * StreamToken * ContactForm
+    | ProcessSignUpForm of EventDateTime * StreamToken * SignUpForm
+    | ProcessSmartFormInput of EventDateTime * StreamToken * SmartFormRawContent
+    | ProcessSmartFormResult of EventDateTime * StreamToken * SignUpForm
 

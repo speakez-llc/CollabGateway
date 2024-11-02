@@ -25,7 +25,7 @@ let private init () = { Message = "This is the Rower page" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
-    | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage success) MessageReceived
+    | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | MessageReceived (Ok msg) -> { model with Message = $"Got success response: {msg}" }, Cmd.none
     | MessageReceived (Result.Error error) -> { model with Message = $"Got server error: {error}" }, Cmd.none
 

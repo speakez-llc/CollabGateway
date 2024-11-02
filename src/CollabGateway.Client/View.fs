@@ -18,6 +18,7 @@ type State = {
     Page: Page
     Toasts: Toast list
     DataPolicyChoice: DataPolicyChoice
+    NextToastIndex: int
 }
 
 let service =
@@ -54,14 +55,14 @@ let processPageVisited (pageName: PageName) =
     async {
         let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
         let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-        service.ProcessPageVisited (streamToken, dateTime, pageName)
+        service.ProcessPageVisited (dateTime, streamToken, pageName)
             |> Async.StartImmediate
     }
 
 let processButtonClicked (buttonName: ButtonName) =
     let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
     let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessButtonClicked (streamToken, dateTime, buttonName)
+    service.ProcessButtonClicked (dateTime, streamToken, buttonName)
         |> Async.StartImmediate
 
 let establishStreamToken () =
@@ -76,14 +77,14 @@ let processStream () =
     async {
         let streamToken = Guid.Parse(establishStreamToken())
         let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-        service.ProcessStreamToken (streamToken, dateTime)
+        service.EstablishStreamToken (dateTime, streamToken)
         |> Async.StartImmediate
     }
 
 let processStreamClose () =
     let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
     let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessStreamClose (streamToken, dateTime)
+    service.ProcessStreamClose (dateTime, streamToken)
     |> Async.StartImmediate
 
 let processUserClientIP () =
@@ -91,7 +92,7 @@ let processUserClientIP () =
         let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
         let! clientIP = getClientIP()
         let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-        do! service.ProcessUserClientIP (streamToken, dateTime, clientIP)
+        do! service.EstablishUserClientIP (dateTime, streamToken, clientIP)
     }
 
 let retrieveDataPolicyChoice () =
@@ -109,13 +110,14 @@ let init () =
         Page = nextPage
         Toasts = []
         DataPolicyChoice = Accepted
+        NextToastIndex = 0
     }
 
     let processStreamCmd =
         Cmd.OfAsync.perform (fun () ->
             async {
                 let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-                do! service.ProcessStreamToken (Guid.Parse streamToken, dateTime)
+                do! service.EstablishStreamToken (dateTime, Guid.Parse streamToken)
             }) () (fun _ -> ProcessStream)
 
     let processUserClientIPCmd = Cmd.OfAsync.perform processUserClientIP () (fun _ -> ProcessUserClientIP)
@@ -131,16 +133,17 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with Page = page }, Cmd.none
     | DataPolicyChoiceRetrieved choice ->
         { state with DataPolicyChoice = choice }, Cmd.none
-    | ShowToast toast ->
+    | ShowToast (message, level) ->
+        let newToast = { Index = state.NextToastIndex; Message = message; Level = level }
         let hideToastCommand =
             Cmd.OfAsync.perform (fun () ->
                 async {
                     do! Async.Sleep 4000
-                    return HideToast toast
+                    return HideToast newToast.Index
                 }) () id
-        { state with Toasts = toast :: state.Toasts }, hideToastCommand
-    | HideToast toast ->
-        { state with Toasts = List.filter (fun t -> t.Message <> toast.Message) state.Toasts }, Cmd.none
+        { state with Toasts = newToast :: state.Toasts; NextToastIndex = state.NextToastIndex + 1 }, hideToastCommand
+    | HideToast index ->
+        { state with Toasts = List.filter (fun t -> t.Index <> index) state.Toasts }, Cmd.none
     | ProcessPageVisited pageName ->
         processPageVisited pageName |> ignore
         state, Cmd.none
@@ -181,7 +184,7 @@ let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
         prop.children [
             Html.button [
                 prop.className "btn btn-sm btn-ghost"
-                prop.onClick (fun _ -> dispatch (HideToast toast))
+                prop.onClick (fun _ -> dispatch (HideToast toast.Index))
                 prop.children [ Fa.i [ Fa.Solid.Times ] [] ]
             ]
             Html.div [
