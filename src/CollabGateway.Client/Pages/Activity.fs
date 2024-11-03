@@ -50,106 +50,103 @@ let update (msg: Msg) (model: State) : State * Cmd<Msg> =
     | ResetTimelineStartEnd ->
         { model with TimelineStartEnd = 0 }, Cmd.none
 
-let renderDescription (event: obj) =
-    match event with
-    | :? ContactForm as form ->
-        let calculateRows (text: string) =
-            let lines = text.Split('\n').Length
-            let additionalRows = text.Length / 60
-            lines + additionalRows
+let renderContactForm (form: ContactForm) =
+    let calculateRows (text: string) =
+        let lines = text.Split('\n').Length
+        let additionalRows = text.Length / 60
+        lines + additionalRows
 
+    Html.div [
         Html.div [
-            Html.div [
-                prop.className "mb-2"
-                prop.children [
-                    Html.label [
-                        prop.className "text-xs font-bold block"
-                        prop.text "Name"
-                    ]
-                    Html.input [
-                        prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
-                        prop.readOnly true
-                        prop.value form.Name
-                    ]
+            prop.className "mb-2"
+            prop.children [
+                Html.label [
+                    prop.className "text-xs font-bold block"
+                    prop.text "Name"
+                ]
+                Html.input [
+                    prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
+                    prop.readOnly true
+                    prop.value form.Name
                 ]
             ]
-            Html.div [
-                prop.className "mb-2"
-                prop.children [
-                    Html.label [
-                        prop.className "text-xs font-bold block"
-                        prop.text "Email"
-                    ]
-                    Html.input [
-                        prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
-                        prop.readOnly true
-                        prop.value form.Email
-                    ]
+        ]
+        Html.div [
+            prop.className "mb-2"
+            prop.children [
+                Html.label [
+                    prop.className "text-xs font-bold block"
+                    prop.text "Email"
+                ]
+                Html.input [
+                    prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
+                    prop.readOnly true
+                    prop.value form.Email
                 ]
             ]
-            Html.div [
-                prop.className "mb-2"
-                prop.children [
-                    Html.label [
-                        prop.className "text-xs font-bold block"
-                        prop.text "Message"
+        ]
+        Html.div [
+            prop.className "mb-2"
+            prop.children [
+                Html.label [
+                    prop.className "text-xs font-bold block"
+                    prop.text "Message"
+                ]
+                Html.textarea [
+                    prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                    prop.readOnly true
+                    prop.value form.MessageBody
+                    prop.rows (calculateRows form.MessageBody)
+                ]
+            ]
+        ]
+    ]
+
+let renderSignUpForm (form: SignUpForm) =
+    let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
+        Html.div [
+            prop.className "flex space-x-4"
+            prop.children [
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label1
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value1
+                        ]
                     ]
-                    Html.textarea [
-                        prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
-                        prop.readOnly true
-                        prop.value form.MessageBody
-                        prop.rows (calculateRows form.MessageBody)
+                ]
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label2
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value2
+                        ]
                     ]
                 ]
             ]
         ]
-    | :? SignUpForm as form ->
-        let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
-            Html.div [
-                prop.className "flex space-x-4"
-                prop.children [
-                    Html.div [
-                        prop.className "flex-1"
-                        prop.children [
-                            Html.label [
-                                prop.className "text-xs font-bold block mb-1"
-                                prop.text label1
-                            ]
-                            Html.input [
-                                prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
-                                prop.readOnly true
-                                prop.value value1
-                            ]
-                        ]
-                    ]
-                    Html.div [
-                        prop.className "flex-1"
-                        prop.children [
-                            Html.label [
-                                prop.className "text-xs font-bold block mb-1"
-                                prop.text label2
-                            ]
-                            Html.input [
-                                prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
-                                prop.readOnly true
-                                prop.value value2
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        Html.div [
-            renderRow "Name" form.Name "Email" form.Email
-            renderRow "Job Title" form.JobTitle "Phone" form.Phone
-            renderRow "Department" form.Department "Company" form.Company
-            renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
-            renderRow "City" form.City "State or Province" form.StateProvince
-            renderRow "Postal Code" form.PostCode "Country" form.Country
-        ]
-    | _ ->
-        Html.p [ prop.text (event.ToString()) ]
+    Html.div [
+        renderRow "Name" form.Name "Email" form.Email
+        renderRow "Job Title" form.JobTitle "Phone" form.Phone
+        renderRow "Department" form.Department "Company" form.Company
+        renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
+        renderRow "City" form.City "State or Province" form.StateProvince
+        renderRow "Postal Code" form.PostCode "Country" form.Country
+    ]
 
-let timelineItem (index: int) (time: string) (title: string) (description: obj) =
+let timelineItem (index: int) (time: string) (title: string) (content: ReactElement) =
     let isStart = (index % 2) = 0
     Html.li [
         Html.div [
@@ -169,34 +166,51 @@ let timelineItem (index: int) (time: string) (title: string) (description: obj) 
                     prop.className "text-lg font-black"
                     prop.text title
                 ]
-                renderDescription description
+                content
             ]
         ]
         Html.hr []
     ]
 
-
-
 let renderTimeline (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
     dispatch ResetTimelineStartEnd
-    let items = [
-        timelineItem 0 (userSummary.StreamInitiated.ToString("yyyy-MM-dd HH:mm:ss")) "Your First Visit" ""
+
+    let events = [
+        yield (userSummary.StreamInitiated, 0, "Your First Visit", Html.none)
 
         match userSummary.DataPolicyDecision with
         | Some (date, choice) ->
-            timelineItem 1 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Data Policy Agreement" (choice.ToString())
-        | _ -> Html.none
+            yield (date, 1, "Data Policy Agreement", Html.text (choice.ToString()))
+        | None -> ()
 
         match userSummary.ContactFormSubmitted with
         | Some (date, form) ->
-            timelineItem 0 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Latest Contact Form Sent" form
-        | None -> Html.none
+            yield (date, 0, "Latest Contact Form Sent", renderContactForm form)
+        | None -> ()
 
         match userSummary.SignUpFormSubmitted with
         | Some (date, form) ->
-            timelineItem 1 (date.ToString("yyyy-MM-dd HH:mm:ss")) "Latest Sign Up Form Sent" form
-        | None -> Html.none
+            yield (date, 1, "Latest Sign Up Form Sent", renderSignUpForm form)
+        | None -> ()
+
+        match userSummary.EmailStatus with
+        | Some emailStatusList ->
+            for date, email, status in emailStatusList do
+                yield (date, 0, sprintf "Email Status %s" (status.ToString()), Html.text (sprintf "Email: %s" email))
+        | None -> ()
+
+        match userSummary.SubscribeStatus with
+        | Some subscribeStatusList ->
+            for date, email, status in subscribeStatusList do
+                yield (date, 1, sprintf "Subscribe Status %s" (status.ToString()), Html.text (sprintf "Email: %s" email))
+        | None -> ()
     ]
+
+    let sortedEvents = events |> List.sortBy (fun (date, _, _, _) -> date)
+
+    let items = sortedEvents |> List.map (fun (date, index, title, description) ->
+        timelineItem index (date.ToString("yyyy-MM-dd HH:mm:ss")) title description
+    )
 
     Html.ul [
         prop.className "timeline timeline-snap-icon max-md:timeline timeline-vertical mx-auto"

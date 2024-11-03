@@ -107,7 +107,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | SubmitForm ->
         let errors, hasErrors = validateForm model.SignUpForm
         if hasErrors then
-            errors |> List.iter (fun error -> parentDispatch (ShowToast { Message = error; Level = AlertLevel.Warning }))
+            errors |> List.iter (fun error -> parentDispatch (ShowToast (error, AlertLevel.Warning )))
             model, Cmd.none
         else
             let timeStamp = DateTime.UtcNow
@@ -115,15 +115,15 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (timeStamp, sessionToken, model.SignUpForm)) FormSubmitted
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        parentDispatch (ShowToast { Message = "Contact form sent"; Level = AlertLevel.Success })
+        parentDispatch (ShowToast ("Contact form sent", AlertLevel.Success ))
         { model with SignUpForm = { model.SignUpForm with Email = ""; Name = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = ""
                                      }; ResponseMessage = $"Got success response: {response}"; IsProcessing = false }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
-        parentDispatch (ShowToast { Message = "Failed to send contact form"; Level = AlertLevel.Error })
+        parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | ProcessSmartFormRawContent clipboardText ->
         if clipboardText = "" then
-            parentDispatch (ShowToast { Message = "No text in clipboard"; Level = AlertLevel.Error })
+            parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Error ))
             model, Cmd.none
         else
             let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
@@ -133,16 +133,16 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)
         { model with SignUpForm = parsedForm; IsProcessing = false }, Cmd.none
     | FormProcessed (Result.Error ex) ->
-        parentDispatch (ShowToast { Message = $"Failed to process form: {ex}"; Level = AlertLevel.Error })
+        parentDispatch (ShowToast ($"Failed to process form: {ex}", AlertLevel.Error ))
         { model with IsProcessing = false }, Cmd.none
     | SmartFormProcessed (Ok response) ->
-        parentDispatch (ShowToast { Message = "Smart Form Processing Completed"; Level = AlertLevel.Info })
+        parentDispatch (ShowToast ("Smart Form Processing Completed", AlertLevel.Info ))
         { model with SignUpForm = response; IsProcessing = false }, Cmd.none
     | SmartFormProcessed (Result.Error ex) ->
-        parentDispatch (ShowToast { Message = $"Failed to process smart form: {ex}"; Level = AlertLevel.Error })
+        parentDispatch (ShowToast ($"Failed to process smart form: {ex}", AlertLevel.Error ))
         { model with IsProcessing = false }, Cmd.none
     | NotifyClipboardError s ->
-        parentDispatch (ShowToast { Message = $"Error in processing clipboard: {s}"; Level = AlertLevel.Warning })
+        parentDispatch (ShowToast ($"Error in processing clipboard: {s}", AlertLevel.Warning ))
         { model with IsProcessing = false }, Cmd.none
     | ClearForm ->
         { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" } }, Cmd.none
@@ -167,7 +167,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 return Some text
             with
             | ex ->
-                parentDispatch (ShowToast { Message = $"Failed to read clipboard content: {ex.Message}"; Level = AlertLevel.Warning })
+                parentDispatch (ShowToast ($"Failed to read clipboard content: {ex.Message}", AlertLevel.Warning ))
                 return None
         }
 
@@ -177,7 +177,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             let! clipboardTextOption = getClipboardText()
             match clipboardTextOption with
             | Some clipboardText -> dispatch (ProcessSmartFormRawContent clipboardText)
-            | None -> parentDispatch (ShowToast { Message = "No text in clipboard"; Level = AlertLevel.Info })
+            | None -> parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Info ))
         } |> ignore
 
     React.fragment [

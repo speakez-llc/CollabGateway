@@ -93,6 +93,7 @@ let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken,
 
 let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: ValidationToken, email: EmailAddress, status: EmailStatus) = async {
     Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, email, status))
+    Console.WriteLine $"Email status verification link: http://localhost:5000/api/prefs/confirm?token={eventToken}"
     }
 
 let processStreamClose (timeStamp: EventDateTime, streamToken: StreamToken) = async {
@@ -164,6 +165,8 @@ let webApp : HttpHandler =
         |> Remoting.withErrorHandler (Remoting.errorHandler logger)
         |> Remoting.buildHttpHandler
     choose [
+        route "/api/prefs/confirm" >=> Notifications.confirmEmailHandler
+        route "/api/prefs/unsubscribe" >=> Notifications.unsubscribeHandler
         Require.services<ILogger<_>> remoting
         htmlFile "public/index.html"
     ]

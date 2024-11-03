@@ -128,11 +128,6 @@ let retrieveEmailStatus (streamToken: StreamToken): Async<(EventDateTime * Email
                     | EmailStatusAppended { TimeStamp = ts; EmailAddress = ea; Status = status} -> Some (ts, ea, status)
                     | _ -> None
                 | _ -> None)
-            |> Seq.groupBy (fun (_, ea, _) -> ea)
-            |> Seq.map (fun (_, events) ->
-                let latestEvent = events |> Seq.maxBy (fun (timestamp, _, _) -> timestamp)
-                match latestEvent with
-                | timestamp, ea, status -> (timestamp, ea, status))
             |> Seq.toList
 
         return if List.isEmpty emailStatusEvents then None else Some emailStatusEvents
