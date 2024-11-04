@@ -10,7 +10,7 @@ let DataPolicyModal (state: DataPolicyChoice) (parentDispatch: ViewMsg -> unit) 
         prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
         prop.children [
             Html.div [
-                prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-5/6 md:w-1/2"
+                prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-5/6 md:w-1/2 max-h-screen overflow-y-auto"
                 prop.children [
                     Html.img [
                         prop.src "/img/Collab_Logo_narrow.svg"

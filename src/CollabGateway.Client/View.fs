@@ -15,6 +15,7 @@ open CollabGateway.Client.ViewMsg
 open CollabGateway.Client.DataPolicyModal
 
 type State = {
+    IsAdmin: bool
     Page: Page
     Toasts: Toast list
     DataPolicyChoice: DataPolicyChoice
@@ -102,11 +103,25 @@ let retrieveDataPolicyChoice () =
         return choice
     }
 
+let checkIfAdmin (streamToken: StreamToken) =
+    async {
+        let! emailStatuses = service.RetrieveEmailStatus streamToken
+        let isAdmin =
+            match emailStatuses with
+            | Some statuses ->
+                statuses
+                |> List.exists (fun (_, email, status) ->
+                    status = Verified && email.EndsWith("@rowerconsulting.com"))
+            | None -> false
+        return isAdmin
+    }
+
 let init () =
     let nextPage = Router.currentPath() |> Page.parseFromUrlSegments
     let streamToken = establishStreamToken()
 
     let initialState = {
+        IsAdmin = false
         Page = nextPage
         Toasts = []
         DataPolicyChoice = Accepted
@@ -122,8 +137,9 @@ let init () =
 
     let processUserClientIPCmd = Cmd.OfAsync.perform processUserClientIP () (fun _ -> ProcessUserClientIP)
     let retrieveDataPolicyChoiceCmd = Cmd.OfAsync.perform retrieveDataPolicyChoice () DataPolicyChoiceRetrieved
+    let checkIfAdminCmd = Cmd.OfAsync.perform (fun () -> checkIfAdmin (Guid.Parse streamToken)) () (fun isAdmin -> if isAdmin then ProcessAdminCheck true else ProcessAdminCheck false)
 
-    let initialCmd = Cmd.batch [processStreamCmd; processUserClientIPCmd; retrieveDataPolicyChoiceCmd]
+    let initialCmd = Cmd.batch [processStreamCmd; processUserClientIPCmd; retrieveDataPolicyChoiceCmd; checkIfAdminCmd]
 
     initialState, initialCmd
 
@@ -170,6 +186,8 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | ProcessStreamClose ->
         processStreamClose()
         state, Cmd.none
+    | ProcessAdminCheck isAdmin ->
+        { state with IsAdmin = isAdmin }, Cmd.none
 
 let getAlertClass level =
         match level with

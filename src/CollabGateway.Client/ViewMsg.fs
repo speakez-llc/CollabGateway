@@ -1,6 +1,5 @@
 module CollabGateway.Client.ViewMsg
 
-open CollabGateway.Shared.Events
 open CollabGateway.Shared.API
 open Router
 
@@ -15,3 +14,4 @@ type ViewMsg =
     | ProcessStreamClose
     | ProcessUserClientIP
     | DataPolicyChoiceRetrieved of DataPolicyChoice
+    | ProcessAdminCheck of bool
