@@ -1,6 +1,7 @@
 ﻿module CollabGateway.Client.Pages.SignUp
 
 open System
+open CollabGateway.Shared.Errors
 open Fable.Import
 open Newtonsoft.Json
 open Feliz
@@ -13,7 +14,7 @@ open UseElmish
 open Browser.Dom
 open Browser.Navigator
 
-type private State = {
+type State = {
     Message : string
     ResponseMessage: string
     Accordion1Open : bool
@@ -21,9 +22,10 @@ type private State = {
     Accordion3Open : bool
     SignUpForm : SignUpForm
     IsProcessing: bool
+    FormSubmittedCount: int
 }
 
-type private Msg =
+type Msg =
     | AskForMessage of bool
     | UpdateName of string
     | UpdateEmail of string
@@ -46,9 +48,11 @@ type private Msg =
     | ClearForm
     | FormSubmitted of ServerResult<string>
     | FormProcessed of ServerResult<string>
+    | RetrieveFormSubmittedCount of ServerResult<int>
     | ProcessSmartFormRawContent of string
     | SmartFormProcessed of ServerResult<SignUpForm>
     | NotifyClipboardError of string
+    | ReevaluateFormSubmittedCount
 
 let private validateForm (contactForm: SignUpForm) =
     let errors =
@@ -57,18 +61,36 @@ let private validateForm (contactForm: SignUpForm) =
         |> List.choose id
     errors, not (List.isEmpty errors)
 
-let private init () = { Message = "Take The First Step!"
-                        IsProcessing = false
-                        ResponseMessage = ""
-                        Accordion1Open = false
-                        Accordion2Open = false
-                        Accordion3Open = false
-                        SignUpForm = { Name = ""; Email = ""
-                                       JobTitle = ""; Phone = ""
-                                       Department = ""; Company = ""
-                                       StreetAddress1 = ""; StreetAddress2 = ""
-                                       City = ""; StateProvince = ""
-                                       Country = ""; PostCode = "" } }, Cmd.none
+let init () : State * Cmd<Msg> =
+    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+    let initialState = {
+        Message = "Take The First Step!"
+        FormSubmittedCount = 0
+        IsProcessing = false
+        ResponseMessage = ""
+        Accordion1Open = false
+        Accordion2Open = false
+        Accordion3Open = false
+        SignUpForm = {
+            Name = ""
+            Email = ""
+            JobTitle = ""
+            Phone = ""
+            Department = ""
+            Company = ""
+            StreetAddress1 = ""
+            StreetAddress2 = ""
+            City = ""
+            StateProvince = ""
+            Country = ""
+            PostCode = ""
+        }
+    }
+
+    let fetchFormSubmittedCountCmd =
+        Cmd.OfAsync.perform (fun () -> service.RetrieveSmartFormSubmittedCount streamToken) () (fun result -> RetrieveFormSubmittedCount (Ok result))
+
+    initialState, fetchFormSubmittedCountCmd
 
 let private closeAccordion label model =
     match label with
@@ -77,7 +99,7 @@ let private closeAccordion label model =
     | "Accordion3" -> { model with Accordion3Open = false }
     | _ -> model
 
-let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
+let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg>  =
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name -> { model with State.SignUpForm.Name = name }, Cmd.none
@@ -113,7 +135,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             let timeStamp = DateTime.UtcNow
             let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (timeStamp, sessionToken, model.SignUpForm)) FormSubmitted
-            { model with IsProcessing = true }, cmd
+            { model with IsProcessing = true; FormSubmittedCount = model.FormSubmittedCount + 1 }, cmd
     | FormSubmitted (Ok response) ->
         parentDispatch (ShowToast ("Contact form sent", AlertLevel.Success ))
         { model with SignUpForm = { model.SignUpForm with Email = ""; Name = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = ""
@@ -123,12 +145,25 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | ProcessSmartFormRawContent clipboardText ->
         if clipboardText = "" then
-            parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Error ))
+            parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Error))
             model, Cmd.none
         else
             let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, sessionToken,clipboardText)) SmartFormProcessed
-            { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true }, cmd
+            match model.FormSubmittedCount with
+            | 2 ->
+                parentDispatch (ShowToast ("Two Smart Form attempts remaining", AlertLevel.Warning))
+                let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, sessionToken, clipboardText)) SmartFormProcessed
+                { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true; FormSubmittedCount = model.FormSubmittedCount + 1 }, cmd
+            | 3 ->
+                parentDispatch (ShowToast ("One Smart Form attempt remaining", AlertLevel.Warning))
+                let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, sessionToken, clipboardText)) SmartFormProcessed
+                { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true; FormSubmittedCount = model.FormSubmittedCount + 1 }, cmd
+            | count when count >= 4 ->
+                parentDispatch (ShowToast ("Smart Form Disabled", AlertLevel.Error))
+                model, Cmd.none
+            | _ ->
+                let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, sessionToken, clipboardText)) SmartFormProcessed
+                { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" }; IsProcessing = true; FormSubmittedCount = model.FormSubmittedCount + 1 }, cmd
     | FormProcessed (Ok response) ->
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)
         { model with SignUpForm = parsedForm; IsProcessing = false }, Cmd.none
@@ -144,12 +179,20 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | NotifyClipboardError s ->
         parentDispatch (ShowToast ($"Error in processing clipboard: {s}", AlertLevel.Warning ))
         { model with IsProcessing = false }, Cmd.none
-    | ClearForm ->
-        { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = "" } }, Cmd.none
+    | ClearForm -> { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; Country = ""; PostCode = "" } }, Cmd.none
+    | RetrieveFormSubmittedCount (Ok count) ->
+        if count >= 5 then
+            parentDispatch (ShowToast ("Smart Form Disabled", AlertLevel.Warning))
+        { model with FormSubmittedCount = count }, Cmd.none
+    | RetrieveFormSubmittedCount (Result.Error ex) -> { model with ResponseMessage = ex.ToString() }, Cmd.none
+    | ReevaluateFormSubmittedCount ->
+        let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.RetrieveSmartFormSubmittedCount sessionToken) RetrieveFormSubmittedCount
+        model, cmd
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
-    let state, dispatch = React.useElmish((fun () -> init ()), (fun msg model -> update msg model parentDispatch), [| |])
+    let state, dispatch = React.useElmish(init, (fun msg model -> update msg model parentDispatch), [| |])
 
     React.useEffectOnce(fun () ->
         parentDispatch (ProcessPageVisited SignUpPage)
@@ -177,7 +220,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             let! clipboardTextOption = getClipboardText()
             match clipboardTextOption with
             | Some clipboardText -> dispatch (ProcessSmartFormRawContent clipboardText)
-            | None -> parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Info ))
+            | None -> parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Warning))
         } |> ignore
 
     React.fragment [
@@ -492,6 +535,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "btn bg-orange-500 h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
                                                     prop.text "Use Smart Form"
                                                     prop.type' "submit"
+                                                    prop.disabled (state.FormSubmittedCount > 4)
                                                     prop.onClick handleSmartForm
                                                 ]
                                                 Html.button [

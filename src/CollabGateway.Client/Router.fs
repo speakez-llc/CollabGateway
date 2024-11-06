@@ -14,6 +14,8 @@ type Page =
     | Contact
     | Partners
     | Activity
+    | UserSummary
+    | Overview
 
 [<RequireQualifiedAccess>]
 module Page =
@@ -28,6 +30,8 @@ module Page =
         | [ "contact" ] -> Page.Contact
         | [ "partners" ] -> Page.Partners
         | [ "activity" ] -> Page.Activity
+        | [ "user-summary" ] -> Page.UserSummary
+        | [ "overview" ] -> Page.Overview
         | [ ] -> Page.Index
         | _ -> defaultPage
 
@@ -43,6 +47,8 @@ module Page =
         | Page.Contact -> [ "contact" ] |> noQueryString
         | Page.Partners -> [ "partners" ] |> noQueryString
         | Page.Activity -> [ "activity" ] |> noQueryString
+        | Page.UserSummary -> [ "user-summary" ] |> noQueryString
+        | Page.Overview -> [ "overview" ] |> noQueryString
 
 [<RequireQualifiedAccess>]
 module Router =

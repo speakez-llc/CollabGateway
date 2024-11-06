@@ -22,6 +22,9 @@
         <Compile Include="Pages\SpeakEZ.fs" />
         <Compile Include="Pages\Contact.fs" />
         <Compile Include="Pages\Activity.fs" />
+        <Compile Include="Pages\UserSummary.fs" />
+        <Compile Include="Pages\Overview.fs" />
+        <Compile Include="Pages\Housekeeping.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />
     </ItemGroup>
@@ -31,6 +34,8 @@
     <ItemGroup>
       <PackageReference Include="Fable.Browser.Navigator" Version="2.5.0" />
       <PackageReference Include="Fable.Fetch" Version="2.7.0" />
+      <PackageReference Include="Feliz.PigeonMaps" Version="3.0.0" />
+      <PackageReference Include="Feliz.Recharts" Version="4.3.0" />
       <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />

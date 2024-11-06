@@ -30,6 +30,7 @@ let DataPolicyModal (state: DataPolicyChoice) (parentDispatch: ViewMsg -> unit) 
                                 ]
                                 Html.p [
                                     prop.className "pt-2"
+
                                     prop.text "collab@rowerconsulting.com"
                                 ]
                             | _ ->

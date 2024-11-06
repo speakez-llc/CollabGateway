@@ -18,6 +18,8 @@ type PageName =
     | ContactPage
     | PartnersPage
     | ActivityPage
+    | OverviewPage
+    | UserSummaryPage
 
 type ButtonName =
     | DataPolicyAcceptButton
@@ -45,6 +47,8 @@ type ButtonName =
     | ThoughtSpotSiteButton
     | SpeakEZSiteButton
     | ActivityButton
+    | OverviewButton
+    | UserSummaryButton
 
 type StreamToken = Guid
 type EventDateTime = DateTime
@@ -107,12 +111,12 @@ type EmailStatus =
     | Verified
     | Evicted
 
-
 type Toast = {
     Index: int
     Message: string
     Level: AlertLevel
 }
+
 type UserSummaryAggregate = {
     StreamInitiated: EventDateTime
     DataPolicyDecision: (EventDateTime * DataPolicyChoice) option
@@ -124,7 +128,40 @@ type UserSummaryAggregate = {
 
 type FullUserStreamProjection = (string * EventDateTime * obj option) list
 
-type UserNameProjection = (string option * StreamToken) list
+type UserTopLineSummary = {
+    StreamToken: StreamToken
+    UserName: string option
+    Email: string option
+    EventCount: int
+}
+
+type UserStreamProjection = UserTopLineSummary list
+
+type Grain =
+    | Month
+    | Week
+    | Day
+    | Hour
+    | Minute
+
+type IntervalStart = DateTime
+type IntervalEnd = DateTime
+
+type OverviewTotals = {
+    TotalUserStreams: int
+    TotalDataPolicyDeclines: int
+    TotalContactFormsUsed: int
+    TotalSmartFormUsers: int
+    TotalSignUpFormsUsed: int
+    TotalEmailVerifications: int
+    TotalEmailUnsubscribes: int
+}
+
+type OverviewTotalsProjection = {
+    IntervalStart: IntervalStart option
+    IntervalEnd: IntervalEnd option
+    OverviewTotals: OverviewTotals
+}
 
 type Service = {
     GetMessage : string -> Async<string>
@@ -138,13 +175,17 @@ type Service = {
     ProcessPageVisited : EventDateTime * StreamToken * PageName -> Async<unit>
     ProcessButtonClicked : EventDateTime * StreamToken * ButtonName -> Async<unit>
     ProcessSmartForm : EventDateTime * StreamToken * SmartFormRawContent -> Async<SignUpForm>
+    RetrieveSmartFormSubmittedCount: StreamToken -> Async<int>
     ProcessSignUpForm : EventDateTime * StreamToken * SignUpForm -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
     RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list option>
     RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) list option>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
     RetrieveFullUserStream : StreamToken -> Async<FullUserStreamProjection>
-    RetrieveAllUserNames : unit -> Async<UserNameProjection>
+    RetrieveAllUserNames : unit -> Async<UserStreamProjection>
+    RetrieveOverviewTotals : (int * Grain) option -> Async<OverviewTotalsProjection list>
+    RetrieveClientIPLocations : unit -> Async<(string * float * float * int) list>
+    RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

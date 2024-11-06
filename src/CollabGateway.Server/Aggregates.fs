@@ -114,6 +114,22 @@ let retrieveDataPolicyChoice (streamToken: StreamToken) = async {
     | _ -> return Unknown
 }
 
+let retrieveSmartFormSubmittedCount (streamToken: StreamToken) = async {
+    use session = Database.store.LightweightSession()
+    let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+    let smartFormSubmittedEvents =
+        allEvents
+        |> Seq.choose (fun e ->
+            match e.Data with
+            | :? FormEventCase as eventCase ->
+                match eventCase with
+                | SmartFormSubmitted _ -> Some eventCase
+                | _ -> None
+            | _ -> None)
+        |> Seq.length
+
+    return smartFormSubmittedEvents
+}
 
 let retrieveEmailStatus (streamToken: StreamToken): Async<(EventDateTime * EmailAddress * EmailStatus) list option> =
     async {

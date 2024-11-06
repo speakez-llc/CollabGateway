@@ -148,13 +148,17 @@ let service = {
     ProcessPageVisited = processPageVisited
     ProcessButtonClicked = processButtonClicked
     ProcessSmartForm = processSmartForm
+    RetrieveSmartFormSubmittedCount = Aggregates.retrieveSmartFormSubmittedCount
     ProcessSignUpForm = processSignUpForm
     RetrieveDataPolicyChoice = Aggregates.retrieveDataPolicyChoice
     RetrieveEmailStatus = Aggregates.retrieveEmailStatus
     RetrieveUnsubscribeStatus = Aggregates.retrieveSubscribeStatus
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
     RetrieveFullUserStream = Projections.retrieveFullUserStreamProjection
-    RetrieveAllUserNames = Projections.retrieveUserStreamProjection
+    RetrieveAllUserNames = Projections.retrieveUserNameProjection
+    RetrieveOverviewTotals = Projections.retrieveOverviewTotals
+    RetrieveClientIPLocations = Projections.retrieveClientIPLocations
+    RetrieveVerifiedEmailDomains = Projections.retrieveVerifiedEmailDomains
 }
 
 let webApp : HttpHandler =

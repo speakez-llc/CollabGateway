@@ -121,7 +121,7 @@ let init () =
     let streamToken = establishStreamToken()
 
     let initialState = {
-        IsAdmin = false
+        IsAdmin = true // Default to true for development
         Page = nextPage
         Toasts = []
         DataPolicyChoice = Accepted
@@ -285,6 +285,8 @@ let AppView () =
         | Page.Contact -> Pages.Contact.IndexView dispatch
         | Page.Activity -> Pages.Activity.IndexView dispatch
         | Page.Partners -> Pages.Partners.IndexView dispatch
+        | Page.UserSummary -> Pages.UserSummary.IndexView (state.IsAdmin, dispatch)
+        | Page.Overview -> Pages.Overview.IndexView (state.IsAdmin, dispatch)
 
     let navigationWrapper =
         Html.div [
@@ -349,7 +351,7 @@ let AppView () =
                     prop.children [
                         // Sidebar
                         Html.div [
-                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)] flex flex-col" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16"))
+                            prop.className (sprintf "transition-all duration-500 ease-in-out %s z-10 fixed top-16 left-0 h-[calc(100vh-4rem)] flex flex-col overflow-y-auto" (if isOpen then "w-64" else if isMobileView() then "w-0" else "w-16"))
                             prop.style [ style.width (if isOpen then length.rem 16 else if isMobileView() then length.rem 0 else length.rem 4) ]
                             prop.children [
                                 if isOpen || not (isMobileView()) then
@@ -502,6 +504,58 @@ let AppView () =
                                                                 Fa.Solid.InfoCircle
                                                             ] []
                                                             if isOpen then Html.span "Partners & Links" else Html.none
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                else Html.none
+                                // Admin sub-menu
+                                if state.IsAdmin then
+                                    Html.div [
+                                        prop.className "mt-auto"
+                                        prop.children [
+                                            Html.ul [
+                                                prop.className (sprintf "menu bg-base-200 text-base-content text-lg font-semibold transition-opacity duration-900 ease-in-out %s" (if isOpen || not (isMobileView()) then "opacity-100" else "opacity-0"))
+                                                prop.children [
+                                                    Html.li [
+                                                        prop.children [
+                                                            Html.a [
+                                                                prop.href "overview"
+                                                                prop.title "Overview"
+                                                                prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked OverviewButton); Router.goToUrl(e))
+                                                                prop.children [
+                                                                    Fa.i [ Fa.Solid.List ] []
+                                                                    if isOpen then Html.span "Overview" else Html.none
+                                                                ]
+                                                            ]
+                                                        ]
+                                                    ]
+                                                    Html.li [
+                                                        prop.children [
+                                                            Html.a [
+                                                                prop.href "user-summary"
+                                                                prop.title "User Details"
+                                                                prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked UserSummaryButton); Router.goToUrl(e))
+                                                                prop.children [
+                                                                    Fa.i [ Fa.Solid.UserCog ] []
+                                                                    if isOpen then Html.span "User Details" else Html.none
+                                                                ]
+                                                            ]
+                                                        ]
+                                                    ]
+                                                    Html.li [
+                                                        prop.children [
+                                                            Html.a [
+                                                                prop.href "housekeeping"
+                                                                prop.title "Housekeeping"
+                                                                prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked UserSummaryButton); Router.goToUrl(e))
+                                                                prop.children [
+                                                                    Fa.i [ Fa.Solid.HouseSignal ] []
+                                                                    if isOpen then Html.span "Housekeeping" else Html.none
+                                                                ]
+                                                            ]
                                                         ]
                                                     ]
                                                 ]

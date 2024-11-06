@@ -5,6 +5,8 @@ storage: none
 nuget Fable.FontAwesome
 nuget Fable.FontAwesome.Pro
 nuget Fable.Remoting.Giraffe
+nuget Feliz.PigeonMaps
+nuget Feliz.Recharts
 nuget Giraffe
 nuget Giraffe.GoodRead
 
