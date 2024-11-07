@@ -8,6 +8,7 @@ open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
+open Feliz.Styles
 open UseElmish
 
 type State = {
@@ -105,12 +106,6 @@ let OverviewStats (overviewTotals: OverviewTotalsProjection) =
             ]
         ]
     ]
-
-type TooltipPayload = {
-    name: string
-    value: int
-}
-
 type OverviewDataPoint = {
     name: string
     userStreams: int
@@ -123,38 +118,16 @@ type OverviewDataPoint = {
     usersSmartFormLimit: int
 }
 
-let customTooltip (props: {| active: bool; payload: obj list; label: string |}) =
-    if props.active && not (List.isEmpty props.payload) then
-        Html.div [
-            prop.className "custom-tooltip"
-            prop.children [
-                Html.p [
-                    prop.className "label"
-                    prop.text $"{props.label}"
-                ]
-                for item in props.payload do
-                    let payloadItem = item :?> TooltipPayload
-                    Html.p [
-                        prop.className "intro"
-                        prop.text $"{payloadItem.name} : {payloadItem.value}"
-                    ]
-                Html.p [
-                    prop.className "desc"
-                    prop.text "Additional description here."
-                ]
-            ]
-        ]
-    else
-        Html.none
-
 [<ReactComponent>]
 let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
     let data =
         overviewSeries
         |> List.map (fun projection ->
             {
-                name = projection.IntervalEnd |> Option.map (_.ToString("MM/dd")) |> Option.defaultValue ""
-                userStreams = projection.OverviewTotals.TotalUserStreams
+                name = projection.IntervalEnd
+                       |> Option.map (fun date -> "Date: " + date.ToString("MM/dd"))
+                       |> Option.defaultValue ""
+                userStreams = projection.OverviewTotals.TotalNewUserStreams
                 dataPolicyDeclines = projection.OverviewTotals.TotalDataPolicyDeclines
                 contactFormsUsed = projection.OverviewTotals.TotalContactFormsUsed
                 smartFormUsers = projection.OverviewTotals.TotalSmartFormUsers
@@ -164,77 +137,74 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                 usersSmartFormLimit = projection.OverviewTotals.TotalUsersWhoReachedSmartFormLimit
             })
 
+
     let responsiveChart =
         Recharts.lineChart [
             lineChart.data data
-            lineChart.margin(top=5, right=30)
+            lineChart.margin(top=50, right=50, bottom=25)
             lineChart.children [
                 Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(3, 3) ]
                 Recharts.xAxis [ xAxis.dataKey (_.name) ]
                 Recharts.yAxis [ ]
                 Recharts.tooltip [
-                    tooltip.labelStyle [
-                        style.backgroundColor "#333333"
-                        style.paddingBottom 10
-                        style.marginLeft 5
-                        style.marginRight 5
-                    ]
-                    tooltip.itemStyle [
-                        style.backgroundColor "#333333"
-                        style.padding 2
-                        style.marginLeft 5
-                        style.marginRight 5
-                    ]
+                    tooltip.formatter (fun (value: obj) _ _ ->
+                        match value with
+                        | :? int as intValue -> sprintf "%d" intValue
+                        | _ -> ""
+                    )
+                    tooltip.labelStyle [ style.color.black; style.backgroundColor.whiteSmoke; style.paddingBottom 5 ]
+                    tooltip.wrapperStyle [ style.border(8, borderStyle.solid, "white")
+                                           style.borderRadius 8 ]
                 ]
                 Recharts.legend [
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.userStreams)
-                    line.name "User Streams"
-                    line.stroke "#8884d8"
+                    line.name "New Users"
+                    line.stroke "blue"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.dataPolicyDeclines)
                     line.name "Data Policy Declines"
-                    line.stroke "#82ca9d"
+                    line.stroke "red"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.contactFormsUsed)
                     line.name "Contact Forms Used"
-                    line.stroke "#ff7300"
+                    line.stroke "darkgreen"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.smartFormUsers)
                     line.name "Smart Form Users"
-                    line.stroke "#387908"
+                    line.stroke "darkorange"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.signUpFormsUsed)
                     line.name "Sign Up Forms Used"
-                    line.stroke "#ff0000"
+                    line.stroke "darkgray"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.emailVerifications)
                     line.name "Email Verifications"
-                    line.stroke "lightblue"
+                    line.stroke "teal"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.emailUnsubscribes)
                     line.name "Email Unsubscribes"
-                    line.stroke "#00ff00"
+                    line.stroke "darkred"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.usersSmartFormLimit)
                     line.name "Smart Form Limit"
-                    line.stroke "cyan"
+                    line.stroke "green"
                 ]
             ]
         ]
@@ -317,12 +287,20 @@ let GeoMap (geoInfo: (string * float * float * int) list) =
     let zoom, setZoom = React.useState 8
     let center, setCenter = React.useState initialCenter
 
-    PigeonMaps.map [
-        map.center center
-        map.zoom zoom
-        map.height 350
-        map.onBoundsChanged (fun args -> setZoom (int args.zoom); setCenter args.center)
-        map.markers [ for city in cities -> renderMarker city ]
+    Html.div [
+        prop.style [
+            style.borderRadius 12
+            style.overflow.hidden
+        ]
+        prop.children [
+            PigeonMaps.map [
+                map.center center
+                map.zoom zoom
+                map.height 350
+                map.onBoundsChanged (fun args -> setZoom (int args.zoom); setCenter args.center)
+                map.markers [ for city in cities -> renderMarker city ]
+            ]
+        ]
     ]
 
 [<ReactComponent>]

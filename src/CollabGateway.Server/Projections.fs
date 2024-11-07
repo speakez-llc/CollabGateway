@@ -167,7 +167,7 @@ let filterEventsByInterval (interval: (IntervalStart * IntervalEnd) option): Asy
         return filteredEvents
     }
 
-let retrieveTotalUserStreamCount (interval: (IntervalStart * IntervalEnd) option): Async<int> =
+let retrieveTotalNewUserStreamCount (interval: (IntervalStart * IntervalEnd) option): Async<int> =
     async {
         let! filteredEvents = filterEventsByInterval interval
 
@@ -381,7 +381,7 @@ let retrieveVerifiedEmailDomains (): Async<(string * int) list> =
 
 let retrieveOverviewStats (interval: (IntervalStart * IntervalEnd) option): Async<OverviewTotals> =
     async {
-        let! totalUserStreams = retrieveTotalUserStreamCount interval
+        let! totalNewUserStreams = retrieveTotalNewUserStreamCount interval
         let! totalDataPolicyDeclined = retrieveTotalDataPolicyDeclined interval
         let! totalContactFormsSubmitted = retrieveTotalContactFormsSubmitted interval
         let! totalSmartFormUsers = retrieveTotalSmartFormUsers interval
@@ -390,7 +390,7 @@ let retrieveOverviewStats (interval: (IntervalStart * IntervalEnd) option): Asyn
         let! totalEmailUnsubscribes = retrieveTotalEmailUnsubscribes interval
         let! totalUsersWhoReachedSmartFormLimit = retrieveUsersWhoReachedSmartFormLimit interval
         return {
-            TotalUserStreams = totalUserStreams
+            TotalNewUserStreams = totalNewUserStreams
             TotalDataPolicyDeclines = totalDataPolicyDeclined
             TotalContactFormsUsed = totalContactFormsSubmitted
             TotalSmartFormUsers = totalSmartFormUsers

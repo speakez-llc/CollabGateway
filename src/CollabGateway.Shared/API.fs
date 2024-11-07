@@ -148,7 +148,7 @@ type IntervalStart = DateTime
 type IntervalEnd = DateTime
 
 type OverviewTotals = {
-    TotalUserStreams: int
+    TotalNewUserStreams: int
     TotalDataPolicyDeclines: int
     TotalContactFormsUsed: int
     TotalSmartFormUsers: int
