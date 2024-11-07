@@ -89,18 +89,18 @@ let OverviewStats (overviewTotals: OverviewTotalsProjection) =
                 prop.className "stats stats-vertical lg:stats-horizontal shadow"
                 prop.children [
                     renderStatItem "New Users" overviewTotals.OverviewTotals.TotalNewUserStreams "Total number of user streams"
-                    renderStatItem "Policy Declines" overviewTotals.OverviewTotals.TotalDataPolicyDeclines "Total data policy declines"
+                    renderStatItem "Sign Ups Sent" overviewTotals.OverviewTotals.TotalSignUpFormsUsed "Total sign up forms used"
+                    renderStatItem "Smart Form Used" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form \n sent per user"
                     renderStatItem "Contact Sent" overviewTotals.OverviewTotals.TotalContactFormsUsed "Total contact forms used"
-                    renderStatItem "Smart Form Sent" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form \n sent per user"
                 ]
             ]
             Html.div [
                 prop.className "stats stats-vertical lg:stats-horizontal shadow"
                 prop.children [
-                    renderStatItem "Sign Ups Sent" overviewTotals.OverviewTotals.TotalSignUpFormsUsed "Total sign up forms used"
                     renderStatItem "Email Verifications" overviewTotals.OverviewTotals.TotalEmailVerifications "Total email verifications"
                     renderStatItem "Email Unsubscribes" overviewTotals.OverviewTotals.TotalEmailUnsubscribes "Total email unsubscribes"
                     renderStatItem "Smart Form Limit" overviewTotals.OverviewTotals.TotalUsersWhoReachedSmartFormLimit "Limit of 5 attempts max"
+                    renderStatItem "Policy Declines" overviewTotals.OverviewTotals.TotalDataPolicyDeclines "Total data policy declines"
                 ]
             ]
         ]
@@ -161,31 +161,26 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                     line.monotone
                     line.dataKey (_.userStreams)
                     line.name "New Users"
-                    line.stroke "blue"
-                ]
-                Recharts.line [
-                    line.monotone
-                    line.dataKey (_.dataPolicyDeclines)
-                    line.name "Data Policy Declines"
-                    line.stroke "red"
-                ]
-                Recharts.line [
-                    line.monotone
-                    line.dataKey (_.contactFormsUsed)
-                    line.name "Contact Forms Used"
-                    line.stroke "darkgreen"
-                ]
-                Recharts.line [
-                    line.monotone
-                    line.dataKey (_.smartFormUsers)
-                    line.name "Smart Form Users"
-                    line.stroke "darkorange"
+                    line.stroke "steelblue"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.signUpFormsUsed)
-                    line.name "Sign Up Forms Used"
-                    line.stroke "darkgray"
+                    line.name "Sign Up Forms Sent"
+                    line.stroke "teal"
+                    line.strokeWidth 4
+                ]
+                Recharts.line [
+                    line.monotone
+                    line.dataKey (_.smartFormUsers)
+                    line.name "Smart Form Used"
+                    line.stroke "orangered"
+                ]
+                Recharts.line [
+                    line.monotone
+                    line.dataKey (_.contactFormsUsed)
+                    line.name "Contact Forms Sent"
+                    line.stroke "darkgreen"
                 ]
                 Recharts.line [
                     line.monotone
@@ -197,13 +192,20 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                     line.monotone
                     line.dataKey (_.emailUnsubscribes)
                     line.name "Email Unsubscribes"
-                    line.stroke "darkred"
+                    line.stroke "MediumVioletRed"
                 ]
                 Recharts.line [
                     line.monotone
                     line.dataKey (_.usersSmartFormLimit)
                     line.name "Smart Form Limit"
-                    line.stroke "green"
+                    line.stroke "darkred"
+                    line.strokeWidth 2
+                ]
+                Recharts.line [
+                    line.monotone
+                    line.dataKey (_.dataPolicyDeclines)
+                    line.name "Data Policy Declines"
+                    line.stroke "blueviolet"
                 ]
             ]
         ]
