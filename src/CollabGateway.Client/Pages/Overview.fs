@@ -8,7 +8,6 @@ open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
-open Feliz.Styles
 open UseElmish
 
 type State = {
@@ -89,19 +88,19 @@ let OverviewStats (overviewTotals: OverviewTotalsProjection) =
             Html.div [
                 prop.className "stats stats-vertical lg:stats-horizontal shadow"
                 prop.children [
-                    renderStatItem "User Streams" overviewTotals.OverviewTotals.TotalUserStreams "Total number of user streams"
-                    renderStatItem "Data Policy Declines" overviewTotals.OverviewTotals.TotalDataPolicyDeclines "Total data policy declines"
-                    renderStatItem "Contact Forms Used" overviewTotals.OverviewTotals.TotalContactFormsUsed "Total contact forms used"
-                    renderStatItem "Smart Forms" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form users"
+                    renderStatItem "New Users" overviewTotals.OverviewTotals.TotalNewUserStreams "Total number of user streams"
+                    renderStatItem "Policy Declines" overviewTotals.OverviewTotals.TotalDataPolicyDeclines "Total data policy declines"
+                    renderStatItem "Contact Sent" overviewTotals.OverviewTotals.TotalContactFormsUsed "Total contact forms used"
+                    renderStatItem "Smart Form Sent" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form \n sent per user"
                 ]
             ]
             Html.div [
                 prop.className "stats stats-vertical lg:stats-horizontal shadow"
                 prop.children [
-                    renderStatItem "Sign Ups" overviewTotals.OverviewTotals.TotalSignUpFormsUsed "Total sign up forms used"
+                    renderStatItem "Sign Ups Sent" overviewTotals.OverviewTotals.TotalSignUpFormsUsed "Total sign up forms used"
                     renderStatItem "Email Verifications" overviewTotals.OverviewTotals.TotalEmailVerifications "Total email verifications"
                     renderStatItem "Email Unsubscribes" overviewTotals.OverviewTotals.TotalEmailUnsubscribes "Total email unsubscribes"
-                    renderStatItem "Smart Form Limit" overviewTotals.OverviewTotals.TotalUsersWhoReachedSmartFormLimit "Users who reached Smart Form limit"
+                    renderStatItem "Smart Form Limit" overviewTotals.OverviewTotals.TotalUsersWhoReachedSmartFormLimit "Limit of 5 attempts max"
                 ]
             ]
         ]
