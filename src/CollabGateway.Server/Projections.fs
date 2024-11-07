@@ -246,6 +246,27 @@ let retrieveTotalSmartFormUsers (interval: (IntervalStart * IntervalEnd) option)
         return List.length smartFormEvents
     }
 
+let retrieveUsersWhoReachedSmartFormLimit (interval: (IntervalStart * IntervalEnd) option): Async<int> =
+    async {
+        let! filteredEvents = filterEventsByInterval interval
+
+        let smartFormEventCounts =
+            filteredEvents
+            |> Seq.choose (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | SmartFormSubmitted _ -> Some e.StreamId
+                    | _ -> None
+                | _ -> None)
+            |> Seq.groupBy id
+            |> Seq.map (fun (streamId, events) -> streamId, Seq.length events)
+            |> Seq.filter (fun (_, count) -> count >= 5)
+            |> Seq.toList
+
+        return List.length smartFormEventCounts
+    }
+
 let retrieveTotalSignUpFormsSubmitted (interval: (IntervalStart * IntervalEnd) option): Async<int> =
     async {
         let! filteredEvents = filterEventsByInterval interval
@@ -367,6 +388,7 @@ let retrieveOverviewStats (interval: (IntervalStart * IntervalEnd) option): Asyn
         let! totalSignUpFormsSubmitted = retrieveTotalSignUpFormsSubmitted interval
         let! totalEmailVerifications = retrieveTotalEmailVerifications interval
         let! totalEmailUnsubscribes = retrieveTotalEmailUnsubscribes interval
+        let! totalUsersWhoReachedSmartFormLimit = retrieveUsersWhoReachedSmartFormLimit interval
         return {
             TotalUserStreams = totalUserStreams
             TotalDataPolicyDeclines = totalDataPolicyDeclined
@@ -375,6 +397,7 @@ let retrieveOverviewStats (interval: (IntervalStart * IntervalEnd) option): Asyn
             TotalSignUpFormsUsed = totalSignUpFormsSubmitted
             TotalEmailVerifications = totalEmailVerifications
             TotalEmailUnsubscribes = totalEmailUnsubscribes
+            TotalUsersWhoReachedSmartFormLimit = totalUsersWhoReachedSmartFormLimit
         }
     }
 

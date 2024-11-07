@@ -91,15 +91,16 @@ let OverviewStats (overviewTotals: OverviewTotalsProjection) =
                     renderStatItem "User Streams" overviewTotals.OverviewTotals.TotalUserStreams "Total number of user streams"
                     renderStatItem "Data Policy Declines" overviewTotals.OverviewTotals.TotalDataPolicyDeclines "Total data policy declines"
                     renderStatItem "Contact Forms Used" overviewTotals.OverviewTotals.TotalContactFormsUsed "Total contact forms used"
+                    renderStatItem "Smart Forms" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form users"
                 ]
             ]
             Html.div [
                 prop.className "stats stats-vertical lg:stats-horizontal shadow"
                 prop.children [
-                    renderStatItem "Smart Forms" overviewTotals.OverviewTotals.TotalSmartFormUsers "Total smart form users"
                     renderStatItem "Sign Ups" overviewTotals.OverviewTotals.TotalSignUpFormsUsed "Total sign up forms used"
                     renderStatItem "Email Verifications" overviewTotals.OverviewTotals.TotalEmailVerifications "Total email verifications"
                     renderStatItem "Email Unsubscribes" overviewTotals.OverviewTotals.TotalEmailUnsubscribes "Total email unsubscribes"
+                    renderStatItem "Smart Form Limit" overviewTotals.OverviewTotals.TotalUsersWhoReachedSmartFormLimit "Users who reached Smart Form limit"
                 ]
             ]
         ]
@@ -119,6 +120,7 @@ type OverviewDataPoint = {
     signUpFormsUsed: int
     emailVerifications: int
     emailUnsubscribes: int
+    usersSmartFormLimit: int
 }
 
 let customTooltip (props: {| active: bool; payload: obj list; label: string |}) =
@@ -159,6 +161,7 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                 signUpFormsUsed = projection.OverviewTotals.TotalSignUpFormsUsed
                 emailVerifications = projection.OverviewTotals.TotalEmailVerifications
                 emailUnsubscribes = projection.OverviewTotals.TotalEmailUnsubscribes
+                usersSmartFormLimit = projection.OverviewTotals.TotalUsersWhoReachedSmartFormLimit
             })
 
     let responsiveChart =
@@ -167,53 +170,71 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
             lineChart.margin(top=5, right=30)
             lineChart.children [
                 Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(3, 3) ]
-                Recharts.xAxis [ xAxis.dataKey (fun point -> point.name) ]
+                Recharts.xAxis [ xAxis.dataKey (_.name) ]
                 Recharts.yAxis [ ]
                 Recharts.tooltip [
+                    tooltip.labelStyle [
+                        style.backgroundColor "#333333"
+                        style.paddingBottom 10
+                        style.marginLeft 5
+                        style.marginRight 5
+                    ]
+                    tooltip.itemStyle [
+                        style.backgroundColor "#333333"
+                        style.padding 2
+                        style.marginLeft 5
+                        style.marginRight 5
+                    ]
                 ]
                 Recharts.legend [
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.userStreams)
+                    line.dataKey (_.userStreams)
                     line.name "User Streams"
                     line.stroke "#8884d8"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.dataPolicyDeclines)
+                    line.dataKey (_.dataPolicyDeclines)
                     line.name "Data Policy Declines"
                     line.stroke "#82ca9d"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.contactFormsUsed)
+                    line.dataKey (_.contactFormsUsed)
                     line.name "Contact Forms Used"
                     line.stroke "#ff7300"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.smartFormUsers)
+                    line.dataKey (_.smartFormUsers)
                     line.name "Smart Form Users"
                     line.stroke "#387908"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.signUpFormsUsed)
+                    line.dataKey (_.signUpFormsUsed)
                     line.name "Sign Up Forms Used"
                     line.stroke "#ff0000"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.emailVerifications)
+                    line.dataKey (_.emailVerifications)
                     line.name "Email Verifications"
-                    line.stroke "#0000ff"
+                    line.stroke "lightblue"
                 ]
                 Recharts.line [
                     line.monotone
-                    line.dataKey (fun point -> point.emailUnsubscribes)
+                    line.dataKey (_.emailUnsubscribes)
                     line.name "Email Unsubscribes"
                     line.stroke "#00ff00"
+                ]
+                Recharts.line [
+                    line.monotone
+                    line.dataKey (_.usersSmartFormLimit)
+                    line.name "Smart Form Limit"
+                    line.stroke "cyan"
                 ]
             ]
         ]
@@ -293,8 +314,8 @@ let GeoMap (geoInfo: (string * float * float * int) list) =
         |> Option.map (fun city -> city.Latitude, city.Longitude)
         |> Option.defaultValue (33.7490, -84.3880)
 
-    let (zoom, setZoom) = React.useState 8
-    let (center, setCenter) = React.useState initialCenter
+    let zoom, setZoom = React.useState 8
+    let center, setCenter = React.useState initialCenter
 
     PigeonMaps.map [
         map.center center

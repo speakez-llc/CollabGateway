@@ -155,6 +155,7 @@ type OverviewTotals = {
     TotalSignUpFormsUsed: int
     TotalEmailVerifications: int
     TotalEmailUnsubscribes: int
+    TotalUsersWhoReachedSmartFormLimit: int
 }
 
 type OverviewTotalsProjection = {
