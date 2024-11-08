@@ -3,31 +3,7 @@
 open System
 open CollabGateway.Shared.API
 
-type Location = {
-    country: string
-    region: string
-    city: string
-    lat: float
-    lng: float
-    postalCode: string
-    timezone: string
-    geonameId: int
-}
 
-type AsInfo = {
-    asn: int
-    name: string
-    route: string
-    domain: string
-    ``type``: string
-}
-
-type GeoInfo = {
-    ip: string
-    location: Location
-    ``as``: AsInfo
-    isp: string
-}
 
 type ClientIPEvent = {
     Id: Guid
@@ -141,6 +117,8 @@ type ButtonEventCase =
     | DataPolicyDeclineButtonClicked of ButtonEvent
     | DataPolicyResetButtonClicked of ButtonEvent
     | SummaryActivityButtonClicked of ButtonEvent
+    | ContactActivityButtonClicked of ButtonEvent
+    | SignUpActivityButtonClicked of ButtonEvent
     member this.Id =
         match this with
         | HomeButtonClicked e -> e.Id
@@ -170,6 +148,8 @@ type ButtonEventCase =
         | DataPolicyDeclineButtonClicked e -> e.Id
         | DataPolicyResetButtonClicked e -> e.Id
         | SummaryActivityButtonClicked e -> e.Id
+        | ContactActivityButtonClicked e -> e.Id
+        | SignUpActivityButtonClicked e -> e.Id
 
 type StreamEventCase =
     | UserStreamInitiated of StreamEvent

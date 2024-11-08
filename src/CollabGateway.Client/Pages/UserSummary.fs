@@ -1,14 +1,12 @@
 ﻿module CollabGateway.Client.Pages.UserSummary
 
 open System
-open Browser.Dom
 open Browser.Types
 open Feliz
 open Fable.FontAwesome
 open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
-open CollabGateway.Shared.Events
 open CollabGateway.Client.ViewMsg
 open UseElmish
 
@@ -43,6 +41,192 @@ let init () =
         Cmd.OfAsync.perform service.RetrieveAllUserNames () UserStreamsReceived
 
     initialState, fetchUserStreamsCmd
+
+let renderContactForm (form: ContactForm) =
+    let calculateRows (text: string) =
+        let lines = text.Split('\n').Length
+        let additionalRows = text.Length / 60
+        lines + additionalRows
+
+    Html.div [
+        prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+        prop.children [
+            Html.input [
+                prop.type' "checkbox"
+            ]
+            Html.div [
+                prop.className "collapse-title bg-base-200 font-medium text-gold"
+                prop.text "Contact Form"
+            ]
+            Html.div [
+                prop.className "collapse-content"
+                prop.children [
+                    Html.div [
+                        prop.className "mb-2"
+                        prop.children [
+                            Html.label [
+                                prop.className "text-xs font-bold"
+                                prop.text "Name"
+                            ]
+                            Html.input [
+                                prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-full"
+                                prop.readOnly true
+                                prop.value form.Name
+                            ]
+                        ]
+                    ]
+                    Html.div [
+                        prop.className "mb-2"
+                        prop.children [
+                            Html.label [
+                                prop.className "text-xs font-bold block"
+                                prop.text "Email"
+                            ]
+                            Html.input [
+                                prop.className "form-control bg-base-200 input input-ghost input-s p-2 rounded-xl w-full"
+                                prop.readOnly true
+                                prop.value form.Email
+                            ]
+                        ]
+                    ]
+                    Html.div [
+                        prop.className "mb-2"
+                        prop.children [
+                            Html.label [
+                                prop.className "text-xs font-bold block"
+                                prop.text "Message"
+                            ]
+                            Html.textarea [
+                                prop.className "form-control bg-base-200 input input-ghost input-s p-2 rounded-xl w-full"
+                                prop.readOnly true
+                                prop.value form.MessageBody
+                                prop.rows (calculateRows form.MessageBody)
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+let renderSmartFormReturn (form: SignUpForm) =
+    let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
+        Html.div [
+            prop.className "flex space-x-4"
+            prop.children [
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label1
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value1
+                        ]
+                    ]
+                ]
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label2
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value2
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    Html.div [
+        prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+        prop.children [
+            Html.input [
+                prop.type' "checkbox"
+            ]
+            Html.div [
+                prop.className "collapse-title bg-base-200 font-medium text-gold"
+                prop.text "Smart Form Returned Structure"
+            ]
+            Html.div [
+                prop.className "collapse-content"
+                prop.children [
+                    renderRow "Name" form.Name "Email" form.Email
+                    renderRow "Job Title" form.JobTitle "Phone" form.Phone
+                    renderRow "Department" form.Department "Company" form.Company
+                    renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
+                    renderRow "City" form.City "State or Province" form.StateProvince
+                    renderRow "Postal Code" form.PostCode "Country" form.Country
+                ]
+            ]
+        ]
+    ]
+
+let renderSignUpForm (form: SignUpForm) =
+    let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
+        Html.div [
+            prop.className "flex space-x-4"
+            prop.children [
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label1
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value1
+                        ]
+                    ]
+                ]
+                Html.div [
+                    prop.className "flex-1"
+                    prop.children [
+                        Html.label [
+                            prop.className "text-xs font-bold block mb-1"
+                            prop.text label2
+                        ]
+                        Html.input [
+                            prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
+                            prop.readOnly true
+                            prop.value value2
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    Html.div [
+        prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+        prop.children [
+            Html.input [
+                prop.type' "checkbox"
+                prop.defaultChecked true
+            ]
+            Html.div [
+                prop.className "collapse-title bg-base-200 font-medium text-gold"
+                prop.text "Sign Up Information"
+            ]
+            Html.div [
+                prop.className "collapse-content"
+                prop.children [
+                    renderRow "Name" form.Name "Email" form.Email
+                    renderRow "Job Title" form.JobTitle "Phone" form.Phone
+                    renderRow "Department" form.Department "Company" form.Company
+                    renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
+                    renderRow "City" form.City "State or Province" form.StateProvince
+                    renderRow "Postal Code" form.PostCode "Country" form.Country
+                ]
+            ]
+        ]
+    ]
 
 let renderUserStreamDropdown (userStreams: UserStreamProjection) (dispatch: Msg -> unit) =
     Html.select [
@@ -93,59 +277,7 @@ let update (msg: Msg) (model: State) : State * Cmd<Msg> =
     | FullUserStreamReceived fullStream ->
         { model with FullUserStream = Some fullStream }, Cmd.ofMsg ResetTimelineStartEnd
 
-let renderContactForm (form: ContactForm) =
-    let calculateRows (text: string) =
-        let lines = text.Split('\n').Length
-        let additionalRows = text.Length / 60
-        lines + additionalRows
-
-    Html.div [
-        Html.div [
-            prop.className "mb-2"
-            prop.children [
-                Html.label [
-                    prop.className "text-xs font-bold block"
-                    prop.text "Name"
-                ]
-                Html.input [
-                    prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
-                    prop.readOnly true
-                    prop.value form.Name
-                ]
-            ]
-        ]
-        Html.div [
-            prop.className "mb-2"
-            prop.children [
-                Html.label [
-                    prop.className "text-xs font-bold block"
-                    prop.text "Email"
-                ]
-                Html.input [
-                    prop.className "form-control bg-base-200 input-s p-2 rounded-xl w-1/2 ml-auto"
-                    prop.readOnly true
-                    prop.value form.Email
-                ]
-            ]
-        ]
-        Html.div [
-            prop.className "mb-2"
-            prop.children [
-                Html.label [
-                    prop.className "text-xs font-bold block"
-                    prop.text "Message"
-                ]
-                Html.textarea [
-                    prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
-                    prop.readOnly true
-                    prop.value form.MessageBody
-                    prop.rows (calculateRows form.MessageBody)
-                ]
-            ]
-        ]
-    ]
-
-let renderSignUpForm (form: SignUpForm) =
+let renderGeoInfo (geoInfo: GeoInfo) =
     let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
         Html.div [
             prop.className "flex space-x-4"
@@ -181,21 +313,26 @@ let renderSignUpForm (form: SignUpForm) =
             ]
         ]
     Html.div [
-        renderRow "Name" form.Name "Email" form.Email
-        renderRow "Job Title" form.JobTitle "Phone" form.Phone
-        renderRow "Department" form.Department "Company" form.Company
-        renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
-        renderRow "City" form.City "State or Province" form.StateProvince
-        renderRow "Postal Code" form.PostCode "Country" form.Country
-    ]
-
-let renderGeoInfo (geoInfo: GeoInfo) =
-    Html.div [
-        Html.p [ prop.text (sprintf "IP: %s" geoInfo.ip) ]
-        Html.p [ prop.text (sprintf "ISP: %s" geoInfo.isp) ]
-        Html.p [ prop.text (sprintf "Location: %s, %s, %s" geoInfo.location.city geoInfo.location.region geoInfo.location.country) ]
-        Html.p [ prop.text (sprintf "Latitude: %f, Longitude: %f" geoInfo.location.lat geoInfo.location.lng) ]
-        Html.p [ prop.text (sprintf "ASN: %d, Name: %s, Type: %s, Route: %s, Domain: %s" geoInfo.``as``.asn geoInfo.``as``.name geoInfo.``as``.``type`` geoInfo.``as``.route geoInfo.``as``.domain) ]
+        prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+        prop.children [
+            Html.input [
+                prop.type' "checkbox"
+            ]
+            Html.div [
+                prop.className "collapse-title bg-base-200 font-medium text-gold"
+                prop.text "Geo Information"
+            ]
+            Html.div [
+                prop.className "collapse-content"
+                prop.children [
+                    renderRow "Name" geoInfo.``as``.name "Type" geoInfo.``as``.``type``
+                    renderRow "ISP" geoInfo.isp "Location" (sprintf "%s, %s, %s" geoInfo.location.city geoInfo.location.region geoInfo.location.country)
+                    renderRow "Latitude" (sprintf "%f" geoInfo.location.lat) "Longitude" (sprintf "%f" geoInfo.location.lng)
+                    renderRow "IP" geoInfo.ip "Route" geoInfo.``as``.route
+                    renderRow "ASN" (sprintf "%d" geoInfo.``as``.asn) "Domain" geoInfo.``as``.domain
+                ]
+            ]
+        ]
     ]
 
 let timelineItem (time: string) (title: string) (content: ReactElement) =
@@ -228,22 +365,84 @@ let timelineItem (time: string) (title: string) (content: ReactElement) =
         Html.hr []
     ]
 
-let renderTimeline (fullStream: FullUserStreamProjection) (dispatch: Msg -> unit) =
+let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit) =
     let events =
-        fullStream |> List.map (fun (eventName, date, content) ->
-            let description =
-                match eventName, content with
-                | "User ClientIP Detected", Some (:? GeoInfo as geoInfo) -> renderGeoInfo geoInfo
-                | "User ClientIP Updated", Some (:? GeoInfo as geoInfo) -> renderGeoInfo geoInfo
-                | "Contact Form Submitted", Some (:? ContactForm as form) -> renderContactForm form
-                | "SignUp Form Submitted", Some (:? SignUpForm as form) -> renderSignUpForm form
-                | "Smart Form Submitted", Some (:? string as input) -> Html.text input
-                | "Smart Form Result Returned", Some (:? SignUpForm as form) -> renderSignUpForm form
-                | "Subscribe Status Appended", Some (:? SubscribeStatus as status) -> Html.text (sprintf "%A" status)
-                | "Email Status Appended", Some (:? EmailStatus as status) -> Html.text (sprintf "%A" status)
-                | _, None -> Html.none
-                | _ -> Html.text (sprintf "%A" content)
-            (date, eventName, description)
+        fullStream |> List.map (fun event ->
+            let date, title, description =
+                match event with
+                | FullUserStreamEvent.UserStreamInitiated date -> (date, "User Stream Initiated", Html.none)
+                | FullUserStreamEvent.UserStreamResumed date -> (date, "User Stream Resumed", Html.none)
+                | FullUserStreamEvent.UserStreamClosed date -> (date, "User Stream Closed", Html.none)
+                | FullUserStreamEvent.UserStreamEnded date -> (date, "User Stream Ended", Html.none)
+                | FullUserStreamEvent.DataPolicyAccepted date -> (date, "Data Policy Accepted", Html.none)
+                | FullUserStreamEvent.DataPolicyDeclined date -> (date, "Data Policy Declined", Html.none)
+                | FullUserStreamEvent.DataPolicyReset date -> (date, "Data Policy Reset", Html.none)
+                | FullUserStreamEvent.HomePageVisited date -> (date, "Home Page Visited", Html.none)
+                | FullUserStreamEvent.ProjectPageVisited date -> (date, "Project Page Visited", Html.none)
+                | FullUserStreamEvent.DataPageVisited date -> (date, "Data Page Visited", Html.none)
+                | FullUserStreamEvent.SignupPageVisited date -> (date, "Signup Page Visited", Html.none)
+                | FullUserStreamEvent.RowerPageVisited date -> (date, "Rower Page Visited", Html.none)
+                | FullUserStreamEvent.SpeakEZPageVisited date -> (date, "SpeakEZ Page Visited", Html.none)
+                | FullUserStreamEvent.ContactPageVisited date -> (date, "Contact Page Visited", Html.none)
+                | FullUserStreamEvent.PartnersPageVisited date -> (date, "Partners Page Visited", Html.none)
+                | FullUserStreamEvent.DataPolicyPageVisited date -> (date, "Data Policy Page Visited", Html.none)
+                | FullUserStreamEvent.SummaryActivityPageVisited date -> (date, "Summary Activity Page Visited", Html.none)
+                | FullUserStreamEvent.HomeButtonClicked date -> (date, "Home Button Clicked", Html.none)
+                | FullUserStreamEvent.HomeProjectButtonClicked date -> (date, "Home Project Button Clicked", Html.none)
+                | FullUserStreamEvent.HomeSignUpButtonClicked date -> (date, "Home SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.ProjectButtonClicked date -> (date, "Project Button Clicked", Html.none)
+                | FullUserStreamEvent.ProjectDataButtonClicked date -> (date, "Project Data Button Clicked", Html.none)
+                | FullUserStreamEvent.ProjectSignUpButtonClicked date -> (date, "Project SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.DataButtonClicked date -> (date, "Data Button Clicked", Html.none)
+                | FullUserStreamEvent.DataSignUpButtonClicked date -> (date, "Data SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.SignUpButtonClicked date -> (date, "SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.SmartFormButtonClicked date -> (date, "Smart Form Button Clicked", Html.none)
+                | FullUserStreamEvent.SmartFormSubmittedButtonClicked date -> (date, "Smart Form Submitted Button Clicked", Html.none)
+                | FullUserStreamEvent.RowerButtonClicked date -> (date, "Rower Button Clicked", Html.none)
+                | FullUserStreamEvent.RowerSignUpButtonClicked date -> (date, "Rower SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.SpeakEZButtonClicked date -> (date, "SpeakEZ Button Clicked", Html.none)
+                | FullUserStreamEvent.SpeakEZSignUpButtonClicked date -> (date, "SpeakEZ SignUp Button Clicked", Html.none)
+                | FullUserStreamEvent.ContactButtonClicked date -> (date, "Contact Button Clicked", Html.none)
+                | FullUserStreamEvent.PartnersButtonClicked date -> (date, "Partners Button Clicked", Html.none)
+                | FullUserStreamEvent.RowerSiteButtonClicked date -> (date, "Rower Site Button Clicked", Html.none)
+                | FullUserStreamEvent.CuratorSiteButtonClicked date -> (date, "Curator Site Button Clicked", Html.none)
+                | FullUserStreamEvent.TableauSiteButtonClicked date -> (date, "Tableau Site Button Clicked", Html.none)
+                | FullUserStreamEvent.PowerBISiteButtonClicked date -> (date, "PowerBI Site Button Clicked", Html.none)
+                | FullUserStreamEvent.ThoughtSpotSiteButtonClicked date -> (date, "ThoughtSpot Site Button Clicked", Html.none)
+                | FullUserStreamEvent.SpeakEZSiteButtonClicked date -> (date, "SpeakEZ Site Button Clicked", Html.none)
+                | FullUserStreamEvent.DataPolicyAcceptButtonClicked date -> (date, "Data Policy Accept Button Clicked", Html.none)
+                | FullUserStreamEvent.DataPolicyDeclineButtonClicked date -> (date, "Data Policy Decline Button Clicked", Html.none)
+                | FullUserStreamEvent.DataPolicyResetButtonClicked date -> (date, "Data Policy Reset Button Clicked", Html.none)
+                | FullUserStreamEvent.SummaryActivityButtonClicked date -> (date, "Summary Activity Button Clicked", Html.none)
+                | FullUserStreamEvent.ContactFormSubmitted (date, form) -> (date, "Contact Form Submitted", renderContactForm form)
+                | FullUserStreamEvent.SignUpFormSubmitted (date, form) -> (date, "SignUp Form Submitted", renderSignUpForm form)
+                | FullUserStreamEvent.SmartFormSubmitted (date, input) ->
+                    let renderSmartFormSubmitted (input: string) =
+                        Html.div [
+                            prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+                            prop.children [
+                                Html.input [
+                                    prop.type' "checkbox"
+                                ]
+                                Html.div [
+                                    prop.className "collapse-title bg-base-200 font-medium text-gold"
+                                    prop.text "Smart Form Text Input"
+                                ]
+                                Html.div [
+                                    prop.className "collapse-content"
+                                    prop.children [
+                                        Html.text input
+                                    ]
+                                ]
+                            ]
+                        ]
+                    (date, "Smart Form Submitted", renderSmartFormSubmitted input)
+                | FullUserStreamEvent.SmartFormResultReturned (date, form) -> (date, "Smart Form Result Returned", renderSmartFormReturn form)
+                | FullUserStreamEvent.EmailStatusAppended (date, status) -> (date, "Email Status Appended", Html.text (sprintf "%A" status))
+                | FullUserStreamEvent.SubscribeStatusAppended (date, status) -> (date, "Subscribe Status Appended", Html.text (sprintf "%A" status))
+                | FullUserStreamEvent.UserClientIPDetected (date, geoInfo) -> (date, "User ClientIP Detected", renderGeoInfo geoInfo)
+                | FullUserStreamEvent.UserClientIPUpdated (date, geoInfo) -> (date, "User ClientIP Updated", renderGeoInfo geoInfo)
+            (date, title, description)
         )
 
     let sortedEvents = events |> List.sortBy (fun (date, _, _) -> date)

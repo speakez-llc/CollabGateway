@@ -5,99 +5,82 @@ open System.Threading.Tasks
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 
-let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserStreamProjection> =
+let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserStreamEvent list> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
         let allStreamEvents =
             allEvents
             |> Seq.map (fun e ->
-                let eventName, formContent =
-                    match e.Data with
-                    | :? StreamEventCase as eventCase ->
-                        let name =
-                            match eventCase with
-                            | UserStreamInitiated _ -> "User Stream Initiated"
-                            | UserStreamResumed _ -> "User Stream Resumed"
-                            | UserStreamClosed _ -> "User Stream Closed"
-                            | UserStreamEnded _ -> "User Stream Ended"
-                        (name, None)
-                    | :? DataPolicyEventCase as eventCase ->
-                        let name =
-                            match eventCase with
-                            | DataPolicyAccepted _ -> "Data Policy Accepted"
-                            | DataPolicyDeclined _ -> "Data Policy Declined"
-                            | DataPolicyReset _ -> "Data Policy Reset"
-                        (name, None)
-                    | :? PageEventCase as eventCase ->
-                        let name =
-                            match eventCase with
-                            | HomePageVisited _ -> "Home Page Visited"
-                            | ProjectPageVisited _ -> "Project Page Visited"
-                            | DataPageVisited _ -> "Data Page Visited"
-                            | SignupPageVisited _ -> "Signup Page Visited"
-                            | RowerPageVisited _ -> "Rower Page Visited"
-                            | SpeakEZPageVisited _ -> "SpeakEZ Page Visited"
-                            | ContactPageVisited _ -> "Contact Page Visited"
-                            | PartnersPageVisited _ -> "Partners Page Visited"
-                            | DataPolicyPageVisited _ -> "Data Policy Page Visited"
-                            | SummaryActivityPageVisited _ -> "Summary Activity Page Visited"
-                        (name, None)
-                    | :? ButtonEventCase as eventCase ->
-                        let name =
-                            match eventCase with
-                            | HomeButtonClicked _ -> "Home Button Clicked"
-                            | HomeProjectButtonClicked _ -> "Home Project Button Clicked"
-                            | HomeSignUpButtonClicked _ -> "Home SignUp Button Clicked"
-                            | ProjectButtonClicked _ -> "Project Button Clicked"
-                            | ProjectDataButtonClicked _ -> "Project Data Button Clicked"
-                            | ProjectSignUpButtonClicked _ -> "Project SignUp Button Clicked"
-                            | DataButtonClicked _ -> "Data Button Clicked"
-                            | DataSignUpButtonClicked _ -> "Data SignUp Button Clicked"
-                            | SignUpButtonClicked _ -> "SignUp Button Clicked"
-                            | SmartFormButtonClicked _ -> "Smart Form Button Clicked"
-                            | SmartFormSubmittedButtonClicked _ -> "Smart Form Submitted Button Clicked"
-                            | RowerButtonClicked _ -> "Rower Button Clicked"
-                            | RowerSignUpButtonClicked _ -> "Rower SignUp Button Clicked"
-                            | SpeakEZButtonClicked _ -> "SpeakEZ Button Clicked"
-                            | SpeakEZSignUpButtonClicked _ -> "SpeakEZ SignUp Button Clicked"
-                            | ContactButtonClicked _ -> "Contact Button Clicked"
-                            | PartnersButtonClicked _ -> "Partners Button Clicked"
-                            | RowerSiteButtonClicked _ -> "Rower Site Button Clicked"
-                            | CuratorSiteButtonClicked _ -> "Curator Site Button Clicked"
-                            | TableauSiteButtonClicked _ -> "Tableau Site Button Clicked"
-                            | PowerBISiteButtonClicked _ -> "PowerBI Site Button Clicked"
-                            | ThoughtSpotSiteButtonClicked _ -> "ThoughtSpot Site Button Clicked"
-                            | SpeakEZSiteButtonClicked _ -> "SpeakEZ Site Button Clicked"
-                            | DataPolicyAcceptButtonClicked _ -> "Data Policy Accept Button Clicked"
-                            | DataPolicyDeclineButtonClicked _ -> "Data Policy Decline Button Clicked"
-                            | DataPolicyResetButtonClicked _ -> "Data Policy Reset Button Clicked"
-                            | SummaryActivityButtonClicked _ -> "Summary Activity Button Clicked"
-                        (name, None)
-                    | :? FormEventCase as eventCase ->
-                        let name, content =
-                            match eventCase with
-                            | ContactFormSubmitted { Form = form } -> ("Contact Form Submitted", Some (box form))
-                            | SignUpFormSubmitted { Form = form } -> ("SignUp Form Submitted", Some (box form))
-                            | SmartFormSubmitted { ClipboardInput = input } -> ("Smart Form Submitted", Some (box input))
-                            | SmartFormResultReturned { Form = form } -> ("Smart Form Result Returned", Some (box form))
-                            | EmailStatusAppended { Status = status } -> ("Email Status Appended", Some (box status))
-                            | SubscribeStatusAppended { Status = status } -> ("Subscribe Status Appended", Some (box status))
-                        (name, content)
-                    | :? ClientIPEventCase as eventCase ->
-                        let name, content =
-                            match eventCase with
-                            | UserClientIPDetected { UserGeoInfo = geoInfo } -> ("User ClientIP Detected", Some (box geoInfo))
-                            | UserClientIPUpdated { UserGeoInfo = geoInfo } -> ("User ClientIP Updated", Some (box geoInfo))
-                        (name, content)
-                    | _ -> ("Unknown Event", None)
-                let timeStamp = Aggregates.unwrapEventTimeStamp e.Data
-                (eventName, timeStamp, formContent))
-            |> Seq.distinctBy (fun (eventName, timeStamp, _) -> (eventName, timeStamp)) // Ensure unique events
-            |> Seq.sortBy (fun (_, ts, _) -> ts)
+                match e.Data with
+                | :? StreamEventCase as eventCase ->
+                    match eventCase with
+                    | UserStreamInitiated _ -> FullUserStreamEvent.UserStreamInitiated (Aggregates.unwrapEventTimeStamp e.Data)
+                    | UserStreamResumed _ -> FullUserStreamEvent.UserStreamResumed (Aggregates.unwrapEventTimeStamp e.Data)
+                    | UserStreamClosed _ -> FullUserStreamEvent.UserStreamClosed (Aggregates.unwrapEventTimeStamp e.Data)
+                    | UserStreamEnded _ -> FullUserStreamEvent.UserStreamEnded (Aggregates.unwrapEventTimeStamp e.Data)
+                | :? DataPolicyEventCase as eventCase ->
+                    match eventCase with
+                    | DataPolicyAccepted _ -> FullUserStreamEvent.DataPolicyAccepted (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyDeclined _ -> FullUserStreamEvent.DataPolicyDeclined (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyReset _ -> FullUserStreamEvent.DataPolicyReset (Aggregates.unwrapEventTimeStamp e.Data)
+                | :? PageEventCase as eventCase ->
+                    match eventCase with
+                    | HomePageVisited _ -> FullUserStreamEvent.HomePageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ProjectPageVisited _ -> FullUserStreamEvent.ProjectPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPageVisited _ -> FullUserStreamEvent.DataPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SignupPageVisited _ -> FullUserStreamEvent.SignupPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | RowerPageVisited _ -> FullUserStreamEvent.RowerPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SpeakEZPageVisited _ -> FullUserStreamEvent.SpeakEZPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ContactPageVisited _ -> FullUserStreamEvent.ContactPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | PartnersPageVisited _ -> FullUserStreamEvent.PartnersPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyPageVisited _ -> FullUserStreamEvent.DataPolicyPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SummaryActivityPageVisited _ -> FullUserStreamEvent.SummaryActivityPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                | :? ButtonEventCase as eventCase ->
+                    match eventCase with
+                    | HomeButtonClicked _ -> FullUserStreamEvent.HomeButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | HomeProjectButtonClicked _ -> FullUserStreamEvent.HomeProjectButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | HomeSignUpButtonClicked _ -> FullUserStreamEvent.HomeSignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ProjectButtonClicked _ -> FullUserStreamEvent.ProjectButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ProjectDataButtonClicked _ -> FullUserStreamEvent.ProjectDataButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ProjectSignUpButtonClicked _ -> FullUserStreamEvent.ProjectSignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataButtonClicked _ -> FullUserStreamEvent.DataButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataSignUpButtonClicked _ -> FullUserStreamEvent.DataSignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SignUpButtonClicked _ -> FullUserStreamEvent.SignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SmartFormButtonClicked _ -> FullUserStreamEvent.SmartFormButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SmartFormSubmittedButtonClicked _ -> FullUserStreamEvent.SmartFormSubmittedButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | RowerButtonClicked _ -> FullUserStreamEvent.RowerButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | RowerSignUpButtonClicked _ -> FullUserStreamEvent.RowerSignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SpeakEZButtonClicked _ -> FullUserStreamEvent.SpeakEZButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SpeakEZSignUpButtonClicked _ -> FullUserStreamEvent.SpeakEZSignUpButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ContactButtonClicked _ -> FullUserStreamEvent.ContactButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | PartnersButtonClicked _ -> FullUserStreamEvent.PartnersButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | RowerSiteButtonClicked _ -> FullUserStreamEvent.RowerSiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | CuratorSiteButtonClicked _ -> FullUserStreamEvent.CuratorSiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | TableauSiteButtonClicked _ -> FullUserStreamEvent.TableauSiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | PowerBISiteButtonClicked _ -> FullUserStreamEvent.PowerBISiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ThoughtSpotSiteButtonClicked _ -> FullUserStreamEvent.ThoughtSpotSiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SpeakEZSiteButtonClicked _ -> FullUserStreamEvent.SpeakEZSiteButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyAcceptButtonClicked _ -> FullUserStreamEvent.DataPolicyAcceptButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyDeclineButtonClicked _ -> FullUserStreamEvent.DataPolicyDeclineButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | DataPolicyResetButtonClicked _ -> FullUserStreamEvent.DataPolicyResetButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SummaryActivityButtonClicked _ -> FullUserStreamEvent.SummaryActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | ContactFormSubmitted { Form = form } -> FullUserStreamEvent.ContactFormSubmitted (Aggregates.unwrapEventTimeStamp e.Data, form)
+                    | SignUpFormSubmitted { Form = form } -> FullUserStreamEvent.SignUpFormSubmitted (Aggregates.unwrapEventTimeStamp e.Data, form)
+                    | SmartFormSubmitted { ClipboardInput = input } -> FullUserStreamEvent.SmartFormSubmitted (Aggregates.unwrapEventTimeStamp e.Data, input)
+                    | SmartFormResultReturned { Form = form } -> FullUserStreamEvent.SmartFormResultReturned (Aggregates.unwrapEventTimeStamp e.Data, form)
+                    | EmailStatusAppended { Status = status } -> FullUserStreamEvent.EmailStatusAppended (Aggregates.unwrapEventTimeStamp e.Data, status)
+                    | SubscribeStatusAppended { Status = status } -> FullUserStreamEvent.SubscribeStatusAppended (Aggregates.unwrapEventTimeStamp e.Data, status)
+                | :? ClientIPEventCase as eventCase ->
+                    match eventCase with
+                    | UserClientIPDetected { UserGeoInfo = geoInfo } -> FullUserStreamEvent.UserClientIPDetected (Aggregates.unwrapEventTimeStamp e.Data, geoInfo)
+                    | UserClientIPUpdated { UserGeoInfo = geoInfo } -> FullUserStreamEvent.UserClientIPUpdated (Aggregates.unwrapEventTimeStamp e.Data, geoInfo)
+                | _ -> failwith "Unknown event type"
+            )
             |> Seq.toList
-        let projection = allStreamEvents
-        return projection
+        return allStreamEvents
     }
 
 let retrieveAllUserStreams (): Async<StreamToken list> =

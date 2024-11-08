@@ -32,7 +32,6 @@ type private Msg =
     | FormSubmitted of ServerResult<string>
     | WebmailDomainFlagged of bool
     | ParentDispatch of ViewMsg
-    | SetSubmitActive
     | CheckEmailVerification
     | EmailVerificationChecked of bool
 
@@ -303,6 +302,14 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                             prop.text "Someone will be in touch with you within one to two business days."
                         ]
                     ]
+                ]
+                Html.button [
+                    prop.className "btn btn-primary"
+                    prop.text "Your Activity Summary"
+                    prop.onClick (fun _ ->
+                        parentDispatch (ProcessButtonClicked ContactActivityButton)
+                        window.location.href <- "/activity"
+                    )
                 ]
             ]
         ]

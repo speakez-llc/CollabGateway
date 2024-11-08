@@ -49,6 +49,8 @@ type ButtonName =
     | ActivityButton
     | OverviewButton
     | UserSummaryButton
+    | ContactActivityButton
+    | SignUpActivityButton
 
 type StreamToken = Guid
 type EventDateTime = DateTime
@@ -126,7 +128,90 @@ type UserSummaryAggregate = {
     SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) list option
 }
 
-type FullUserStreamProjection = (string * EventDateTime * obj option) list
+type Location = {
+    country: string
+    region: string
+    city: string
+    lat: float
+    lng: float
+    postalCode: string
+    timezone: string
+    geonameId: int
+}
+
+type AsInfo = {
+    asn: int
+    name: string
+    route: string
+    domain: string
+    ``type``: string
+}
+
+type GeoInfo = {
+    ip: string
+    location: Location
+    ``as``: AsInfo
+    isp: string
+}
+
+[<RequireQualifiedAccess>]
+type FullUserStreamEvent =
+    | UserStreamInitiated of EventDateTime
+    | UserStreamResumed of EventDateTime
+    | UserStreamClosed of EventDateTime
+    | UserStreamEnded of EventDateTime
+    | DataPolicyAccepted of EventDateTime
+    | DataPolicyDeclined of EventDateTime
+    | DataPolicyReset of EventDateTime
+    | HomePageVisited of EventDateTime
+    | ProjectPageVisited of EventDateTime
+    | DataPageVisited of EventDateTime
+    | SignupPageVisited of EventDateTime
+    | RowerPageVisited of EventDateTime
+    | SpeakEZPageVisited of EventDateTime
+    | ContactPageVisited of EventDateTime
+    | PartnersPageVisited of EventDateTime
+    | DataPolicyPageVisited of EventDateTime
+    | SummaryActivityPageVisited of EventDateTime
+    | HomeButtonClicked of EventDateTime
+    | HomeProjectButtonClicked of EventDateTime
+    | HomeSignUpButtonClicked of EventDateTime
+    | ProjectButtonClicked of EventDateTime
+    | ProjectDataButtonClicked of EventDateTime
+    | ProjectSignUpButtonClicked of EventDateTime
+    | DataButtonClicked of EventDateTime
+    | DataSignUpButtonClicked of EventDateTime
+    | SignUpButtonClicked of EventDateTime
+    | SmartFormButtonClicked of EventDateTime
+    | SmartFormSubmittedButtonClicked of EventDateTime
+    | RowerButtonClicked of EventDateTime
+    | RowerSignUpButtonClicked of EventDateTime
+    | SpeakEZButtonClicked of EventDateTime
+    | SpeakEZSignUpButtonClicked of EventDateTime
+    | ContactButtonClicked of EventDateTime
+    | PartnersButtonClicked of EventDateTime
+    | RowerSiteButtonClicked of EventDateTime
+    | CuratorSiteButtonClicked of EventDateTime
+    | TableauSiteButtonClicked of EventDateTime
+    | PowerBISiteButtonClicked of EventDateTime
+    | ThoughtSpotSiteButtonClicked of EventDateTime
+    | SpeakEZSiteButtonClicked of EventDateTime
+    | DataPolicyAcceptButtonClicked of EventDateTime
+    | DataPolicyDeclineButtonClicked of EventDateTime
+    | DataPolicyResetButtonClicked of EventDateTime
+    | SummaryActivityButtonClicked of EventDateTime
+    | ContactFormSubmitted of EventDateTime * ContactForm
+    | SignUpFormSubmitted of EventDateTime * SignUpForm
+    | SmartFormSubmitted of EventDateTime * string
+    | SmartFormResultReturned of EventDateTime * SignUpForm
+    | EmailStatusAppended of EventDateTime * EmailStatus
+    | SubscribeStatusAppended of EventDateTime * SubscribeStatus
+    | UserClientIPDetected of EventDateTime * GeoInfo
+    | UserClientIPUpdated of EventDateTime * GeoInfo
+    | ContactActivityButtonClicked of EventDateTime
+    | SignUpActivityButtonClicked of EventDateTime
+
+type FullUserStreamProjection = FullUserStreamEvent list
 
 type UserTopLineSummary = {
     StreamToken: StreamToken
