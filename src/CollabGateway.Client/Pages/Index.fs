@@ -62,11 +62,11 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "flex flex-col space-y-4 mt-4 items-center md:items-end"
                                     prop.children [
                                         Html.p [
-                                            prop.text "Thank you for taking the time to review this site. Rower Consulting & SpeakEZ Platform Services are proud to present a showcase that demonstrates return-of-value on your existing software investments while establishing a clear path for bringing in high-leverage additions to your company's solution portfolio. This fully functional portal site demonstrates in real time how this hybrid approach can help advance an organization's mission while protecting the bottom line."
+                                            prop.text "Rower Consulting & SpeakEZ Platform Services are proud to present a showcase that demonstrates return-of-value on existing analytics investments while establishing a clear path for bringing in high-leverage additions to your solution portfolio. This fully functional portal site demonstrates in real time how this hybrid approach can help advance an organization's mission while protecting the bottom line."
                                         ]
                                         Html.p [
                                             prop.className "text-left"
-                                            prop.text "A showcase of this scale may seem challenging to take in all at once. That's why, aside from the preamble in this gateway site, we are offering a guided tour through this technology landscape. Feel free to review the information presented throughout this site. When you're ready to see for yourself, sign up for our waitlist - and get ready to experience the future hands-on!"
+                                            prop.text "A live demo of this scale may seem challenging to take in all at once. That's why, aside from the preamble in this gateway site, we are offering to provide a guided tour through this technology landscape. When you're ready to see the solution in action, sign up for our waitlist - and get ready to experience the future hands-on!"
                                         ]
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto"

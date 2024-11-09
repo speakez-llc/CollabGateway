@@ -27,7 +27,9 @@ let unwrapEventTimeStamp (eventCase: obj) : EventDateTime =
         | ContactPageVisited { TimeStamp = ts }
         | PartnersPageVisited { TimeStamp = ts }
         | DataPolicyPageVisited { TimeStamp = ts }
-        | SummaryActivityPageVisited { TimeStamp = ts } -> ts
+        | SummaryActivityPageVisited { TimeStamp = ts }
+        | OverviewPageVisited { TimeStamp = ts }
+        | UserSummaryPageVisited { TimeStamp = ts } -> ts
     | :? ButtonEventCase as e ->
         match e with
         | HomeButtonClicked { TimeStamp = ts }
@@ -56,7 +58,11 @@ let unwrapEventTimeStamp (eventCase: obj) : EventDateTime =
         | DataPolicyAcceptButtonClicked { TimeStamp = ts }
         | DataPolicyDeclineButtonClicked { TimeStamp = ts }
         | DataPolicyResetButtonClicked { TimeStamp = ts }
-        | SummaryActivityButtonClicked { TimeStamp = ts } -> ts
+        | SummaryActivityButtonClicked { TimeStamp = ts }
+        | ContactActivityButtonClicked { TimeStamp = ts }
+        | SignUpActivityButtonClicked { TimeStamp = ts }
+        | OverviewButtonClicked { TimeStamp = ts }
+        | UserSummaryButtonClicked { TimeStamp = ts } -> ts
     | :? FormEventCase as e ->
         match e with
         | ContactFormSubmitted { TimeStamp = ts }

@@ -3,8 +3,6 @@
 open System
 open CollabGateway.Shared.API
 
-
-
 type ClientIPEvent = {
     Id: Guid
     TimeStamp: EventDateTime
@@ -76,6 +74,8 @@ type PageEventCase =
     | PartnersPageVisited of PageEvent
     | DataPolicyPageVisited of PageEvent
     | SummaryActivityPageVisited of PageEvent
+    | OverviewPageVisited of PageEvent
+    | UserSummaryPageVisited of PageEvent
     member this.Id =
         match this with
         | HomePageVisited e -> e.Id
@@ -88,6 +88,8 @@ type PageEventCase =
         | PartnersPageVisited e -> e.Id
         | DataPolicyPageVisited e -> e.Id
         | SummaryActivityPageVisited e -> e.Id
+        | OverviewPageVisited e -> e.Id
+        | UserSummaryPageVisited e -> e.Id
 
 type ButtonEventCase =
     | HomeButtonClicked of ButtonEvent
@@ -119,6 +121,8 @@ type ButtonEventCase =
     | SummaryActivityButtonClicked of ButtonEvent
     | ContactActivityButtonClicked of ButtonEvent
     | SignUpActivityButtonClicked of ButtonEvent
+    | OverviewButtonClicked of ButtonEvent
+    | UserSummaryButtonClicked of ButtonEvent
     member this.Id =
         match this with
         | HomeButtonClicked e -> e.Id
@@ -150,6 +154,8 @@ type ButtonEventCase =
         | SummaryActivityButtonClicked e -> e.Id
         | ContactActivityButtonClicked e -> e.Id
         | SignUpActivityButtonClicked e -> e.Id
+        | OverviewButtonClicked e -> e.Id
+        | UserSummaryButtonClicked e -> e.Id
 
 type StreamEventCase =
     | UserStreamInitiated of StreamEvent

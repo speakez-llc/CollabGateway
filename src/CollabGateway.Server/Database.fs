@@ -161,6 +161,8 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | ContactPage -> ContactPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
                 | PartnersPage -> PartnersPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
                 | ActivityPage -> SummaryActivityPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | OverviewPage -> OverviewPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | UserSummaryPage -> UserSummaryPageVisited { TimeStamp = timeStamp; Id = Guid.NewGuid() }
             session.Events.Append(streamToken, [| pageCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessButtonClicked (timeStamp, streamToken, buttonName) ->
@@ -192,6 +194,10 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                 | DataPolicyDeclineButton -> DataPolicyDeclineButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
                 | DataPolicyResetButton -> DataPolicyResetButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
                 | ActivityButton -> SummaryActivityButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | OverviewButton -> OverviewButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | UserSummaryButton -> UserSummaryButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | ContactActivityButton -> ContactActivityButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
+                | SignUpActivityButton -> SignUpActivityButtonClicked { TimeStamp = timeStamp; Id = Guid.NewGuid() }
             session.Events.Append(streamToken, [| buttonCase :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessStreamClose (timeStamp, streamToken) ->

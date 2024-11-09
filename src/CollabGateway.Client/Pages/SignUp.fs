@@ -761,7 +761,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                             ]
                             Html.div [
                                 prop.className (if state.CurrentStep >= 3 then "step step-primary" else "step")
-                                prop.text "Thank You"
+                                prop.text "Confirmation"
                             ]
                         ]
                     ]
