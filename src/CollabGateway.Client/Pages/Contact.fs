@@ -35,6 +35,14 @@ type private Msg =
     | CheckEmailVerification
     | EmailVerificationChecked of bool
 
+let private checkFormSubmissionAndEmailStatus sessionToken =
+    async {
+        let! formSubmissionExists = service.RetrieveContactFormSubmitted sessionToken
+        let! emailStatus = service.RetrieveEmailStatus sessionToken
+        let isEmailVerified = emailStatus |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))
+        return formSubmissionExists, isEmailVerified
+    }
+
 let private init () =
     let initialContactForm = {
         Name = ""
@@ -42,7 +50,19 @@ let private init () =
         MessageBody = ""
     }
     let initialState = { IsFormSubmitComplete = false; IsEmailVerified = false; ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = ""; Errors = Map.empty; IsEmailValid = None; IsWebmailDomain = None; IsProcessing = false; IsSubmitActive = false; CurrentStep = 1 }
-    initialState, Cmd.none
+
+    let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+    let cmd = Cmd.OfAsync.perform (fun () -> checkFormSubmissionAndEmailStatus sessionToken) () (fun (formSubmissionExists, isEmailVerified) ->
+        if formSubmissionExists then
+            if isEmailVerified then
+                EmailVerificationChecked true
+            else
+                FormSubmitted (Ok "Form submission exists")
+        else
+            EmailVerificationChecked false
+    )
+
+    initialState, cmd
 
 let private isEmailValid (email: string) =
     let emailRegex = System.Text.RegularExpressions.Regex("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$")
@@ -288,7 +308,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
     let renderStep3 () =
         Html.div [
-            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-full md:w-4/5  mx-auto max-w-screen-xl"
+            prop.className "flex flex-col p-4 space-y-4 transition-opacity duration-900 ease-in-out w-full md:w-4/5 mx-auto max-w-screen-xl"
             prop.children [
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
@@ -304,7 +324,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.button [
-                    prop.className "btn btn-primary"
+                    prop.className "btn bg-secondary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl mx-auto"
                     prop.text "Your Activity Summary"
                     prop.onClick (fun _ ->
                         parentDispatch (ProcessButtonClicked ContactActivityButton)

@@ -14,6 +14,33 @@ open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
 open CollabGateway.Client.DataPolicyModal
 
+let getQueryParam (param: string) =
+    let search = window.location.search
+    if String.IsNullOrEmpty(search) then
+        None
+    else
+        let tokens = search.Substring(1).Split('&')
+        tokens
+        |> Array.tryFind (_.StartsWith(param + "="))
+        |> Option.map (_.Substring(param.Length + 1))
+
+let establishStreamToken () =
+    let queryToken = getQueryParam "token"
+
+    match queryToken with
+    | Some token ->
+        window.localStorage.setItem("UserStreamToken", token)
+        let newUrl = window.location.href.Split('?').[0]
+        window.history.replaceState(null, "", newUrl)
+        token
+    | None ->
+        match window.localStorage.getItem("UserStreamToken") with
+        | null ->
+            let newToken = Guid.NewGuid().ToString()
+            window.localStorage.setItem("UserStreamToken", newToken)
+            newToken
+        | token -> token
+
 type State = {
     IsAdmin: bool
     Page: Page
@@ -52,28 +79,6 @@ let getClientIP () =
             return ""
     }
 
-let processPageVisited (pageName: PageName) =
-    async {
-        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-        let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-        service.ProcessPageVisited (dateTime, streamToken, pageName)
-            |> Async.StartImmediate
-    }
-
-let processButtonClicked (buttonName: ButtonName) =
-    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessButtonClicked (dateTime, streamToken, buttonName)
-        |> Async.StartImmediate
-
-let establishStreamToken () =
-    match window.localStorage.getItem("UserStreamToken") with
-    | null ->
-        let newToken = Guid.NewGuid().ToString()
-        window.localStorage.setItem("UserStreamToken", newToken)
-        newToken
-    | token -> token
-
 let processStream () =
     async {
         let streamToken = Guid.Parse(establishStreamToken())
@@ -81,12 +86,6 @@ let processStream () =
         service.EstablishStreamToken (dateTime, streamToken)
         |> Async.StartImmediate
     }
-
-let processStreamClose () =
-    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
-    service.ProcessStreamClose (dateTime, streamToken)
-    |> Async.StartImmediate
 
 let processUserClientIP () =
     async {
@@ -102,6 +101,26 @@ let retrieveDataPolicyChoice () =
         let! choice = service.RetrieveDataPolicyChoice streamToken
         return choice
     }
+
+let processPageVisited (pageName: PageName) =
+    async {
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
+        service.ProcessPageVisited (dateTime, streamToken, pageName)
+            |> Async.StartImmediate
+    }
+
+let processButtonClicked (buttonName: ButtonName) =
+    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
+    service.ProcessButtonClicked (dateTime, streamToken, buttonName)
+        |> Async.StartImmediate
+
+let processStreamClose () =
+    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+    let dateTime = DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Utc)
+    service.ProcessStreamClose (dateTime, streamToken)
+    |> Async.StartImmediate
 
 let checkIfAdmin (streamToken: StreamToken) =
     async {

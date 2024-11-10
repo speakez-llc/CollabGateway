@@ -105,7 +105,6 @@ let processPageVisited (timeStamp: EventDateTime, streamToken: StreamToken, page
     }
 
 let processButtonClicked (timeStamp: EventDateTime, streamToken: StreamToken, buttonName: ButtonName) = async {
-    Console.WriteLine $"Button handler: {buttonName}"
     Database.eventProcessor.Post(ProcessButtonClicked (timeStamp, streamToken, buttonName))
     }
 
@@ -153,6 +152,8 @@ let service = {
     RetrieveDataPolicyChoice = Aggregates.retrieveDataPolicyChoice
     RetrieveEmailStatus = Aggregates.retrieveEmailStatus
     RetrieveUnsubscribeStatus = Aggregates.retrieveSubscribeStatus
+    RetrieveContactFormSubmitted = Aggregates.retrieveContactFormSubmitted
+    RetrieveSignUpFormSubmitted = Aggregates.retrieveSignUpFormSubmitted
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
     RetrieveFullUserStream = Projections.retrieveFullUserStreamProjection
     RetrieveAllUserNames = Projections.retrieveUserNameProjection

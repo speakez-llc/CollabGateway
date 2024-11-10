@@ -220,6 +220,7 @@ type City = {
     Name: string
     Latitude: float
     Longitude: float
+    UserCount: int
 }
 
 type MarkerProps = {
@@ -249,16 +250,15 @@ let markerWithPopover (marker: MarkerProps)  =
                 Html.div [
                     prop.style [
                         style.visibility.visible
-                        style.backgroundColor.black
+                        style.backgroundColor.dimGray
                         style.color.lightGreen
                         style.textAlign.center
                         style.borderRadius 5
                         style.padding 10
                         style.position.absolute
-                        style.zIndex 1
                         style.marginLeft -60
                     ]
-                    prop.text marker.City.Name
+                    prop.text (sprintf "%s (%d)" marker.City.Name marker.City.UserCount)
                 ]
         ]
     ]
@@ -278,14 +278,10 @@ let renderMarker (city: City) =
 
 [<ReactComponent>]
 let GeoMap (geoInfo: (string * float * float * int) list) =
-    let cities = geoInfo |> List.map (fun (name, lat, lng, _) -> { Name = name; Latitude = lat; Longitude = lng })
-    let initialCenter =
-        cities
-        |> List.tryHead
-        |> Option.map (fun city -> city.Latitude, city.Longitude)
-        |> Option.defaultValue (33.7490, -84.3880)
+    let cities = geoInfo |> List.map (fun (name, lat, lng, userCount) -> { Name = name; Latitude = lat; Longitude = lng; UserCount = userCount })
+    let initialCenter = (39.8283, -98.5795)
 
-    let zoom, setZoom = React.useState 8
+    let zoom, setZoom = React.useState 4
     let center, setCenter = React.useState initialCenter
 
     Html.div [
@@ -297,7 +293,7 @@ let GeoMap (geoInfo: (string * float * float * int) list) =
             PigeonMaps.map [
                 map.center center
                 map.zoom zoom
-                map.height 350
+                map.height 500
                 map.onBoundsChanged (fun args -> setZoom (int args.zoom); setCenter args.center)
                 map.markers [ for city in cities -> renderMarker city ]
             ]

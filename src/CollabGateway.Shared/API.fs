@@ -266,6 +266,8 @@ type Service = {
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
     RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list option>
     RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) list option>
+    RetrieveContactFormSubmitted : StreamToken -> Async<bool>
+    RetrieveSignUpFormSubmitted : StreamToken -> Async<bool>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
     RetrieveFullUserStream : StreamToken -> Async<FullUserStreamProjection>
     RetrieveAllUserNames : unit -> Async<UserStreamProjection>

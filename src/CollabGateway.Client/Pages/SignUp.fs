@@ -15,20 +15,20 @@ open Browser.Navigator
 
 type State = {
     IsFormSubmitComplete: bool
+    IsEmailVerified: bool
+    SignUpForm : SignUpForm
     IsEmailValid: bool option
     IsWebmailDomain: bool option
-    IsEmailVerified: bool
+    Errors: Map<string, string>
     Message : string
     ResponseMessage: string
     Accordion1Open : bool
     Accordion2Open : bool
     Accordion3Open : bool
-    SignUpForm : SignUpForm
     IsProcessing: bool
     IsSubmitActive: bool
     FormSubmittedCount: int
     CurrentStep: int
-    Errors: Map<string, string>
 }
 
 type Msg =
@@ -63,6 +63,14 @@ type Msg =
     | ParentDispatch of ViewMsg
     | CheckEmailVerification
     | EmailVerificationChecked of bool
+
+let private checkFormSubmissionAndEmailStatus sessionToken =
+    async {
+        let! formSubmissionExists = service.RetrieveContactFormSubmitted sessionToken
+        let! emailStatus = service.RetrieveEmailStatus sessionToken
+        let isEmailVerified = emailStatus |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))
+        return formSubmissionExists, isEmailVerified
+    }
 
 let private isEmailValid (email: string) =
     let emailRegex = System.Text.RegularExpressions.Regex("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$")
@@ -129,10 +137,21 @@ let init () : State * Cmd<Msg> =
         IsSubmitActive = false
     }
 
+    let checkFormSubmissionAndEmailStatusCmd =
+        Cmd.OfAsync.perform (fun () -> checkFormSubmissionAndEmailStatus streamToken) () (fun (formSubmissionExists, isEmailVerified) ->
+            if formSubmissionExists then
+                if isEmailVerified then
+                    EmailVerificationChecked true
+                else
+                    FormSubmitted (Ok "Form submission exists")
+            else
+                EmailVerificationChecked false
+        )
+
     let fetchFormSubmittedCountCmd =
         Cmd.OfAsync.perform (fun () -> service.RetrieveSmartFormSubmittedCount streamToken) () (fun result -> RetrieveFormSubmittedCount (Ok result))
 
-    initialState, fetchFormSubmittedCountCmd
+    initialState, Cmd.batch [checkFormSubmissionAndEmailStatusCmd; fetchFormSubmittedCountCmd]
 
 let private closeAccordion label model =
     match label with
@@ -727,7 +746,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.button [
-                    prop.className "btn btn-primary"
+                    prop.className "btn bg-secondary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl mx-auto"
                     prop.text "Your Activity Summary"
                     prop.onClick (fun _ ->
                         parentDispatch (ProcessButtonClicked SignUpActivityButton)

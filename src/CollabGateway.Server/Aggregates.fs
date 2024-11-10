@@ -178,6 +178,40 @@ let retrieveSubscribeStatus (streamToken: StreamToken): Async<(EventDateTime * E
         return if List.isEmpty unsubscribeStatusEvents then None else Some unsubscribeStatusEvents
     }
 
+let retrieveContactFormSubmitted (streamToken: StreamToken): Async<bool> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let contactFormSubmittedEvents =
+            allEvents
+            |> Seq.exists (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | ContactFormSubmitted _ -> true
+                    | _ -> false
+                | _ -> false)
+
+        return contactFormSubmittedEvents
+    }
+
+let retrieveSignUpFormSubmitted (streamToken: StreamToken): Async<bool> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let contactFormSubmittedEvents =
+            allEvents
+            |> Seq.exists (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | SignUpFormSubmitted _ -> true
+                    | _ -> false
+                | _ -> false)
+
+        return contactFormSubmittedEvents
+    }
+
 let getLatestDataPolicyDecision (streamToken: StreamToken): Async<(EventDateTime * DataPolicyChoice) option> =
     async {
         use session = Database.store.LightweightSession()

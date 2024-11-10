@@ -65,6 +65,8 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
                     | DataPolicyDeclineButtonClicked _ -> FullUserStreamEvent.DataPolicyDeclineButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                     | DataPolicyResetButtonClicked _ -> FullUserStreamEvent.DataPolicyResetButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                     | SummaryActivityButtonClicked _ -> FullUserStreamEvent.SummaryActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | ContactActivityButtonClicked _ -> FullUserStreamEvent.ContactActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | SignUpActivityButtonClicked _ -> FullUserStreamEvent.SignUpActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                 | :? FormEventCase as eventCase ->
                     match eventCase with
                     | ContactFormSubmitted { Form = form } -> FullUserStreamEvent.ContactFormSubmitted (Aggregates.unwrapEventTimeStamp e.Data, form)
@@ -398,6 +400,7 @@ let retrieveOverviewTotals (intGrain: (int * Grain) option): Async<OverviewTotal
                 | Grain.Day -> TimeSpan.FromDays(1.0)
                 | Grain.Week -> TimeSpan.FromDays(7.0)
                 | Grain.Month -> TimeSpan.FromDays(30.0)
+                | Minute -> TimeSpan.FromMinutes(1.0)
 
             let intervals =
                 [for i in 0 .. count - 1 do
