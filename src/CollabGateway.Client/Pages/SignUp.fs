@@ -223,7 +223,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             ]
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        parentDispatch (ShowToast ("Contact form sent", AlertLevel.Success ))
         { model with SignUpForm = { model.SignUpForm with Email = ""; Name = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = ""
                                      }; ResponseMessage = $"Got success response: {response}"; CurrentStep = 2; IsProcessing = false }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
@@ -710,7 +709,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.div [
-                    prop.className "flex items-center space-x-2"
+                    prop.className "flex items-center justify-center space-x-2"
                     prop.children [
                         Html.div [
                             prop.className "loading loading-ring loading-md text-warning animate-spin"

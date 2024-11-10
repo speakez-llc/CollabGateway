@@ -158,7 +158,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             ]
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        parentDispatch (ShowToast ("Message sent", AlertLevel.Success))
         { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = false }, Cmd.ofMsg CheckEmailVerification
     | FormSubmitted (Result.Error ex) ->
         parentDispatch (ShowToast ("Failed to send message", AlertLevel.Error))
@@ -288,7 +287,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.div [
-                    prop.className "flex items-center space-x-2"
+                    prop.className "flex items-center space-x-2 justify-center"
                     prop.children [
                         Html.div [
                             prop.className "loading loading-ring loading-md text-warning animate-spin"
