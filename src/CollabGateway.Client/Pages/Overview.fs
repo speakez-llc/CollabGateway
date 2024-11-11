@@ -8,9 +8,11 @@ open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
+open Feliz.Recharts.legend
 open UseElmish
 
 type State = {
+    Grain: Grain
     OverviewTotals: OverviewTotalsProjection list
     OverviewSeries: OverviewTotalsProjection list
     GeoInfo: (string * float * float * int) list
@@ -24,9 +26,11 @@ type Msg =
     | FetchOverviewSeriesFailed of exn
     | GeoInfoReceived of (string * float * float * int) list
     | FetchGeoInfoFailed of exn
+    | SetOverviewPeriod of (int * Grain)
 
 let init () =
     let initialState = {
+        Grain = Grain.Day
         OverviewTotals = []
         OverviewSeries = []
         GeoInfo = []
@@ -60,6 +64,8 @@ let update (msg: Msg) (model: State) : State * Cmd<Msg> =
         { model with GeoInfo = geoInfo }, Cmd.none
     | FetchGeoInfoFailed _ ->
         model, Cmd.none
+    | SetOverviewPeriod (period, grain) ->
+        { model with Grain = grain }, Cmd.OfAsync.perform (fun () -> service.RetrieveOverviewTotals (Some (period, grain))) () OverviewSeriesReceived
 
 let renderStatItem (title: string) (value: int) (description: string) =
     Html.div [
@@ -118,14 +124,16 @@ type OverviewDataPoint = {
 }
 
 [<ReactComponent>]
-let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
+let OverviewLineChart (overviewSeries: OverviewTotalsProjection list, grain: Grain, dispatch: Msg -> unit) =
     let data =
         overviewSeries
         |> List.map (fun projection ->
             {
-                name = projection.IntervalEnd
-                       |> Option.map (fun date -> "Date: " + date.ToString("MM/dd"))
-                       |> Option.defaultValue ""
+                name =
+                    match projection.IntervalEnd with
+                    | Some date when grain = Grain.Hour -> date.ToLocalTime().ToString("HH:mm")
+                    | Some date -> date.ToString("MM/dd")
+                    | None -> ""
                 userStreams = projection.OverviewTotals.TotalNewUserStreams
                 dataPolicyDeclines = projection.OverviewTotals.TotalDataPolicyDeclines
                 contactFormsUsed = projection.OverviewTotals.TotalContactFormsUsed
@@ -136,14 +144,32 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                 usersSmartFormLimit = projection.OverviewTotals.TotalUsersWhoReachedSmartFormLimit
             })
 
+    let handleRadioChange (e: Browser.Types.Event) =
+        let target = e.target :?> Browser.Types.HTMLInputElement
+        match target.value with
+        | "1 Day (hourly)" -> dispatch (SetOverviewPeriod (24, Grain.Hour))
+        | "1 Week (daily)" -> dispatch (SetOverviewPeriod (7, Grain.Day))
+        | "1 Month (weekly)" -> dispatch (SetOverviewPeriod (4, Grain.Week))
+        | "1 Month (daily)" -> dispatch (SetOverviewPeriod (30, Grain.Day))
+        | _ -> ()
+
+    let tickMargin =
+        match grain with
+        | Grain.Hour -> 15
+        | _ -> 10
 
     let responsiveChart =
         Recharts.lineChart [
             lineChart.data data
-            lineChart.margin(top=50, right=50, bottom=25)
+            lineChart.margin(top=10, right=50, bottom=50)
             lineChart.children [
                 Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(3, 3) ]
-                Recharts.xAxis [ xAxis.dataKey (_.name) ]
+                Recharts.xAxis [
+                    xAxis.dataKey (_.name)
+                    xAxis.angle -45
+                    xAxis.padding 4
+                    xAxis.tickMargin tickMargin
+                ]
                 Recharts.yAxis [ ]
                 Recharts.tooltip [
                     tooltip.formatter (fun (value: obj) _ _ ->
@@ -156,6 +182,8 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
                                            style.borderRadius 8 ]
                 ]
                 Recharts.legend [
+                    verticalAlign.top
+                    legend.wrapperStyle [ style.paddingBottom 10 ]
                 ]
                 Recharts.line [
                     line.monotone
@@ -210,10 +238,69 @@ let OverviewLineChart (overviewSeries: OverviewTotalsProjection list) =
             ]
         ]
 
-    Recharts.responsiveContainer [
-        responsiveContainer.width (length.percent 100)
-        responsiveContainer.height 300
-        responsiveContainer.chart responsiveChart
+    Html.div [
+        prop.className "pb-4"
+        prop.children [
+            Html.div [
+                prop.className "radio-buttons space-x-2 pb-4"
+                prop.children [
+                    Html.label [
+                        prop.className "space-x-1"
+                        prop.children [
+                            Html.input [
+                                prop.type' "radio"
+                                prop.name "overviewPeriod"
+                                prop.value "1 Day (hourly)"
+                                prop.onChange handleRadioChange
+                            ]
+                            Html.span "1 Day (hourly)"
+                        ]
+                    ]
+                    Html.label [
+                        prop.className "space-x-1"
+                        prop.children [
+                            Html.input [
+                                prop.type' "radio"
+                                prop.name "overviewPeriod"
+                                prop.value "1 Week (daily)"
+                                prop.defaultChecked true
+                                prop.onChange handleRadioChange
+                            ]
+                            Html.span "1 Week (daily)"
+                        ]
+                    ]
+                    Html.label [
+                        prop.className "space-x-1"
+                        prop.children [
+                            Html.input [
+                                prop.type' "radio"
+                                prop.name "overviewPeriod"
+                                prop.value "1 Month (weekly)"
+                                prop.onChange handleRadioChange
+                            ]
+                            Html.span "1 Month (weekly)"
+                        ]
+                    ]
+                    Html.label [
+                        prop.className "space-x-1"
+                        prop.children [
+                            Html.input [
+                                prop.type' "radio"
+                                prop.name "overviewPeriod"
+                                prop.value "1 Month (daily)"
+                                prop.onChange handleRadioChange
+                            ]
+                            Html.span "1 Month (daily)"
+                        ]
+                    ]
+                ]
+            ]
+            Recharts.responsiveContainer [
+                responsiveContainer.width (length.percent 100)
+                responsiveContainer.height 400
+                responsiveContainer.chart responsiveChart
+            ]
+        ]
     ]
 
 type City = {
@@ -321,14 +408,14 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                 prop.text "No data available."
                             ]
                         else
-                            Html.div [
-                                prop.className "space-y-24"
-                                prop.children [
-                                   OverviewStats state.OverviewTotals[0]
-                                   OverviewLineChart state.OverviewSeries
-                                   GeoMap state.GeoInfo
-                                ]
+                        Html.div [
+                            prop.className "space-y-24"
+                            prop.children [
+                               OverviewStats state.OverviewTotals[0]
+                               OverviewLineChart (state.OverviewSeries, state.Grain, dispatch)
+                               GeoMap state.GeoInfo
                             ]
+                        ]
                 ]
             ]
         ]
