@@ -286,32 +286,31 @@ let getLatestSignUpFormSubmitted (streamToken: StreamToken): Async<(EventDateTim
         return findLatestForm allFormEvents
     }
 
-type AsyncResult =
-    | DateInitiated of EventDateTime
-    | DataPolicyDecision of (EventDateTime * DataPolicyChoice) option
-    | ContactFormSubmitted of (EventDateTime * ContactForm) option
-    | SignUpFormSubmitted of (EventDateTime * SignUpForm) option
-    | EmailStatus of (EventDateTime * EmailAddress * EmailStatus) list option
-    | SubscribeStatus of (EventDateTime * EmailAddress * SubscribeStatus) list option
-
 let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAggregate> =
     async {
         let! results =
             Async.Parallel [
-                async { let! x = getDateInitiated streamToken in return DateInitiated x }
-                async { let! x = getLatestDataPolicyDecision streamToken in return DataPolicyDecision x }
-                async { let! x = getLatestContactFormSubmitted streamToken in return ContactFormSubmitted x }
-                async { let! x = getLatestSignUpFormSubmitted streamToken in return SignUpFormSubmitted x }
-                async { let! x = retrieveEmailStatus streamToken in return EmailStatus x }
-                async { let! x = retrieveSubscribeStatus streamToken in return SubscribeStatus x }
+                async { let! x = getDateInitiated streamToken in return x :> obj }
+                async { let! x = getLatestDataPolicyDecision streamToken in return x :> obj }
+                async { let! x = getLatestContactFormSubmitted streamToken in return x :> obj }
+                async { let! x = getLatestSignUpFormSubmitted streamToken in return x :> obj }
+                async { let! x = retrieveEmailStatus streamToken in return x :> obj }
+                async { let! x = retrieveSubscribeStatus streamToken in return x :> obj }
             ]
 
+        let dateInitiated = results[0] :?> EventDateTime
+        let dataPolicyDecision = results[1] :?> (EventDateTime * DataPolicyChoice) option
+        let contactFormSubmitted = results[2] :?> (EventDateTime * ContactForm) option
+        let signUpFormSubmitted = results[3] :?> (EventDateTime * SignUpForm) option
+        let emailStatus = results[4] :?> (EventDateTime * EmailAddress * EmailStatus) list option
+        let subscribeStatus = results[5] :?> (EventDateTime * EmailAddress * SubscribeStatus) list option
+
         return {
-            StreamInitiated = results |> Array.pick (function DateInitiated x -> Some x | _ -> None)
-            DataPolicyDecision = results |> Array.pick (function DataPolicyDecision x -> Some x | _ -> None)
-            ContactFormSubmitted = results |> Array.pick (function ContactFormSubmitted x -> Some x | _ -> None)
-            SignUpFormSubmitted = results |> Array.pick (function SignUpFormSubmitted x -> Some x | _ -> None)
-            EmailStatus = results |> Array.pick (function EmailStatus x -> Some x | _ -> None)
-            SubscribeStatus = results |> Array.pick (function SubscribeStatus x -> Some x | _ -> None)
+            StreamInitiated = dateInitiated
+            DataPolicyDecision = dataPolicyDecision
+            ContactFormSubmitted = contactFormSubmitted
+            SignUpFormSubmitted = signUpFormSubmitted
+            EmailStatus = emailStatus
+            SubscribeStatus = subscribeStatus
         }
     }
