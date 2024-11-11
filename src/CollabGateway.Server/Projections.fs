@@ -366,14 +366,21 @@ let retrieveVerifiedEmailDomains (): Async<(string * int) list> =
 
 let retrieveOverviewStats (interval: (IntervalStart * IntervalEnd) option): Async<OverviewTotals> =
     async {
-        let! totalNewUserStreams = retrieveTotalNewUserStreamCount interval
-        let! totalDataPolicyDeclined = retrieveTotalDataPolicyDeclined interval
-        let! totalContactFormsSubmitted = retrieveTotalContactFormsSubmitted interval
-        let! totalSmartFormUsers = retrieveTotalSmartFormUsers interval
-        let! totalSignUpFormsSubmitted = retrieveTotalSignUpFormsSubmitted interval
-        let! totalEmailVerifications = retrieveTotalEmailVerifications interval
-        let! totalEmailUnsubscribes = retrieveTotalEmailUnsubscribes interval
-        let! totalUsersWhoReachedSmartFormLimit = retrieveUsersWhoReachedSmartFormLimit interval
+        let! results =
+            Async.Parallel [
+                async { let! x = retrieveTotalNewUserStreamCount interval in return x }
+                async { let! x = retrieveTotalDataPolicyDeclined interval in return x }
+                async { let! x = retrieveTotalContactFormsSubmitted interval in return x }
+                async { let! x = retrieveTotalSmartFormUsers interval in return x }
+                async { let! x = retrieveTotalSignUpFormsSubmitted interval in return x }
+                async { let! x = retrieveTotalEmailVerifications interval in return x }
+                async { let! x = retrieveTotalEmailUnsubscribes interval in return x }
+                async { let! x = retrieveUsersWhoReachedSmartFormLimit interval in return x }
+            ]
+
+        let totalNewUserStreams, totalDataPolicyDeclined, totalContactFormsSubmitted, totalSmartFormUsers, totalSignUpFormsSubmitted, totalEmailVerifications, totalEmailUnsubscribes, totalUsersWhoReachedSmartFormLimit =
+            results[0], results[1], results[2], results[3], results[4], results[5], results[6], results[7]
+
         return {
             TotalNewUserStreams = totalNewUserStreams
             TotalDataPolicyDeclines = totalDataPolicyDeclined
