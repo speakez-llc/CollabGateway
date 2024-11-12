@@ -50,7 +50,6 @@ let getEmailStatus (eventToken: EventToken): Async<StreamToken * EmailAddress * 
 
 let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: EventToken, emailAddress: EmailAddress, status: EmailStatus) = async {
     try
-        Console.WriteLine $"Processing email verification completion for {emailAddress} with status {status}"
         Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status))
     with
     | ex ->
@@ -93,7 +92,6 @@ let getUnsubscribeStatus (eventToken: EventToken): Async<StreamToken * EmailAddr
 
 let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: EventToken, emailAddress: EmailAddress, status: EmailStatus) = async {
     try
-        Console.WriteLine $"Processing email verification completion for {emailAddress} with status {status}"
         Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status))
     with
     | ex ->
@@ -123,7 +121,7 @@ let confirmEmailHandler (next: HttpFunc) (ctx: HttpContext) =
                 let status = EmailStatus.Verified
                 do! processEmailVerificationCompletion (timeStamp, streamToken, tokenParam, email, status)
                 ctx.Response.StatusCode <- 302
-                ctx.Response.Headers["Location"] <- "http://localhost:8080/activity"
+                ctx.Response.Headers["Location"] <- $"http://localhost:8080/activity?ref={streamToken}"
                 return! next ctx
             else
                 Console.WriteLine "Token not available for verification."

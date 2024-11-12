@@ -223,8 +223,10 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             ]
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        { model with SignUpForm = { model.SignUpForm with Email = ""; Name = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; PostCode = ""; Country = ""
-                                     }; ResponseMessage = $"Got success response: {response}"; CurrentStep = 2; IsProcessing = false }, Cmd.none
+        if not model.IsEmailVerified then
+            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = true }, Cmd.ofMsg CheckEmailVerification
+        else
+            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = false }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
         parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
@@ -289,12 +291,15 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         parentDispatch viewMsg
         model, Cmd.none
     | CheckEmailVerification ->
-        let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-        let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay sessionToken (fun status -> EmailVerificationChecked (status |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))))
-        model, cmd
+        if model.IsProcessing && not model.IsEmailVerified then
+            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay sessionToken (fun status -> EmailVerificationChecked (status |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))))
+            model, cmd
+        else
+            model, Cmd.none
     | EmailVerificationChecked isVerified ->
         if isVerified then
-            { model with IsEmailVerified = true; CurrentStep = 3 }, Cmd.none
+            { model with IsEmailVerified = true; CurrentStep = 3; IsProcessing = false }, Cmd.none
         else
             model, Cmd.ofMsg CheckEmailVerification
 

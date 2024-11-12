@@ -25,7 +25,7 @@ let getQueryParam (param: string) =
         |> Option.map (_.Substring(param.Length + 1))
 
 let establishStreamToken () =
-    let queryToken = getQueryParam "token"
+    let queryToken = getQueryParam "ref"
 
     match queryToken with
     | Some token ->

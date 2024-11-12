@@ -107,12 +107,12 @@ let private checkEmailVerificationWithDelay sessionToken =
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
     | UpdateName name ->
-        let newModel = { model with ContactForm = { model.ContactForm with Name = name } }
+        let newModel = { model with State.ContactForm.Name = name }
         let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | UpdateEmail email ->
         let isEmailValid = isEmailValid email
-        let newModel = { model with ContactForm = { model.ContactForm with Email = email }; IsEmailValid = Some isEmailValid }
+        let newModel = { model with State.ContactForm.Email = email; IsEmailValid = Some isEmailValid }
         let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | WebmailDomainFlagged isWebmailDomain ->
@@ -127,7 +127,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             parentDispatch (ShowToast ("Webmail Domains Are Not Allowed", AlertLevel.Warning))
         { model with Errors = errors; IsWebmailDomain = Some isWebmailDomain; IsSubmitActive = isSubmitActive }, Cmd.none
     | UpdateMessageBody messageBody ->
-        let newModel = { model with ContactForm = { model.ContactForm with MessageBody = messageBody } }
+        let newModel = { model with State.ContactForm.MessageBody = messageBody }
         let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | SubmitForm ->
@@ -158,7 +158,10 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             ]
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = false }, Cmd.ofMsg CheckEmailVerification
+        if not model.IsEmailVerified then
+            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = true }, Cmd.ofMsg CheckEmailVerification
+        else
+            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = false }, Cmd.none
     | FormSubmitted (Result.Error ex) ->
         parentDispatch (ShowToast ("Failed to send message", AlertLevel.Error))
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
@@ -166,12 +169,15 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         parentDispatch viewMsg
         model, Cmd.none
     | CheckEmailVerification ->
-        let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-        let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay sessionToken (fun status -> EmailVerificationChecked (status |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))))
-        model, cmd
+        if model.IsProcessing && not model.IsEmailVerified then
+            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay sessionToken (fun status -> EmailVerificationChecked (status |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))))
+            model, cmd
+        else
+            model, Cmd.none
     | EmailVerificationChecked isVerified ->
         if isVerified then
-            { model with IsEmailVerified = true; CurrentStep = 3 }, Cmd.none
+            { model with IsEmailVerified = true; CurrentStep = 3; IsProcessing = false }, Cmd.none
         else
             model, Cmd.ofMsg CheckEmailVerification
 

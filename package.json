@@ -4,9 +4,9 @@
     "scripts": {
         "prestart": "dotnet tool restore",
         "start": "dotnet fable watch ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite",
+        "start:prod": "vite preview --config /CollabGateway/vite.config.js",
         "prebuild": "dotnet tool restore",
-        "build": "dotnet fable ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite build"
-    },
+        "build": "dotnet fable ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite build" },
     "devDependencies": {
         "@babel/core": "^7.25.2",
         "@vitejs/plugin-react": "^4.2.1",

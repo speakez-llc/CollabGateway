@@ -4,10 +4,6 @@
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Components\Carousel.fs" />
-        <Compile Include="Components\ReactFlow.fs" />
-    </ItemGroup>
-    <ItemGroup>
         <Compile Include="Server.fs" />
         <Compile Include="Router.fs" />
         <Compile Include="Extensions.fs" />
