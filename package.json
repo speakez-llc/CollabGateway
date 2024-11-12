@@ -4,7 +4,7 @@
     "scripts": {
         "prestart": "dotnet tool restore",
         "start": "dotnet fable watch ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite",
-        "start:prod": "vite preview --config /CollabGateway/vite.config.js",
+        "start:prod": "vite preview --config /CollabGateway/vite.config.js --port 8080",
         "prebuild": "dotnet tool restore",
         "build": "dotnet fable ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite build" },
     "devDependencies": {
