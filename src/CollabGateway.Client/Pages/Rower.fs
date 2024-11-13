@@ -90,7 +90,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "A Variety of Industries"
                                         ]
                                         Html.p [
-                                            prop.text "From healthcare to finance, retail to manufacturing, we have the depth and breadth of expertise to help your organization craft solutions to return real business value on your technology investments."
+                                            prop.text "From healthcare to finance, entertainment, automotive, retail and manufacturing logistics, we have the depth and breadth of expertise to help you craft solutions to gain real business value from your technology investments."
                                         ]
                                     ]
                                 ]
@@ -112,7 +112,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Flexibility & Experience"
                                         ]
                                         Html.p [
-                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with teams to develop strategies that help them adapt to today's technology landscape."
+                                            prop.text "Whether a highly regulated workplace or a fast-moving startup, we work with you to develop strategies that help adapt the many dimensions of today's technology landscape to maximize each organization's unique potential."
                                         ]
                                     ]
                                 ]
@@ -134,7 +134,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "The Speed of Business"
                                         ]
                                         Html.p [
-                                            prop.text "While Rower is known for enterprise analytics, we also can help you bring robust operational app experiences to the field and on the go via phone, tablet and even embedded devices."
+                                            prop.text "While Rower is known for analytics, we also can help bring robust operational app experiences to the field and on the go via phone, tablet and even embedded devices. Modern work is not limited to web or desktop, and neither are we."
                                         ]
                                     ]
                                 ]
