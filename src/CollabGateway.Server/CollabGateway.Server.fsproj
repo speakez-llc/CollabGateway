@@ -7,8 +7,8 @@
   <ItemGroup>
     <Compile Include="SendGridHelpers.fs" />
     <Compile Include="Database.fs" />
-    <Compile Include="Notifications.fs" />
     <Compile Include="Aggregates.fs" />
+    <Compile Include="Notifications.fs" />
     <Compile Include="Projections.fs" />
     <Compile Include="Remoting.fs" />
     <Compile Include="WebApp.fs" />

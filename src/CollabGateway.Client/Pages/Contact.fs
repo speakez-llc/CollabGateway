@@ -2,8 +2,8 @@
 
 open System
 open Browser.Dom
+open CollabGateway.Shared.Errors
 open Feliz
-
 open Elmish
 open CollabGateway.Client.Server
 open CollabGateway.Client.ViewMsg
@@ -35,15 +35,20 @@ type private Msg =
     | CheckEmailVerification
     | EmailVerificationChecked of bool
 
-let private checkFormSubmissionAndEmailStatus sessionToken =
+let private checkFormSubmission streamToken =
     async {
-        let! formSubmissionExists = service.RetrieveContactFormSubmitted sessionToken
-        let! emailStatus = service.RetrieveEmailStatus sessionToken
-        let isEmailVerified = emailStatus |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))
-        return formSubmissionExists, isEmailVerified
+        let! formSubmissionExists = service.RetrieveContactFormSubmitted streamToken
+        return formSubmissionExists
     }
 
-let private init () =
+let private checkEmailStatus streamToken =
+    async {
+        let! emailStatus = service.RetrieveEmailStatus streamToken
+        let isEmailVerified = emailStatus |> Option.exists (fun (_, _, s) -> s = Verified)
+        return isEmailVerified
+    }
+
+let private init () : State * Cmd<Msg> =
     let initialContactForm = {
         Name = ""
         Email = ""
@@ -51,18 +56,22 @@ let private init () =
     }
     let initialState = { IsFormSubmitComplete = false; IsEmailVerified = false; ContactForm = initialContactForm; InFormMessage = "Feel Free To Reach Out"; ResponseMessage = ""; Errors = Map.empty; IsEmailValid = None; IsWebmailDomain = None; IsProcessing = false; IsSubmitActive = false; CurrentStep = 1 }
 
-    let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-    let cmd = Cmd.OfAsync.perform (fun () -> checkFormSubmissionAndEmailStatus sessionToken) () (fun (formSubmissionExists, isEmailVerified) ->
-        if formSubmissionExists then
-            if isEmailVerified then
-                EmailVerificationChecked true
-            else
-                FormSubmitted (Ok "Form submission exists")
-        else
-            EmailVerificationChecked false
-    )
+    let streamToken : StreamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
 
-    initialState, cmd
+    let checkFormSubmissionCmd =
+        Cmd.OfAsync.perform (fun () -> checkFormSubmission streamToken) () (fun formSubmissionExists ->
+            if formSubmissionExists then
+                FormSubmitted (Ok "Form submission exists")
+            else
+                FormSubmitted (Result.Error (ServerError.Exception "Form submission does not exist"))
+        )
+
+    let checkEmailStatusCmd =
+        Cmd.OfAsync.perform (fun () -> checkEmailStatus streamToken) () (fun isEmailVerified ->
+            EmailVerificationChecked isEmailVerified
+        )
+
+    initialState, Cmd.batch [checkFormSubmissionCmd; checkEmailStatusCmd]
 
 let private isEmailValid (email: string) =
     let emailRegex = System.Text.RegularExpressions.Regex("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$")
@@ -98,23 +107,32 @@ let private validateForm (contactForm: ContactForm) =
 
     errors, not (List.isEmpty errors), cmd, isSubmitActive
 
-let private checkEmailVerificationWithDelay sessionToken =
+let private checkEmailVerificationWithDelay streamToken =
     async {
-        do! Async.Sleep 2000
-        return! service.RetrieveEmailStatus sessionToken
+        do! Async.Sleep 5000
+        return! service.RetrieveEmailStatus streamToken
     }
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
-    | UpdateName name ->
-        let newModel = { model with State.ContactForm.Name = name }
-        let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | UpdateEmail email ->
         let isEmailValid = isEmailValid email
-        let newModel = { model with State.ContactForm.Email = email; IsEmailValid = Some isEmailValid }
-        let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        let cmd =
+            if isEmailValid then
+                Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain email) () WebmailDomainFlagged
+            else
+                Cmd.none
+
+        let checkEmailVerificationCmd =
+            if isEmailValid then
+                let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+                Cmd.OfAsync.perform (fun () -> service.RetrieveEmailStatus streamToken) () (fun status ->
+                    match status with
+                    | Some (_, _, EmailStatus.Verified) -> EmailVerificationChecked true
+                    | _ -> EmailVerificationChecked false)
+            else
+                Cmd.none
+        { model with State.ContactForm.Email = email; IsEmailValid = Some isEmailValid }, Cmd.batch [cmd; checkEmailVerificationCmd]
     | WebmailDomainFlagged isWebmailDomain ->
         let errors =
             if isWebmailDomain then
@@ -126,9 +144,19 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         if isWebmailDomain then
             parentDispatch (ShowToast ("Webmail Domains Are Not Allowed", AlertLevel.Warning))
         { model with Errors = errors; IsWebmailDomain = Some isWebmailDomain; IsSubmitActive = isSubmitActive }, Cmd.none
+    | EmailVerificationChecked isVerified ->
+        let newState = { model with IsEmailVerified = isVerified }
+        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
+            { newState with CurrentStep = 3 }, Cmd.none
+        else
+            newState, Cmd.none
+    | UpdateName name ->
+        let newModel = { model with State.ContactForm.Name = name }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.ContactForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | UpdateMessageBody messageBody ->
         let newModel = { model with State.ContactForm.MessageBody = messageBody }
-        let errors, hasErrors, cmd, isSubmitActive = validateForm newModel.ContactForm
+        let errors, _, cmd, isSubmitActive = validateForm newModel.ContactForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | SubmitForm ->
         let errors, hasErrors, cmd, _ = validateForm model.ContactForm
@@ -137,49 +165,41 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             { model with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList }, cmd
         else
             let timeStamp = DateTime.UtcNow
-            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let verificationToken = Guid.NewGuid()
             let appendEmailStatusCmd =
                 if not model.IsEmailVerified then
-                    let validationToken = Guid.NewGuid()
-                    Cmd.OfAsync.eitherAsResult (fun _ -> service.AppendEmailStatus (timeStamp, sessionToken, validationToken, model.ContactForm.Email, Open)) (fun _ -> FormSubmitted (Ok "Email status appended"))
+                    Cmd.OfAsync.eitherAsResult (fun _ -> service.AppendEmailStatus (timeStamp, streamToken, verificationToken, model.ContactForm.Email, Open)) (fun _ -> FormSubmitted (Ok "Email status appended"))
                 else
                     Cmd.none
-            let appendSubscriptionStatusCmd =
+            let sendVerificationEmailCmd =
                 if not model.IsEmailVerified then
-                    let subscriptionStatus = SubscribeStatus.Open
-                    let subscriptionToken = Guid.NewGuid()
-                    Cmd.OfAsync.eitherAsResult (fun _ -> service.AppendUnsubscribeStatus (timeStamp, sessionToken, subscriptionToken, model.ContactForm.Email, subscriptionStatus)) (fun _ -> FormSubmitted (Ok "Subscription status appended"))
+                    Cmd.OfAsync.eitherAsResult (fun _ -> service.SendEmailVerification (model.ContactForm.Name, model.ContactForm.Email, verificationToken, Guid.NewGuid())) (fun _ -> FormSubmitted (Ok "Verification email sent"))
                 else
                     Cmd.none
             let cmd = Cmd.batch [
-                Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm (timeStamp, sessionToken, model.ContactForm)) FormSubmitted
+                Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessContactForm (timeStamp, streamToken, model.ContactForm)) FormSubmitted
                 appendEmailStatusCmd
-                appendSubscriptionStatusCmd
+                sendVerificationEmailCmd
             ]
             { model with IsProcessing = true }, cmd
     | FormSubmitted (Ok response) ->
-        if not model.IsEmailVerified then
-            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = true }, Cmd.ofMsg CheckEmailVerification
+        let newState = { model with IsFormSubmitComplete = true; IsProcessing = false }
+        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
+            { newState with CurrentStep = 3 }, Cmd.none
         else
-            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = false }, Cmd.none
+            { newState with CurrentStep = 2 }, Cmd.ofMsg CheckEmailVerification
     | FormSubmitted (Result.Error ex) ->
-        parentDispatch (ShowToast ("Failed to send message", AlertLevel.Error))
+        parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
         { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
-    | ParentDispatch viewMsg ->
-        parentDispatch viewMsg
-        model, Cmd.none
     | CheckEmailVerification ->
         if model.IsProcessing && not model.IsEmailVerified then
-            let sessionToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay sessionToken (fun status -> EmailVerificationChecked (status |> Option.exists (List.exists (fun (_, _, s) -> s = Verified))))
+            let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay streamToken (fun status -> EmailVerificationChecked (status |> Option.exists (fun (_, _, s) -> s = Verified)))
             model, cmd
         else
             model, Cmd.none
-    | EmailVerificationChecked isVerified ->
-        if isVerified then
-            { model with IsEmailVerified = true; CurrentStep = 3; IsProcessing = false }, Cmd.none
-        else
-            model, Cmd.ofMsg CheckEmailVerification
+
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =

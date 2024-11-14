@@ -1,98 +1,111 @@
 ﻿module CollabGateway.Server.Notifications
 
 open System
+open CollabGateway.Server.Aggregates
 open CollabGateway.Shared.API
-open CollabGateway.Shared.Errors
 open CollabGateway.Shared.Events
 open Giraffe
 open Microsoft.AspNetCore.Http
 
-let private apiKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
+let private notificationKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
 
-let getEmailStatus (eventToken: EventToken): Async<StreamToken * EmailAddress * EmailStatus> =
+let serverName =
+    match Environment.GetEnvironmentVariable("SERVER_NAME") with
+    | null | "" -> "http://localhost:8080"
+    | value -> value
+
+let getEmailStatus (verificationToken: VerificationToken): Async<StreamToken * EmailAddress * EmailStatus * VerificationToken> =
     async {
         try
             use session = Database.store.LightweightSession()
-            let allEvents = session.Events.QueryAllRawEvents()
-            let streamTokenOption =
-                allEvents
-                |> Seq.tryPick (fun e ->
+            let allEvents =
+                session.Events.QueryAllRawEvents()
+                |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
+                |> Seq.toList
+
+            let rec findLatestEmailStatus (events: EventEnvelope list) =
+                match events with
+                | [] -> None
+                | e :: rest ->
                     match e.Data with
                     | :? FormEventCase as eventCase ->
                         match eventCase with
-                        | EmailStatusAppended { EventToken = et; EmailAddress = _; Status = _ } when et = eventToken -> Some e.StreamId
-                        | _ -> None
-                    | _ -> None)
+                        | EmailStatusAppended { VerificationToken = vt; EmailAddress = email; Status = status } when vt = verificationToken ->
+                            Some (e.StreamId, email, status, vt)
+                        | _ -> findLatestEmailStatus rest
+                    | _ -> findLatestEmailStatus rest
 
-            match streamTokenOption with
-            | Some streamToken ->
-                let! streamEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
-                let latestEmailStatus =
-                    streamEvents
-                    |> Seq.choose (fun e ->
-                        match e.Data with
-                        | :? FormEventCase as eventCase ->
-                            match eventCase with
-                            | EmailStatusAppended { EventToken = et; EmailAddress = email; Status = status } when et = eventToken -> Some (streamToken, email, status)
-                            | _ -> None
-                        | _ -> None)
-                    |> Seq.tryHead
-
-                match latestEmailStatus with
-                | Some (streamToken, email, status) -> return (streamToken, email, status)
-                | None -> return failwith "No available state for the given token. Verification may already be complete."
-            | None -> return failwith "No match found for the given token."
+            let sortedEvents = allEvents |> List.sortByDescending (_.Timestamp)
+            match findLatestEmailStatus sortedEvents with
+            | Some (streamToken, email, status, verificationToken) -> return (streamToken, email, status, verificationToken)
+            | None -> return failwith "No available state for the given token. Verification may already be complete."
         with
         | ex ->
             Console.WriteLine $"Exception in getEmailStatus: {ex.Message}"
             return failwith "An error occurred while retrieving email status."
     }
 
-let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: EventToken, emailAddress: EmailAddress, status: EmailStatus) = async {
+let getUnsubscribeStatus (subToken: SubscriptionToken): Async<StreamToken * EmailAddress * SubscribeStatus> =
+    async {
+        use session = Database.store.LightweightSession()
+        let allEvents =
+            session.Events.QueryAllRawEvents()
+            |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
+            |> Seq.toList
+
+        let rec findLatestSubscribeStatus (events: EventEnvelope list) =
+            match events with
+            | [] -> None
+            | e :: rest ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | SubscribeStatusAppended { SubscriptionToken = st; EmailAddress = email; Status = status } when st = subToken ->
+                        Some (e.StreamId, email, status)
+                    | _ -> findLatestSubscribeStatus rest
+                | _ -> findLatestSubscribeStatus rest
+
+        let sortedEvents = allEvents |> List.sortByDescending (_.Timestamp)
+        match findLatestSubscribeStatus sortedEvents with
+        | Some (streamToken, email, status) -> return (streamToken, email, status)
+        | None -> return failwith "No available state for the given token. Verification may already be complete."
+    }
+
+
+let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: StreamToken, subToken: SubscriptionToken, emailAddress: EmailAddress, status: EmailStatus) = async {
     try
-        Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status))
+        Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, subToken, emailAddress, status))
+        let! nameOption = getUserName streamToken
+        let name = nameOption |> Option.defaultValue "Unknown"
+        do SendGridHelpers.sendEmailConfirmation (name, emailAddress, streamToken, subToken) |> ignore
     with
     | ex ->
         Console.WriteLine $"Exception in processEmailVerificationCompletion: {ex.Message}"
 }
 
-let getUnsubscribeStatus (eventToken: EventToken): Async<StreamToken * EmailAddress * SubscribeStatus> =
+let getUnsubscribeToken (streamToken: StreamToken): Async<SubscriptionToken option> =
     async {
         use session = Database.store.LightweightSession()
-        let allEvents = session.Events.QueryAllRawEvents()
-        let streamTokenOption =
-            allEvents
-            |> Seq.tryPick (fun e ->
+        let! streamEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let unsubscribeToken =
+            streamEvents
+            |> Seq.choose (fun e ->
                 match e.Data with
                 | :? FormEventCase as eventCase ->
                     match eventCase with
-                    | EmailStatusAppended { EventToken = et; EmailAddress = _; Status = _ } when et = eventToken -> Some e.StreamId
+                    | SubscribeStatusAppended { SubscriptionToken = st } -> Some st
                     | _ -> None
                 | _ -> None)
-
-        match streamTokenOption with
-        | Some streamToken ->
-            let! streamEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
-            let latestEmailStatus =
-                streamEvents
-                |> Seq.choose (fun e ->
-                    match e.Data with
-                    | :? FormEventCase as eventCase ->
-                        match eventCase with
-                        | SubscribeStatusAppended { EventToken = et; EmailAddress = email; Status = status } when et = eventToken-> Some (streamToken, email, status)
-                        | _ -> None
-                    | _ -> None)
-                |> Seq.tryHead
-
-            match latestEmailStatus with
-            | Some (streamToken, email, status) -> return (streamToken, email, status)
-            | None -> return failwith "No available state for the given token. Verification may already be complete."
-        | None -> return failwith "No match found for the given token."
+            |> Seq.tryHead
+        return unsubscribeToken
     }
 
-let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: EventToken, emailAddress: EmailAddress, status: EmailStatus) = async {
+let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamToken, subToken: SubscriptionToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
     try
-        Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status))
+        Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subToken, emailAddress, status))
+        let! nameOption = getUserName streamToken
+        let name = nameOption |> Option.defaultValue "Unknown"
+        do SendGridHelpers.sendUnsubscribeConfirmation (name, emailAddress) |> ignore
     with
     | ex ->
         Console.WriteLine $"Exception in processEmailVerificationCompletion: {ex.Message}"
@@ -101,53 +114,49 @@ let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamT
 let private authenticateApiKey (next: HttpFunc) (ctx: HttpContext) =
     task {
         let apiKeyParam = ctx.Request.Query["api-key"] |> string
-        if apiKeyParam = apiKey then
+        if apiKeyParam = notificationKey then
             return! next ctx
         else
             ctx.Response.StatusCode <- 401
             return! text "Unauthorized" next ctx
     }
 
-let confirmEmailHandler (next: HttpFunc) (ctx: HttpContext) =
+let verificationEmailHandler (next: HttpFunc) (ctx: HttpContext) =
     task {
-        try
-            let tokenParam : EventToken = ctx.Request.Query["token"] |> string |> Guid.Parse
-            Console.WriteLine $"Received token: {tokenParam}"
-            let! streamToken, email, emailStatus = getEmailStatus tokenParam
-            Console.WriteLine $"StreamToken: {streamToken} Email: {email} EmailStatus: {emailStatus}"
-            if emailStatus = EmailStatus.Open then
-                Console.WriteLine $"Email status found: {emailStatus} for email: {email}"
-                let timeStamp = DateTime.Now
-                let status = EmailStatus.Verified
-                do! processEmailVerificationCompletion (timeStamp, streamToken, tokenParam, email, status)
-                ctx.Response.StatusCode <- 302
-                ctx.Response.Headers["Location"] <- $"http://localhost:8080/activity?ref={streamToken}"
-                return! next ctx
-            else
-                Console.WriteLine "Token not available for verification."
-                return! ServerError.failwith (ServerError.Exception "Token not available for verification.") next ctx
-        with
-        | ex ->
-            Console.WriteLine $"Exception: {ex.Message}"
-            return! ServerError.failwith (ServerError.Exception "An error occurred during email verification.") next ctx
+        let verificationParam : VerificationToken = ctx.Request.Query["token"] |> string |> Guid.Parse
+        let! streamToken, email, emailStatus, verificationToken = getEmailStatus verificationParam
+        if emailStatus = EmailStatus.Open then
+            let timeStamp = DateTime.Now
+            let status = EmailStatus.Verified
+            do! processEmailVerificationCompletion (timeStamp, streamToken, verificationToken, email, status)
+            ctx.Response.StatusCode <- 302
+            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            return! next ctx
+        else
+            ctx.Response.StatusCode <- 302
+            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            return! next ctx
     }
 
 let unsubscribeHandler (next: HttpFunc) (ctx: HttpContext) =
     task {
-        let unsubscribeToken : EventToken = ctx.Request.Query["token"] |> string |> Guid.Parse
+        let unsubscribeToken : SubscriptionToken = ctx.Request.Query["token"] |> string |> Guid.Parse
         let! streamToken, email, subscribeStatus = getUnsubscribeStatus unsubscribeToken
         if subscribeStatus = SubscribeStatus.Open then
             let newStatus = SubscribeStatus.Unsubscribed
             let timeStamp = DateTime.Now
-            Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, unsubscribeToken,  email, newStatus))
-            ctx.Response.StatusCode <- 200
-            return! text $"You have been unsubscribed from marketing mails - email: {email} token: {unsubscribeToken}. Be advised if you use another email for this site you will still verify and manage that email separately." next ctx
+            do! processUnsubscribeCompletion (timeStamp, streamToken, unsubscribeToken, email, newStatus)
+            ctx.Response.StatusCode <- 302
+            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            return! next ctx
         else
-            return! ServerError.failwith (ServerError.Exception "Token not available for verification. Email may already be unsubscribed.") next ctx
+            ctx.Response.StatusCode <- 302
+            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            return! next ctx
     }
 
 let notificationManager : HttpHandler  =
     choose [
-        route "/api/prefs/confirm" >=> confirmEmailHandler
+        route "/api/prefs/confirm" >=> verificationEmailHandler
         route "/api/prefs/unsubscribe" >=> unsubscribeHandler
     ]

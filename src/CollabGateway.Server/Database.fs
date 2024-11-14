@@ -137,14 +137,14 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
                         UserClientIPDetected { TimeStamp = timeStamp; Id = Guid.NewGuid(); UserClientIP = clientIP; UserGeoInfo = userGeoInfo }
                 session.Events.Append(streamToken, [| event :> obj |]) |> ignore
                 do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessEmailStatus (timeStamp, streamToken, eventToken, emailAddress, status) ->
+        | ProcessEmailStatus (timeStamp, streamToken, verificationToken, emailAddress, status) ->
             use session = store.LightweightSession()
-            let event = EmailStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            let event = EmailStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); VerificationToken = verificationToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessUnsubscribeStatus(timeStamp, streamToken, eventToken, emailAddress, status) ->
             use session = store.LightweightSession()
-            let event = SubscribeStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); EventToken = eventToken; EmailAddress = emailAddress; Status = status }
+            let event = SubscribeStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); SubscriptionToken = eventToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessPageVisited (timeStamp, streamToken, pageName) ->

@@ -16,6 +16,12 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open Npgsql
 
+let private apiKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
+let serverName =
+    match Environment.GetEnvironmentVariable("SERVER_NAME") with
+    | null | "" -> "http://localhost:5000"
+    | value -> value
+
 let getMessage (input: string): Async<string> =
     async {
         return $"Received message: {input}"
@@ -87,13 +93,13 @@ let establishStreamToken (timeStamp: EventDateTime, streamToken: StreamToken) = 
     Database.eventProcessor.Post(EstablishStreamToken (timeStamp, streamToken))
     }
 
-let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: ValidationToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
-    Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, eventToken, emailAddress, status))
+let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken, subscribeToken: SubscriptionToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
+    Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subscribeToken, emailAddress, status))
     }
 
-let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, eventToken: ValidationToken, email: EmailAddress, status: EmailStatus) = async {
-    Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, eventToken, email, status))
-    Console.WriteLine $"Email status verification link: http://localhost:5000/api/prefs/confirm?token={eventToken}"
+let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, verificationToken: VerificationToken, email: EmailAddress, status: EmailStatus) = async {
+    Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, verificationToken, email, status))
+    Console.WriteLine $"Event Store verification link: {serverName}/api/prefs/confirm?token={verificationToken}&api-key={apiKey}"
     }
 
 let processStreamClose (timeStamp: EventDateTime, streamToken: StreamToken) = async {
@@ -114,14 +120,12 @@ let processUserClientIP (timeStamp: EventDateTime,streamToken: StreamToken,  cli
 
 let processContactForm (timeStamp: EventDateTime,streamToken: StreamToken,  form: ContactForm) = async {
     Database.eventProcessor.Post(ProcessContactForm (timeStamp, streamToken, form))
-    let! result = transmitContactForm form
-    return result
+    return "Ok"
 }
 
 let processSignUpForm (timeStamp: EventDateTime, streamToken: StreamToken, form: SignUpForm) = async {
     Database.eventProcessor.Post(ProcessSignUpForm (timeStamp, streamToken, form))
-    let! result = transmitSignUpForm form
-    return result
+    return "Ok"
 }
 
 let flagEmailDomain (domain: string) = async {
@@ -160,6 +164,7 @@ let service = {
     RetrieveOverviewTotals = Projections.retrieveOverviewTotals
     RetrieveClientIPLocations = Projections.retrieveClientIPLocations
     RetrieveVerifiedEmailDomains = Projections.retrieveVerifiedEmailDomains
+    SendEmailVerification = sendEmailVerification
 }
 
 let webApp : HttpHandler =
@@ -170,7 +175,7 @@ let webApp : HttpHandler =
         |> Remoting.withErrorHandler (Remoting.errorHandler logger)
         |> Remoting.buildHttpHandler
     choose [
-        route "/api/prefs/confirm" >=> Notifications.confirmEmailHandler
+        route "/api/prefs/confirm" >=> Notifications.verificationEmailHandler
         route "/api/prefs/unsubscribe" >=> Notifications.unsubscribeHandler
         Require.services<ILogger<_>> remoting
         htmlFile "public/index.html"

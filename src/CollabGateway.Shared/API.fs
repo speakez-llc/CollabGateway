@@ -54,9 +54,10 @@ type ButtonName =
 
 type StreamToken = Guid
 type EventDateTime = DateTime
-type EventToken = Guid
-type ValidationToken = Guid
+type SubscriptionToken = Guid
+type VerificationToken = Guid
 type ClientIP = string
+type UserName = string
 type EmailAddress = string
 type IpResponse = { ip: string }
 type SmartFormRawContent = string
@@ -78,14 +79,14 @@ type OpenAIRequest = {
 
 
 type ContactForm = {
-    Name : string
-    Email : string
+    Name : UserName
+    Email : EmailAddress
     MessageBody : string
 }
 
 type SignUpForm = {
-    Name : string
-    Email : string
+    Name : UserName
+    Email : EmailAddress
     JobTitle : string
     Phone : string
     Department : string
@@ -124,8 +125,8 @@ type UserSummaryAggregate = {
     DataPolicyDecision: (EventDateTime * DataPolicyChoice) option
     ContactFormSubmitted: (EventDateTime * ContactForm) option
     SignUpFormSubmitted: (EventDateTime * SignUpForm) option
-    EmailStatus: (EventDateTime * EmailAddress * EmailStatus) list option
-    SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) list option
+    EmailStatus: (EventDateTime * EmailAddress * EmailStatus) option
+    SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) option
 }
 
 type Location = {
@@ -249,12 +250,18 @@ type OverviewTotalsProjection = {
     OverviewTotals: OverviewTotals
 }
 
+type EventEnvelope = {
+    StreamId: StreamToken
+    Timestamp: DateTimeOffset
+    Data: obj
+}
+
 type Service = {
     GetMessage : string -> Async<string>
     EstablishStreamToken : EventDateTime * StreamToken -> Async<unit>
     EstablishUserClientIP : EventDateTime * StreamToken * ClientIP -> Async<unit>
-    AppendEmailStatus : EventDateTime * StreamToken * ValidationToken * EmailAddress * EmailStatus -> Async<unit>
-    AppendUnsubscribeStatus : EventDateTime * StreamToken * ValidationToken * EmailAddress * SubscribeStatus -> Async<unit>
+    AppendEmailStatus : EventDateTime * StreamToken * VerificationToken * EmailAddress * EmailStatus -> Async<unit>
+    AppendUnsubscribeStatus : EventDateTime * StreamToken * SubscriptionToken * EmailAddress * SubscribeStatus -> Async<unit>
     FlagWebmailDomain : string -> Async<bool>
     ProcessContactForm : EventDateTime * StreamToken * ContactForm -> Async<string>
     ProcessStreamClose : EventDateTime * StreamToken -> Async<unit>
@@ -264,8 +271,8 @@ type Service = {
     RetrieveSmartFormSubmittedCount: StreamToken -> Async<int>
     ProcessSignUpForm : EventDateTime * StreamToken * SignUpForm -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) list option>
-    RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) list option>
+    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) option>
+    RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) option>
     RetrieveContactFormSubmitted : StreamToken -> Async<bool>
     RetrieveSignUpFormSubmitted : StreamToken -> Async<bool>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
@@ -274,6 +281,7 @@ type Service = {
     RetrieveOverviewTotals : (int * Grain) option -> Async<OverviewTotalsProjection list>
     RetrieveClientIPLocations : unit -> Async<(string * float * float * int) list>
     RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
+    SendEmailVerification: UserName * EmailAddress * StreamToken * VerificationToken -> Async<string>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

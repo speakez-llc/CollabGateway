@@ -28,10 +28,10 @@ type SmartFormSubmittedEvent = {
     ClipboardInput: SmartFormRawContent
 }
 
-type FormStatusEvent = {
+type EmailStatusEvent = {
     Id: Guid
     TimeStamp: EventDateTime
-    EventToken: EventToken
+    VerificationToken: VerificationToken
     EmailAddress: EmailAddress
     Status: EmailStatus
 }
@@ -39,7 +39,7 @@ type FormStatusEvent = {
 type SubscribeStatusEvent = {
     Id: Guid
     TimeStamp: EventDateTime
-    EventToken: EventToken
+    SubscriptionToken: SubscriptionToken
     EmailAddress: EmailAddress
     Status: SubscribeStatus
 }
@@ -192,7 +192,7 @@ type FormEventCase =
     | SignUpFormSubmitted of SignUpFormEvent
     | SmartFormSubmitted of SmartFormSubmittedEvent
     | SmartFormResultReturned of SignUpFormEvent
-    | EmailStatusAppended of FormStatusEvent
+    | EmailStatusAppended of EmailStatusEvent
     | SubscribeStatusAppended of SubscribeStatusEvent
     member this.Id =
         match this with
@@ -213,8 +213,8 @@ type EventCaseType =
 type EventProcessingMessage =
     | EstablishStreamToken of EventDateTime * StreamToken
     | EstablishUserClientIP of EventDateTime * StreamToken * ClientIP
-    | ProcessUnsubscribeStatus of EventDateTime * StreamToken * EventToken * EmailAddress * SubscribeStatus
-    | ProcessEmailStatus of EventDateTime * StreamToken * EventToken * EmailAddress * EmailStatus
+    | ProcessUnsubscribeStatus of EventDateTime * StreamToken * SubscriptionToken * EmailAddress * SubscribeStatus
+    | ProcessEmailStatus of EventDateTime * StreamToken * SubscriptionToken * EmailAddress * EmailStatus
     | ProcessPageVisited of EventDateTime * StreamToken * PageName
     | ProcessButtonClicked of EventDateTime * StreamToken * ButtonName
     | ProcessStreamClose of EventDateTime * StreamToken
