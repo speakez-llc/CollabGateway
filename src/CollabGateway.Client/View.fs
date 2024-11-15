@@ -124,13 +124,13 @@ let processStreamClose () =
 
 let checkIfAdmin (streamToken: StreamToken) =
     async {
-        let! emailStatuses = service.RetrieveEmailStatus streamToken
+        let! emailStatus = service.RetrieveEmailStatus streamToken
         let isAdmin =
-            match emailStatuses with
+            match emailStatus with
             | Some statuses ->
                 statuses
-                |> List.exists (fun (_, email, status) ->
-                    status = Verified && email.EndsWith("@rowerconsulting.com"))
+                |> fun (_, email, status) ->
+                    status = Verified && email.EndsWith("@rowerconsulting.com")
             | None -> false
         return isAdmin
     }
