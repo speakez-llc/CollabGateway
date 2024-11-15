@@ -6,7 +6,7 @@
         "start": "dotnet fable watch ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build --run vite",
         "start:prod": "vite preview --config /CollabGateway/vite.config.js --port 8080",
         "prebuild": "dotnet tool restore",
-        "build": "dotnet fable ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build && cmd /C \"node --stack-size=65500 node_modules/vite/bin/vite build --emptyOutDir\""
+        "build": "dotnet fable ./src/CollabGateway.Client --outDir ./src/CollabGateway.Client/.fable-build && sh -c \"node --stack-size=65500 node_modules/vite/bin/vite build --emptyOutDir\""
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
