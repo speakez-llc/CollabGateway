@@ -10,7 +10,7 @@ open Microsoft.AspNetCore.Http
 let private notificationKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
 
 let serverName =
-    match Environment.GetEnvironmentVariable("SERVER_NAME") with
+    match Environment.GetEnvironmentVariable("VITE_BASE_URL") with
     | null | "" -> "http://localhost:8080"
     | value -> value
 
