@@ -63,7 +63,7 @@ let private init () : State * Cmd<Msg> =
             if formSubmissionExists then
                 FormSubmitted (Ok "Form submission exists")
             else
-                FormSubmitted (Result.Error (ServerError.Exception "Form submission does not exist"))
+                FormSubmitted (Result.Error (ServerError.Exception "Ignore"))
         )
 
     let checkEmailStatusCmd =
@@ -190,8 +190,11 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         else
             { newState with CurrentStep = 2 }, Cmd.ofMsg CheckEmailVerification
     | FormSubmitted (Result.Error ex) ->
-        parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
-        { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
+        if ex = ServerError.Exception "Ignore" then
+            model, Cmd.none
+        else
+            parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
+            { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | CheckEmailVerification ->
         if model.IsProcessing && not model.IsEmailVerified then
             let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
