@@ -140,7 +140,7 @@ let init () =
     let streamToken = establishStreamToken()
 
     let initialState = {
-        IsAdmin = true // Default to true for development
+        IsAdmin = false
         Page = nextPage
         Toasts = []
         DataPolicyChoice = Accepted
