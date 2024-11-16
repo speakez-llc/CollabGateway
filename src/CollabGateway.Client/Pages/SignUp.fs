@@ -408,7 +408,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "Let's start the conversation. Sending this info allows the helpful experts at Rower to contact you and set up a convenient time for a guided tour. And we've also added a small 'AI' feature to help the process. You can choose to fill out the form manually, or use standard browser autofill feature. But the 'Easter egg' here is the SpeakEZ Smart Form feature. You can simply copy your contact info from an email or app and paste it into the form. The AI will do its best to fill out the form for you. Then click 'Send Your Info' and someone will be in touch with you soon."
+                            prop.text "Let's start the conversation. Sending this info allows the helpful experts at Rower to contact you and set up a convenient time for a guided tour. And we've also added a small 'AI' feature to help the process. You can choose to fill out the form manually, or use standard browser autofill feature. But the 'Easter egg' here is the SpeakEZ Smart Form feature. You can simply copy your contact info from an email or app and paste it into the form. The AI will do its best to fill out the form for you. Then click 'Sign Up Now!' and someone will be in touch with you soon."
                         ]
                     ]
                 ]
@@ -449,7 +449,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.onClick (fun _ -> dispatch ToggleAccordion3)
                                                 ]
                                                 Daisy.collapseContent [
-                                                    prop.text "This is an early glimpse at an 'AI' feature. You can copy your email signature with your contact info - or - copy your contact info if you have it in a contact management app. Any place where that info is in regular text. Then use the 'Smart Paste' button to send the clipboard text to the AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Send Your Info'."
+                                                    prop.text "This is an early glimpse at an 'AI' feature. You can copy your email signature with your contact info - or - copy your contact info if you have it in a contact management app. Any place where that info is in regular text. Then use the 'Smart Paste' button to send the clipboard text to the AI systems in SpeakEZ's Lab. It will do its best to parse the text and fill out the form for you. Then after verifying the fields are correct click 'Sign Up Now!'."
                                                 ]
                                             ]
                                         ]
