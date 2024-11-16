@@ -293,7 +293,28 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | NotifyClipboardError s ->
         parentDispatch (ShowToast ($"Error in processing clipboard: {s}", AlertLevel.Warning ))
         model, Cmd.none
-    | ClearForm -> { model with SignUpForm = { Name = ""; Email = ""; JobTitle = ""; Phone = ""; Department = ""; Company = ""; StreetAddress1 = ""; StreetAddress2 = ""; City = ""; StateProvince = ""; Country = ""; PostCode = "" } }, Cmd.none
+    | ClearForm ->
+        let newModel = {
+            model with
+                SignUpForm = {
+                    Name = ""
+                    Email = ""
+                    JobTitle = ""
+                    Phone = ""
+                    Department = ""
+                    Company = ""
+                    StreetAddress1 = ""
+                    StreetAddress2 = ""
+                    City = ""
+                    StateProvince = ""
+                    Country = ""
+                    PostCode = ""
+                }
+                IsSubmitActive = false
+                IsEmailValid = None
+                IsWebmailDomain = None
+            }
+        newModel, Cmd.none
     | RetrieveFormSubmittedCount (Ok count) ->
         if count >= 5 then
             parentDispatch (ShowToast ("You have reached the limit of form submissions", AlertLevel.Warning))
@@ -316,9 +337,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         if isWebmailDomain then
             parentDispatch (ShowToast ("Webmail Domains Are Not Allowed", AlertLevel.Warning))
         { model with Errors = errors; IsWebmailDomain = Some isWebmailDomain; IsSubmitActive = isSubmitActive }, Cmd.none
-    | ParentDispatch viewMsg ->
-        parentDispatch viewMsg
-        model, Cmd.none
     | CheckEmailVerification ->
         if model.IsProcessing && not model.IsEmailVerified then
             let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
@@ -467,7 +485,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "flex flex-col w-full md:w-2/3"
                                     prop.children [
                                         Html.button [
-                                            prop.className "btn bg-orange-500 h-10 w-full md:w-1/3 text-gray-200 text-l md:text-xl mb-4"
+                                            prop.className "btn bg-orange-500 h-10 w-full md:w-1/3 text-gray-200 text-xl mb-4"
                                             prop.text "Use Smart Form"
                                             prop.type' "submit"
                                             prop.disabled (state.FormSubmittedCount > 4)
@@ -496,7 +514,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.children [
                                                         Html.input [
                                                             prop.className $"input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200 required {emailInputClass}"
-                                                            prop.placeholder "A non-webmail email is required"
+                                                            prop.placeholder "A work email is required"
                                                             prop.autoComplete "email"
                                                             prop.required true
                                                             prop.value state.SignUpForm.Email

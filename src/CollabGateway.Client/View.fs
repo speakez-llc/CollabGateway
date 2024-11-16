@@ -209,21 +209,16 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with IsAdmin = isAdmin }, Cmd.none
 
 let getAlertClass level =
-        match level with
-        | Success -> "alert alert-success"
-        | Error -> "alert alert-error"
-        | Warning -> "alert alert-warning"
-        | Info -> "alert alert-info"
+    match level with
+    | Success -> "alert alert-success p-4 text-base md:p-2 md:text-sm"
+    | Error -> "alert alert-error p-4 text-base md:p-2 md:text-sm"
+    | Warning -> "alert alert-warning p-4 text-base md:p-2 md:text-sm"
+    | Info -> "alert alert-info p-4 text-base md:p-2 md:text-sm"
 
 let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
     Html.div [
         prop.className (getAlertClass toast.Level)
         prop.children [
-            Html.button [
-                prop.className "btn btn-sm btn-ghost"
-                prop.onClick (fun _ -> dispatch (HideToast toast.Index))
-                prop.children [ Fa.i [ Fa.Solid.Times ] [] ]
-            ]
             Html.div [
                 prop.className "flex-1"
                 prop.children [ Html.span [ prop.text toast.Message ] ]
