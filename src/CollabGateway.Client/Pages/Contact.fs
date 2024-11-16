@@ -311,7 +311,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     prop.children [
                         Html.div [
                             prop.className "p-4 m-2 card-body mx-auto"
-                            prop.text "We have sent a verification link to your email. Please click on the link to verify your email address."
+                            prop.text "We have sent a verification link to your email. Please click on the link to verify your email address. Please note that it's possible the email may be routed initially to your 'junk' or 'spam' folder."
                         ]
                     ]
                 ]
@@ -340,7 +340,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             prop.children [
                 Html.h1 [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
-                    prop.text "Thank you for verifying your email"
+                    prop.text "Thank you for contacting us!"
                 ]
                 Html.div [
                     prop.className "card mx-auto bg-base-200 w-4/5 mx-auto rounded-3xl"

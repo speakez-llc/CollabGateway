@@ -281,7 +281,7 @@ type Service = {
     RetrieveOverviewTotals : (int * Grain) option -> Async<OverviewTotalsProjection list>
     RetrieveClientIPLocations : unit -> Async<(string * float * float * int) list>
     RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
-    SendEmailVerification: UserName * EmailAddress * StreamToken * VerificationToken -> Async<string>
+    SendEmailVerification: UserName * EmailAddress * StreamToken * VerificationToken -> Async<unit>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

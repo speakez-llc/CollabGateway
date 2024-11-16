@@ -1,0 +1,106 @@
+﻿<html>
+<head>
+    <title>Rower & SpeakEZ Collab: Your Email Is Confirmed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #444444;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        a {
+            color: #164b72;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header, .footer {
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #164b72;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-logo, .footer-text {
+            margin: 10px;
+        }
+        .footer-text {
+            font-size: 12px;
+            text-align: left;
+        }
+        /* Responsive Styles */
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 10px;
+            }
+            .button {
+                width: 80%;
+                box-sizing: border-box;
+            }
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="container">
+        <!-- Placeholder for Banner Image -->
+        <div style="text-align: center; padding: 20px 0;">
+            <img src="{{svg_data_uri}}" alt="Header Image" />
+        </div>
+
+        <!-- Personalized Message -->
+        <p>Thanks for verifying your email, {{first_name}}!</p>
+        <p>We look forward to hearing about the challenges and opportunities present in your business, and to discuss opitons on how we can help. Use the private link below to return to the site, check out the latest and if you haven't already add yourself to our waitlist. We can't wait to show you what we have in store!</p>
+        <p>Sincerely,
+            <br>The Rower & SpeakEZ Teams</p>
+
+        <!-- Confirmation Button -->
+        <div style="text-align: center; padding: 20px 0;">
+            <a href="{{activity_page_link}}" class="button">Your Activity Summary</a>
+        </div>
+
+        <!-- Footer Section with Logo and Text -->
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>This notification was generated from a collaboration gateway web site managed by <a href="https://www.rowerconsulting.com">Rower Consulting</a> and <a href="https://speakez.ai">SpeakEZ Platform Services</a>. We value your time <i>and</i> your privacy. If you have received this email in error or do not wish to receive marketing emails from this site, please feel free to use the unsubscribe link below.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unsubscribe Section -->
+        <div class="footer">
+            <p style="font-size: 12px; line-height: 20px;">
+                <a class="Unsubscribe--unsubscribeLink" href="{{unsubscribe_link}}" target="_blank" style="text-decoration: none; color: #164b72;">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

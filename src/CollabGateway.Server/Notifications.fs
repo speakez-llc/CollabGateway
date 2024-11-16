@@ -7,11 +7,18 @@ open CollabGateway.Shared.Events
 open Giraffe
 open Microsoft.AspNetCore.Http
 
-let private notificationKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
+let private notificationKey =
+    let value = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
+    printfn $"Notifications: Raw NOTIFICATION_KEY environment variable: %s{value}"
+    match value with
+    | null | "" -> failwith "NOTIFICATION_KEY environment variable is not set."
+    | value -> value
 
-let serverName =
-    match Environment.GetEnvironmentVariable("VITE_BASE_URL") with
-    | null | "" -> "http://localhost:8080"
+let private webServerName =
+    let value = Environment.GetEnvironmentVariable("VITE_WEB_URL")
+    printfn $"Notifications: Raw VITE_WEB_URL environment variable: %s{value}"
+    match value with
+    | null | "" -> failwith "VITE_WEB_URL environment variable is not set."
     | value -> value
 
 let getEmailStatus (verificationToken: VerificationToken): Async<StreamToken * EmailAddress * EmailStatus * VerificationToken> =
@@ -77,7 +84,7 @@ let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: S
         Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, subToken, emailAddress, status))
         let! nameOption = getUserName streamToken
         let name = nameOption |> Option.defaultValue "Unknown"
-        do SendGridHelpers.sendEmailConfirmation (name, emailAddress, streamToken, subToken) |> ignore
+        do EmailHelpers.sendEmailConfirmation (name, emailAddress, streamToken, subToken) |> ignore
     with
     | ex ->
         Console.WriteLine $"Exception in processEmailVerificationCompletion: {ex.Message}"
@@ -105,7 +112,7 @@ let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamT
         Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subToken, emailAddress, status))
         let! nameOption = getUserName streamToken
         let name = nameOption |> Option.defaultValue "Unknown"
-        do SendGridHelpers.sendUnsubscribeConfirmation (name, emailAddress) |> ignore
+        do EmailHelpers.sendUnsubscribeConfirmation (name, emailAddress) |> ignore
     with
     | ex ->
         Console.WriteLine $"Exception in processEmailVerificationCompletion: {ex.Message}"
@@ -130,11 +137,11 @@ let verificationEmailHandler (next: HttpFunc) (ctx: HttpContext) =
             let status = EmailStatus.Verified
             do! processEmailVerificationCompletion (timeStamp, streamToken, verificationToken, email, status)
             ctx.Response.StatusCode <- 302
-            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            ctx.Response.Headers["Location"] <- $"{webServerName}/activity?ref={streamToken}"
             return! next ctx
         else
             ctx.Response.StatusCode <- 302
-            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            ctx.Response.Headers["Location"] <- $"{webServerName}/activity?ref={streamToken}"
             return! next ctx
     }
 
@@ -147,11 +154,11 @@ let unsubscribeHandler (next: HttpFunc) (ctx: HttpContext) =
             let timeStamp = DateTime.Now
             do! processUnsubscribeCompletion (timeStamp, streamToken, unsubscribeToken, email, newStatus)
             ctx.Response.StatusCode <- 302
-            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            ctx.Response.Headers["Location"] <- $"{webServerName}/activity?ref={streamToken}"
             return! next ctx
         else
             ctx.Response.StatusCode <- 302
-            ctx.Response.Headers["Location"] <- $"{serverName}/activity?ref={streamToken}"
+            ctx.Response.Headers["Location"] <- $"{webServerName}/activity?ref={streamToken}"
             return! next ctx
     }
 

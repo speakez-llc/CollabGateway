@@ -1,0 +1,85 @@
+﻿<html>
+<head>
+    <title>Rower & SpeakEZ Collab: Your Email Is Confirmed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #444444;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        a {
+            color: #164b72;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header, .footer {
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #164b72;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-logo, .footer-text {
+            margin: 10px;
+        }
+        .footer-text {
+            font-size: 12px;
+            text-align: left;
+        }
+        /* Responsive Styles */
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 10px;
+            }
+            .button {
+                width: 80%;
+                box-sizing: border-box;
+            }
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="container">
+        <!-- Placeholder for Banner Image -->
+        <div style="text-align: center; padding: 20px 0;">
+            <img src="{{svg_data_uri}}" alt="Header Image" />
+        </div>
+        <!-- Personalized Message -->
+        <p>Thanks for your interest, {{first_name}}.</p>
+        <p>Per your request, you have been unsubscribed from marketing notifications. For collaboration site workflows that require confirmation of your email you may still receive notifications. However those are strictly limited to those scenarios based on your site activity.</p>
+        <p>As usual, if you wish to reach out to us, including to request we delete all of your information from our collaboration site, please <a href="mailto:collab@rowerconsulting.com">send an email to us</a> and we will confirm as soon as possible.</p>
+        <p>Kindest Regards,
+            <br>The Rower & SpeakEZ Teams</p>
+    </div>
+</div>
+</body>
+</html>

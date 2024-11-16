@@ -169,7 +169,7 @@ let private closeAccordion label model =
 
 let private checkEmailVerificationWithDelay streamToken =
     async {
-        do! Async.Sleep 2000
+        do! Async.Sleep 5000
         return! service.RetrieveEmailStatus streamToken
     }
 
@@ -323,7 +323,11 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         else
             model, Cmd.none
     | EmailVerificationChecked isVerified ->
-        { model with IsEmailVerified = isVerified }, Cmd.none
+        let newState = { model with IsEmailVerified = isVerified }
+        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
+            { newState with CurrentStep = 3 }, Cmd.none
+        else
+            newState, Cmd.none
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =

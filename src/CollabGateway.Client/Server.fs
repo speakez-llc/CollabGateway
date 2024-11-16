@@ -23,11 +23,11 @@ module Cmd =
         let eitherAsResult fn resultMsg =
             Cmd.OfAsync.either fn () (Result.Ok >> resultMsg) (exnToError >> Result.Error >> resultMsg)
 
-[<Emit("import.meta.env.VITE_BASE_URL")>]
-let VITE_BASE_URL: string = jsNative
+[<Emit("import.meta.env.VITE_BACKEND_URL")>]
+let VITE_BACKEND_URL: string = jsNative
 
 let baseURL =
-    if VITE_BASE_URL <> null then VITE_BASE_URL else "http://localhost:5000"
+    if VITE_BACKEND_URL <> null then VITE_BACKEND_URL else "http://localhost:5000"
 
 let service =
     Remoting.createApi()

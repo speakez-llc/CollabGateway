@@ -11,15 +11,17 @@ open Microsoft.Extensions.Logging
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 open CollabGateway.Shared.Errors
-open CollabGateway.Server.SendGridHelpers
+open CollabGateway.Server.EmailHelpers
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open Npgsql
 
 let private apiKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
-let serverName =
-    match Environment.GetEnvironmentVariable("SERVER_NAME") with
-    | null | "" -> "http://localhost:5000"
+let private serverName =
+    let value = Environment.GetEnvironmentVariable("VITE_BACKEND_URL")
+    printfn $"Raw VITE_BACKEND_URL environment variable: %s{value}"
+    match value with
+    | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
     | value -> value
 
 let getMessage (input: string): Async<string> =
