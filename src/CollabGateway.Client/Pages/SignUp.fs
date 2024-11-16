@@ -375,7 +375,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 Html.div [
                     prop.className "text-2xl font-bold mb-4 mx-auto"
                     prop.children [
-                        // Header with the message
                         Html.h1 [
                             prop.className "text-2xl font-bold mb-4 mx-auto"
                             prop.text state.Message
@@ -393,11 +392,9 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 ]
                 Html.div [
                     prop.children [
-                        // Wrapper div for the accordion and form
                         Html.div [
                             prop.className "flex flex-col md:flex-row gap-4 w-full"
                             prop.children [
-                                // Left-most area with accordion controls
                                 Html.div [
                                     prop.className "flex flex-col w-full md:w-1/3"
                                     prop.children [
@@ -462,11 +459,16 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         ]
                                     ]
                                 ]
-                                // Form area
                                 Html.form [
                                     prop.className "flex flex-col w-full md:w-2/3"
                                     prop.children [
-                                        // Full Name, Email Address
+                                        Html.button [
+                                            prop.className "btn bg-orange-500 h-10 w-full md:w-1/4 text-gray-200 text-xl mb-4"
+                                            prop.text "Use Smart Form"
+                                            prop.type' "submit"
+                                            prop.disabled (state.FormSubmittedCount > 4)
+                                            prop.onClick handleSmartForm
+                                        ]
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -502,7 +504,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // Job Title, Phone Number
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -536,7 +537,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // Department/Division, Company Name
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -570,7 +570,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // Street Address, Street Address 2
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -604,7 +603,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // City, State/Province
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -638,7 +636,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // Country, PostCode
                                         Html.div [
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
@@ -672,26 +669,18 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 ]
                                             ]
                                         ]
-                                        // Button group
                                         Html.div [
-                                            prop.className "flex items-center space-x-2"
+                                            prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
                                                 Html.button [
-                                                    prop.className "btn bg-orange-500 h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
-                                                    prop.text "Use Smart Form"
-                                                    prop.type' "submit"
-                                                    prop.disabled (state.FormSubmittedCount > 4)
-                                                    prop.onClick handleSmartForm
-                                                ]
-                                                Html.button [
-                                                    prop.className "btn bg-primary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
+                                                    prop.className "btn bg-primary h-10 w-full md:w-1/5 text-gray-200 text-xl"
                                                     prop.text "Sign Up Now!"
                                                     prop.type' "submit"
                                                     prop.onClick handleButtonClick
                                                 ]
                                                 if state.IsProcessing = false then
                                                     Html.button [
-                                                        prop.className "btn bg-secondary h-10 w-full md:w-2/3 lg:w-1/3 text-gray-200 text-xl"
+                                                        prop.className "btn bg-secondary h-10 w-full md:w-1/5 text-gray-200 text-xl"
                                                         prop.text "Clear Form"
                                                         prop.type' "submit"
                                                         prop.onClick (fun (e: Browser.Types.MouseEvent) ->
@@ -720,7 +709,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 ]
             ]
         ]
-
 
     let renderStep2 () =
         Html.div [
@@ -795,26 +783,26 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
     React.fragment [
         Html.div [
-                prop.className "flex justify-center items-center w-full p-4 rounded-3xl mx-auto"
-                prop.children [
-                    Html.div [
-                        prop.className "flex items-center flex-col steps w-full md:w-3/4 duration-900 ease-in-out max-w-screen-xl lg:steps-horizontal"
-                        prop.children [
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 1 then "step step-primary" else "step")
-                                prop.text "Submit Form"
-                            ]
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 2 then "step step-primary" else "step")
-                                prop.text "Verify Email"
-                            ]
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 3 then "step step-primary" else "step")
-                                prop.text "Confirmation"
-                            ]
+            prop.className "flex justify-center items-center w-full p-4 rounded-3xl mx-auto"
+            prop.children [
+                Html.div [
+                    prop.className "flex items-start flex-col steps steps-vertical w-1/2 md:w-3/4 duration-900 ease-in-out max-w-screen-xl lg:steps-horizontal"
+                    prop.children [
+                        Html.div [
+                            prop.className (if state.CurrentStep >= 1 then "step step-primary" else "step")
+                            prop.text "Submit Form"
+                        ]
+                        Html.div [
+                            prop.className (if state.CurrentStep >= 2 then "step step-primary" else "step")
+                            prop.text "Verify Email"
+                        ]
+                        Html.div [
+                            prop.className (if state.CurrentStep >= 3 then "step step-primary" else "step")
+                            prop.text "Confirmation"
                         ]
                     ]
                 ]
             ]
+        ]
         renderCurrentStep()
     ]
