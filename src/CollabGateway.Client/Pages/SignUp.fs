@@ -2,6 +2,7 @@
 
 open System
 open CollabGateway.Shared.Errors
+open CollabGateway.Shared.Events
 open Fable.Import
 open Newtonsoft.Json
 open Feliz
@@ -177,7 +178,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     match msg with
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name ->
-        let newModel = { model with State.SignUpForm.Name = name }
+        let newModel = { model with SignUpForm = { model.SignUpForm with Name = name } }
         let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | UpdateEmail email ->
@@ -197,7 +198,10 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
                     | _ -> EmailVerificationChecked false)
             else
                 Cmd.none
-        { model with State.SignUpForm.Email = email; IsEmailValid = Some isEmailValid }, Cmd.batch [cmd; checkEmailVerificationCmd]
+
+        let newModel = { model with SignUpForm = { model.SignUpForm with Email = email }; IsEmailValid = Some isEmailValid }
+        let errors, _, _, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [cmd; checkEmailVerificationCmd]
     | UpdateJobTitle jobTitle -> { model with State.SignUpForm.JobTitle = jobTitle }, Cmd.none
     | UpdatePhone phone -> { model with State.SignUpForm.Phone = phone }, Cmd.none
     | UpdateDepartment department -> { model with State.SignUpForm.Department = department }, Cmd.none
@@ -463,7 +467,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "flex flex-col w-full md:w-2/3"
                                     prop.children [
                                         Html.button [
-                                            prop.className "btn bg-orange-500 h-10 w-full md:w-1/4 text-gray-200 text-xl mb-4"
+                                            prop.className "btn bg-orange-500 h-10 w-full md:w-1/3 text-gray-200 text-l md:text-xl mb-4"
                                             prop.text "Use Smart Form"
                                             prop.type' "submit"
                                             prop.disabled (state.FormSubmittedCount > 4)
@@ -673,14 +677,15 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.className "flex flex-col md:flex-row gap-4 mb-4 w-full"
                                             prop.children [
                                                 Html.button [
-                                                    prop.className "btn bg-primary h-10 w-full md:w-1/5 text-gray-200 text-xl"
+                                                    prop.className "btn bg-primary h-10 w-full md:w-1/3 text-gray-200 text-xl"
                                                     prop.text "Sign Up Now!"
                                                     prop.type' "submit"
+                                                    prop.disabled (not state.IsSubmitActive)
                                                     prop.onClick handleButtonClick
                                                 ]
                                                 if state.IsProcessing = false then
                                                     Html.button [
-                                                        prop.className "btn bg-secondary h-10 w-full md:w-1/5 text-gray-200 text-xl"
+                                                        prop.className "btn bg-secondary h-10 w-full md:w-1/3 text-gray-200 text-xl"
                                                         prop.text "Clear Form"
                                                         prop.type' "submit"
                                                         prop.onClick (fun (e: Browser.Types.MouseEvent) ->
