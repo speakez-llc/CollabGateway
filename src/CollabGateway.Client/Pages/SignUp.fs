@@ -286,8 +286,9 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         { model with IsProcessing = false }, Cmd.none
     | SmartFormProcessed (Ok response) ->
         let newModel = { model with SignUpForm = response; IsProcessing = false }
-        let cmd = Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain response.Email) () WebmailDomainFlagged
-        newModel, cmd
+        let errors, _, cmd1, isSubmitActive = validateForm newModel.SignUpForm
+        let cmd2 = Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain response.Email) () WebmailDomainFlagged
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [cmd1; cmd2]
     | SmartFormProcessed (Result.Error ex) ->
         parentDispatch (ShowToast ($"Failed to process smart form: {ex}", AlertLevel.Error ))
         { model with IsProcessing = false }, Cmd.none
