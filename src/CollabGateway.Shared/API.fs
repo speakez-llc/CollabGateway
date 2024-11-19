@@ -125,7 +125,7 @@ type UserSummaryAggregate = {
     DataPolicyDecision: (EventDateTime * DataPolicyChoice) option
     ContactFormSubmitted: (EventDateTime * ContactForm) option
     SignUpFormSubmitted: (EventDateTime * SignUpForm) option
-    EmailStatus: (EventDateTime * EmailAddress * EmailStatus) option
+    EmailStatusList: (EventDateTime * EmailAddress * EmailStatus) list option
     SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) option
 }
 
@@ -271,8 +271,10 @@ type Service = {
     RetrieveSmartFormSubmittedCount: StreamToken -> Async<int>
     ProcessSignUpForm : EventDateTime * StreamToken * SignUpForm -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) option>
+    RetrieveEmailStatus : StreamToken * EmailAddress -> Async<(EventDateTime * EmailStatus) option>
     RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) option>
+    RetrieveLatestSubscriptionToken : StreamToken * EmailAddress -> Async<SubscriptionToken option>
+    RetrieveLatestVerificationToken : StreamToken * EmailAddress -> Async<VerificationToken option>
     RetrieveContactFormSubmitted : StreamToken -> Async<bool>
     RetrieveSignUpFormSubmitted : StreamToken -> Async<bool>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
@@ -282,6 +284,7 @@ type Service = {
     RetrieveClientIPLocations : unit -> Async<(string * float * float * int) list>
     RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
     SendEmailVerification: UserName * EmailAddress * StreamToken * VerificationToken -> Async<unit>
+    CheckIfAdmin: StreamToken -> Async<bool>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

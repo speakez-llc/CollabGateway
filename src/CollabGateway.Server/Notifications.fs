@@ -83,7 +83,7 @@ let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: S
     try
         Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, subToken, emailAddress, status))
         let! nameOption = getUserName streamToken
-        let name = nameOption |> Option.defaultValue "Unknown"
+        let name = nameOption |> Option.defaultValue "User"
         do EmailHelpers.sendEmailConfirmation (name, emailAddress, streamToken, subToken) |> ignore
     with
     | ex ->
@@ -128,7 +128,7 @@ let private authenticateApiKey (next: HttpFunc) (ctx: HttpContext) =
             return! text "Unauthorized" next ctx
     }
 
-let verificationEmailHandler (next: HttpFunc) (ctx: HttpContext) =
+let emailVerificationHandler (next: HttpFunc) (ctx: HttpContext) =
     task {
         let verificationParam : VerificationToken = ctx.Request.Query["token"] |> string |> Guid.Parse
         let! streamToken, email, emailStatus, verificationToken = getEmailStatus verificationParam
@@ -164,6 +164,6 @@ let unsubscribeHandler (next: HttpFunc) (ctx: HttpContext) =
 
 let notificationManager : HttpHandler  =
     choose [
-        route "/api/prefs/confirm" >=> verificationEmailHandler
+        route "/api/prefs/confirm" >=> emailVerificationHandler
         route "/api/prefs/unsubscribe" >=> unsubscribeHandler
     ]

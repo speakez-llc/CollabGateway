@@ -193,9 +193,10 @@ let renderTimeline (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
             yield (date, 1, "Latest Sign Up Form Sent", renderSignUpForm form)
         | None -> ()
 
-        match userSummary.EmailStatus with
-        | Some (date, email, status) ->
-            yield (date, 0, sprintf "Email Status: %s" (status.ToString()), Html.text (sprintf "email: %s" email))
+        match userSummary.EmailStatusList with
+        | Some emailStatusList ->
+            for (date, email, status) in emailStatusList do
+                yield (date, 0, sprintf "Email Status: %s" (status.ToString()), Html.text (sprintf "email: %s" email))
         | None -> ()
 
         match userSummary.SubscribeStatus with

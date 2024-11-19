@@ -122,17 +122,9 @@ let processStreamClose () =
     service.ProcessStreamClose (dateTime, streamToken)
     |> Async.StartImmediate
 
-let checkIfAdmin (streamToken: StreamToken) =
-    async {
-        let! emailStatus = service.RetrieveEmailStatus streamToken
-        let isAdmin =
-            match emailStatus with
-            | Some statuses ->
-                statuses
-                |> fun (_, email, status) ->
-                    status = Verified && email.EndsWith("@rowerconsulting.com")
-            | None -> false
-        return isAdmin
+let checkIfAdmin (streamToken: StreamToken) = async {
+    let! isAdmin = service.CheckIfAdmin streamToken
+    return isAdmin
     }
 
 let init () =

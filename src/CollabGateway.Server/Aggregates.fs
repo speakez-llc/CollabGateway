@@ -114,6 +114,24 @@ let getDateInitiated (streamToken: StreamToken): Async<EventDateTime> =
         | None -> return failwith "No UserStreamInitiated event found for the given StreamToken."
     }
 
+let retrieveAdminStatus (streamToken: StreamToken): Async<bool> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let adminStatusEvents =
+            allEvents
+            |> Seq.exists (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | ContactFormSubmitted { Form = form } when form.Email.Contains("@rowerconsulting.com") -> true
+                    | SignUpFormSubmitted { Form = form } when form.Email.Contains("@rowerconsulting.com") -> true
+                    | _ -> false
+                | _ -> false)
+
+        return adminStatusEvents
+    }
+
 let retrieveDataPolicyChoice (streamToken: StreamToken) = async {
     use session = Database.store.LightweightSession()
     let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
@@ -155,7 +173,26 @@ let retrieveSmartFormSubmittedCount (streamToken: StreamToken) = async {
     return smartFormSubmittedEvents
 }
 
-let retrieveEmailStatus (streamToken: StreamToken): Async<(EventDateTime * EmailAddress * EmailStatus) option> =
+let retrieveEmailStatus (streamToken: StreamToken, email: EmailAddress): Async<(EventDateTime * EmailStatus) option> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let emailStatusEvents =
+            allEvents
+            |> Seq.choose (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | EmailStatusAppended { TimeStamp = ts; EmailAddress = ea; Status = status} when ea = email -> Some (ts, status)
+                    | _ -> None
+                | _ -> None)
+            |> Seq.sortByDescending fst
+            |> Seq.tryHead
+
+        return emailStatusEvents
+    }
+
+let retrieveEmailStatusList (streamToken: StreamToken): Async<(EventDateTime * EmailAddress * EmailStatus) list option> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
@@ -169,10 +206,11 @@ let retrieveEmailStatus (streamToken: StreamToken): Async<(EventDateTime * Email
                     | _ -> None
                 | _ -> None)
             |> Seq.groupBy (fun (_, ea, _) -> ea)
-            |> Seq.map (fun (_, events) -> events |> Seq.maxBy (fun (timestamp, _, _) -> timestamp))
-            |> Seq.tryHead
+            |> Seq.map (fun (_, events) ->
+                events |> Seq.maxBy (fun (ts, _, _) -> ts))
+            |> Seq.toList
 
-        return emailStatusEvents
+        return if emailStatusEvents.IsEmpty then None else Some emailStatusEvents
     }
 
 let retrieveSubscribeStatus (streamToken: StreamToken): Async<(EventDateTime * EmailAddress * SubscribeStatus) option> =
@@ -306,6 +344,42 @@ let getLatestSignUpFormSubmitted (streamToken: StreamToken): Async<(EventDateTim
         return findLatestForm allFormEvents
     }
 
+let getLatestEmailSubscriptionToken (streamToken: StreamToken, email: EmailAddress): Async<SubscriptionToken option> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let allFormEvents =
+            allEvents
+            |> Seq.choose (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | SubscribeStatusAppended { EmailAddress = ea; SubscriptionToken = token } when ea = email -> Some (unwrapEventTimeStamp e, token)
+                    | _ -> None
+                | _ -> None)
+            |> Seq.sortByDescending fst
+
+        return allFormEvents |> Seq.tryHead |> Option.map snd
+    }
+
+let getLatestEmailVerificationToken (streamToken: StreamToken, email: EmailAddress): Async<VerificationToken option> =
+    async {
+        use session = Database.store.LightweightSession()
+        let! allEvents = session.Events.FetchStreamAsync(streamToken) |> Async.AwaitTask
+        let allFormEvents =
+            allEvents
+            |> Seq.choose (fun e ->
+                match e.Data with
+                | :? FormEventCase as eventCase ->
+                    match eventCase with
+                    | EmailStatusAppended { EmailAddress = ea; VerificationToken = token } when ea = email -> Some (unwrapEventTimeStamp e, token)
+                    | _ -> None
+                | _ -> None)
+            |> Seq.sortByDescending fst
+
+        return allFormEvents |> Seq.tryHead |> Option.map snd
+    }
+
 let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAggregate> =
     async {
         let! results =
@@ -314,7 +388,7 @@ let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAg
                 async { let! x = getLatestDataPolicyDecision streamToken in return x :> obj }
                 async { let! x = getLatestContactFormSubmitted streamToken in return x :> obj }
                 async { let! x = getLatestSignUpFormSubmitted streamToken in return x :> obj }
-                async { let! x = retrieveEmailStatus streamToken in return x :> obj }
+                async { let! x = retrieveEmailStatusList streamToken in return x :> obj }
                 async { let! x = retrieveSubscribeStatus streamToken in return x :> obj }
             ]
 
@@ -322,7 +396,7 @@ let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAg
         let dataPolicyDecision = results[1] :?> (EventDateTime * DataPolicyChoice) option
         let contactFormSubmitted = results[2] :?> (EventDateTime * ContactForm) option
         let signUpFormSubmitted = results[3] :?> (EventDateTime * SignUpForm) option
-        let emailStatus = results[4] :?> (EventDateTime * EmailAddress * EmailStatus) option
+        let emailStatusList = results[4] :?> (EventDateTime * EmailAddress * EmailStatus) list option
         let subscribeStatus = results[5] :?> (EventDateTime * EmailAddress * SubscribeStatus) option
 
         return {
@@ -330,7 +404,7 @@ let retrieveUserSummaryAggregate (streamToken: StreamToken): Async<UserSummaryAg
             DataPolicyDecision = dataPolicyDecision
             ContactFormSubmitted = contactFormSubmitted
             SignUpFormSubmitted = signUpFormSubmitted
-            EmailStatus = emailStatus
+            EmailStatusList = emailStatusList
             SubscribeStatus = subscribeStatus
         }
     }

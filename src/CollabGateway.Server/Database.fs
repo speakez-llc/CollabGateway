@@ -142,9 +142,9 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
             let event = EmailStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); VerificationToken = verificationToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
-        | ProcessUnsubscribeStatus(timeStamp, streamToken, eventToken, emailAddress, status) ->
+        | ProcessUnsubscribeStatus(timeStamp, streamToken, subscribeToken, emailAddress, status) ->
             use session = store.LightweightSession()
-            let event = SubscribeStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); SubscriptionToken = eventToken; EmailAddress = emailAddress; Status = status }
+            let event = SubscribeStatusAppended { TimeStamp = timeStamp; Id = Guid.NewGuid(); SubscriptionToken = subscribeToken; EmailAddress = emailAddress; Status = status }
             session.Events.Append(streamToken, [| event :> obj |]) |> ignore
             do! session.SaveChangesAsync() |> Async.AwaitTask
         | ProcessPageVisited (timeStamp, streamToken, pageName) ->

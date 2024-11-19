@@ -97,6 +97,7 @@ let establishStreamToken (timeStamp: EventDateTime, streamToken: StreamToken) = 
 
 let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken, subscribeToken: SubscriptionToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
     Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subscribeToken, emailAddress, status))
+    Console.WriteLine $"Event Store unsubscribe link: {serverName}/api/prefs/confirm?token={subscribeToken}&api-key={apiKey}"
     }
 
 let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, verificationToken: VerificationToken, email: EmailAddress, status: EmailStatus) = async {
@@ -158,6 +159,8 @@ let service = {
     RetrieveDataPolicyChoice = Aggregates.retrieveDataPolicyChoice
     RetrieveEmailStatus = Aggregates.retrieveEmailStatus
     RetrieveUnsubscribeStatus = Aggregates.retrieveSubscribeStatus
+    RetrieveLatestSubscriptionToken = Aggregates.getLatestEmailSubscriptionToken
+    RetrieveLatestVerificationToken = Aggregates.getLatestEmailVerificationToken
     RetrieveContactFormSubmitted = Aggregates.retrieveContactFormSubmitted
     RetrieveSignUpFormSubmitted = Aggregates.retrieveSignUpFormSubmitted
     RetrieveUserSummary = Aggregates.retrieveUserSummaryAggregate
@@ -167,6 +170,7 @@ let service = {
     RetrieveClientIPLocations = Projections.retrieveClientIPLocations
     RetrieveVerifiedEmailDomains = Projections.retrieveVerifiedEmailDomains
     SendEmailVerification = sendEmailVerification
+    CheckIfAdmin = Aggregates.retrieveAdminStatus
 }
 
 let webApp : HttpHandler =
@@ -177,7 +181,7 @@ let webApp : HttpHandler =
         |> Remoting.withErrorHandler (Remoting.errorHandler logger)
         |> Remoting.buildHttpHandler
     choose [
-        route "/api/prefs/confirm" >=> Notifications.verificationEmailHandler
+        route "/api/prefs/confirm" >=> Notifications.emailVerificationHandler
         route "/api/prefs/unsubscribe" >=> Notifications.unsubscribeHandler
         Require.services<ILogger<_>> remoting
         htmlFile "public/index.html"
