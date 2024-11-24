@@ -53,7 +53,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.text "Delivering Business Solutions You Need With Tools You Trust"
                                 ]
                                 Html.p [
-                                    prop.text "Inspired by the Results Oriented Work Environment (ROWE) philosophy, Rower Consulting delivers innovation through insight and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on collective expertise along with advanced tooling to deliver exceptional products where user success as the central metric. Through collaboration we uncover opportunities that support your organization, beyond the latest hype cycle, and deliver tailored analytic and operational solutions that unlock your unique potential."
+                                    prop.text "Inspired by the Results Oriented Work Environment (ROWE) philosophy, Rower Consulting delivers innovation through insight and performance. Our diverse team of experts, with over 100 years of combined experience, collaborate across industries and disciplines. We rely on collective expertise along with advanced tooling to deliver exceptional products where user success is the central metric. Through collaboration we uncover opportunities that support your organization, beyond the latest hype cycle, and deliver tailored analytic and operational solutions that unlock your unique potential."
                                 ]
                             ]
                         ]

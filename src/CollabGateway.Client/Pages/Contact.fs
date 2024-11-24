@@ -153,12 +153,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         if isWebmailDomain then
             parentDispatch (ShowToast ("Webmail Domains Are Not Allowed", AlertLevel.Warning))
         { model with Errors = errors; IsWebmailDomain = Some isWebmailDomain; IsSubmitActive = isSubmitActive }, Cmd.none
-    | EmailVerificationChecked isVerified ->
-        let newState = { model with IsEmailVerified = isVerified }
-        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
-            { newState with CurrentStep = 3 }, Cmd.none
-        else
-            newState, Cmd.none
     | UpdateName name ->
         let newModel = { model with State.ContactForm.Name = name }
         let errors, _, cmd, isSubmitActive = validateForm newModel.ContactForm
@@ -190,9 +184,8 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         model, cmd
     | SendVerificationEmail (verificationToken, subscriptionToken) ->
         if not model.IsEmailVerified then
-            printfn "Sending verification email"
             let cmd = Cmd.OfAsync.perform (fun () -> service.SendEmailVerification (model.ContactForm.Name, model.ContactForm.Email, verificationToken, subscriptionToken)) () (fun _ -> EmailVerificationChecked false)
-            { model with IsProcessing = false }, cmd
+            { model with IsProcessing = false }, Cmd.batch [cmd; Cmd.ofMsg CheckEmailVerification]
         else
             { model with IsProcessing = false }, Cmd.none
     | FormSubmitted (Ok "FormSubmitted") ->
@@ -211,12 +204,23 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
             { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
     | CheckEmailVerification ->
-        if model.IsProcessing && not model.IsEmailVerified then
-            let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay streamToken (fun status -> EmailVerificationChecked (status |> Option.exists (fun (_, _, s) -> s = Verified)))
-            model, cmd
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        let cmd = Cmd.OfAsync.perform (fun () -> checkEmailVerificationWithDelay streamToken) () (fun status ->
+            match status with
+            | Some (_, _, EmailStatus.Verified) -> EmailVerificationChecked true
+            | _ -> EmailVerificationChecked false)
+        model, cmd
+    | EmailVerificationChecked isVerified ->
+        let newState = { model with IsEmailVerified = isVerified }
+        let nextCmd =
+            if not isVerified then
+                Cmd.ofMsg CheckEmailVerification
+            else
+                Cmd.none
+        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
+            { newState with CurrentStep = 3 }, Cmd.none
         else
-            model, Cmd.none
+            newState, nextCmd
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
