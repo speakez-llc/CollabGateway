@@ -125,7 +125,7 @@ type UserSummaryAggregate = {
     DataPolicyDecision: (EventDateTime * DataPolicyChoice) option
     ContactFormSubmitted: (EventDateTime * ContactForm) option
     SignUpFormSubmitted: (EventDateTime * SignUpForm) option
-    EmailStatusList: (EventDateTime * EmailAddress * EmailStatus) list option
+    EmailStatus: (EventDateTime * EmailAddress * EmailStatus) option
     SubscribeStatus: (EventDateTime * EmailAddress * SubscribeStatus) option
 }
 
@@ -271,10 +271,10 @@ type Service = {
     RetrieveSmartFormSubmittedCount: StreamToken -> Async<int>
     ProcessSignUpForm : EventDateTime * StreamToken * SignUpForm -> Async<string>
     RetrieveDataPolicyChoice : StreamToken -> Async<DataPolicyChoice>
-    RetrieveEmailStatus : StreamToken * EmailAddress -> Async<(EventDateTime * EmailStatus) option>
+    RetrieveEmailStatus : StreamToken -> Async<(EventDateTime * EmailAddress * EmailStatus) option>
     RetrieveUnsubscribeStatus : StreamToken -> Async<(EventDateTime * EmailAddress * SubscribeStatus) option>
-    RetrieveLatestSubscriptionToken : StreamToken * EmailAddress -> Async<SubscriptionToken option>
-    RetrieveLatestVerificationToken : StreamToken * EmailAddress -> Async<VerificationToken option>
+    RetrieveLatestSubscriptionToken : StreamToken * EmailAddress -> Async<SubscriptionToken>
+    RetrieveLatestVerificationToken : StreamToken * EmailAddress -> Async<VerificationToken>
     RetrieveContactFormSubmitted : StreamToken -> Async<bool>
     RetrieveSignUpFormSubmitted : StreamToken -> Async<bool>
     RetrieveUserSummary : StreamToken -> Async<UserSummaryAggregate>
@@ -283,7 +283,7 @@ type Service = {
     RetrieveOverviewTotals : (int * Grain) option -> Async<OverviewTotalsProjection list>
     RetrieveClientIPLocations : unit -> Async<(string * float * float * int) list>
     RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
-    SendEmailVerification: UserName * EmailAddress * StreamToken * VerificationToken -> Async<unit>
+    SendEmailVerification: UserName * EmailAddress * VerificationToken * SubscriptionToken -> Async<unit>
     CheckIfAdmin: StreamToken -> Async<bool>
 }
 with

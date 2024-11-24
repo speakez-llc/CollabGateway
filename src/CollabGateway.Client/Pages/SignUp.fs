@@ -31,6 +31,8 @@ type State = {
     IsSubmitActive: bool
     FormSubmittedCount: int
     CurrentStep: int
+    VerificationToken: VerificationToken
+    SubscriptionToken: SubscriptionToken
 }
 
 type Msg =
@@ -62,9 +64,11 @@ type Msg =
     | NotifyClipboardError of string
     | ReevaluateFormSubmittedCount
     | WebmailDomainFlagged of bool
-    | ParentDispatch of ViewMsg
     | CheckEmailVerification
     | EmailVerificationChecked of bool
+    | UpdateVerificationToken
+    | UpdateSubscriptionToken
+    | SendVerificationEmail
 
 
 
@@ -150,6 +154,8 @@ let init () : State * Cmd<Msg> =
         CurrentStep = 1
         Errors = Map.empty
         IsSubmitActive = false
+        VerificationToken = Guid.Empty
+        SubscriptionToken = Guid.Empty
     }
 
     let checkFormSubmissionCmd =
@@ -207,9 +213,9 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         let checkEmailVerificationCmd =
             if isEmailValid then
                 let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-                Cmd.OfAsync.perform (fun () -> service.RetrieveEmailStatus (streamToken, model.SignUpForm.Email)) () (fun status ->
+                Cmd.OfAsync.perform (fun () -> service.RetrieveEmailStatus streamToken) () (fun status ->
                     match status with
-                    | Some (_, EmailStatus.Verified) -> EmailVerificationChecked true
+                    | Some (_, _, EmailStatus.Verified) -> EmailVerificationChecked true
                     | _ -> EmailVerificationChecked false)
             else
                 Cmd.none
@@ -246,43 +252,27 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             { model with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList }, cmd
         else
             let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let verificationTokenOpt = getVerificationToken streamToken model.SignUpForm.Email |> Async.RunSynchronously
-            let newVerificationToken = verificationTokenOpt |> Option.defaultValue (Guid.NewGuid())
-            let subTokenOpt = getSubscriptionToken streamToken model.SignUpForm.Email |> Async.RunSynchronously
-            let newSubscriptionToken = subTokenOpt |> Option.defaultValue (Guid.NewGuid())
-            let appendEmailStatusCmd =
-                if verificationTokenOpt.IsNone then
-                    let timeStamp = DateTime.UtcNow
-                    Cmd.OfAsync.eitherAsResult (fun _ -> service.AppendEmailStatus (timeStamp, streamToken, newVerificationToken, model.SignUpForm.Email, Open)) (fun _ -> FormSubmitted (Ok "Email status appended"))
-                else
-                    Cmd.none
-            let appendSubscriptionStatusCmd =
-                if subTokenOpt.IsNone then
-                    let timeStamp = DateTime.UtcNow
-                    let subscriptionStatus = SubscribeStatus.Open
-                    Cmd.OfAsync.eitherAsResult (fun _ -> service.AppendUnsubscribeStatus (timeStamp, streamToken, newSubscriptionToken, model.SignUpForm.Email, subscriptionStatus)) (fun _ -> FormSubmitted (Ok "Subscription status appended"))
-                else
-                    Cmd.none
-            let sendVerificationEmailCmd =
-                if not model.IsEmailVerified then
-                    Console.WriteLine $"Contact client verification link: /api/prefs/confirm?token={newVerificationToken}"
-                    Cmd.OfAsync.eitherAsResult (fun _ -> service.SendEmailVerification (model.SignUpForm.Name, model.SignUpForm.Email, newVerificationToken, newSubscriptionToken)) (fun _ -> FormSubmitted (Ok "Verification email sent"))
-                else
-                    Cmd.none
-
-            let cmd = Cmd.batch [
-                appendEmailStatusCmd
-                appendSubscriptionStatusCmd
-                sendVerificationEmailCmd
-                let timeStamp = DateTime.UtcNow
-                Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (timeStamp, streamToken, model.SignUpForm)) FormSubmitted
-            ]
-            { model with IsProcessing = true }, cmd
+            let processSignUpFormCmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSignUpForm (DateTime.UtcNow, streamToken, model.SignUpForm)) FormSubmitted
+            { model with IsProcessing = true }, Cmd.batch [processSignUpFormCmd; Cmd.ofMsg UpdateVerificationToken]
+    | UpdateVerificationToken ->
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        Cmd.OfAsync.perform (fun () -> service.RetrieveLatestVerificationToken (streamToken, model.SignUpForm.Email)) () (fun token ->
+            { model with VerificationToken = token }) |> ignore
+        model, Cmd.ofMsg UpdateSubscriptionToken
+    | UpdateSubscriptionToken ->
+        let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
+        Cmd.OfAsync.perform (fun () -> service.RetrieveLatestSubscriptionToken (streamToken, model.SignUpForm.Email)) () (fun token ->
+            { model with SubscriptionToken = token }) |> ignore
+        model, Cmd.ofMsg SendVerificationEmail
+    | SendVerificationEmail ->
+        service.SendEmailVerification (model.SignUpForm.Name, model.SignUpForm.Email, model.VerificationToken, model.SubscriptionToken) |> ignore
+        model, Cmd.ofMsg CheckEmailVerification
     | FormSubmitted (Ok _) ->
-        if not model.IsEmailVerified then
-            { model with IsFormSubmitComplete = true; CurrentStep = 2; IsProcessing = true }, Cmd.ofMsg CheckEmailVerification
+        let newState = { model with IsFormSubmitComplete = true }
+        if newState.IsFormSubmitComplete && newState.IsEmailVerified then
+            { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
         else
-            { model with IsFormSubmitComplete = true; CurrentStep = 3; IsProcessing = false }, Cmd.none
+            { newState with CurrentStep = 2 }, Cmd.ofMsg CheckEmailVerification
     | FormSubmitted (Result.Error ex) ->
         if ex = ServerError.Exception "Ignore" then
             model, Cmd.none
@@ -360,7 +350,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | CheckEmailVerification ->
         if model.IsProcessing && not model.IsEmailVerified then
             let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay (streamToken, model.SignUpForm.Email) (fun status -> EmailVerificationChecked (status |> Option.exists (fun (_, s) -> s = Verified)))
+            let cmd = Cmd.OfAsync.perform checkEmailVerificationWithDelay streamToken (fun status -> EmailVerificationChecked (status |> Option.exists (fun (_, _, s) -> s = Verified)))
             model, cmd
         else
             model, Cmd.none

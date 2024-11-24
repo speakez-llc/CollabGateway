@@ -192,16 +192,16 @@ type FormEventCase =
     | SignUpFormSubmitted of SignUpFormEvent
     | SmartFormSubmitted of SmartFormSubmittedEvent
     | SmartFormResultReturned of SignUpFormEvent
-    | EmailStatusAppended of EmailStatusEvent
     | SubscribeStatusAppended of SubscribeStatusEvent
+    | EmailStatusAppended of EmailStatusEvent
     member this.Id =
         match this with
         | ContactFormSubmitted e -> e.Id
         | SignUpFormSubmitted e -> e.Id
         | SmartFormSubmitted e -> e.Id
         | SmartFormResultReturned e -> e.Id
-        | EmailStatusAppended e -> e.Id
         | SubscribeStatusAppended e -> e.Id
+        | EmailStatusAppended e -> e.Id
 
 type EventCaseType =
     | PageEventCase of PageEventCase

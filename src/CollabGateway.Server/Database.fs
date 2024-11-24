@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Net.Http
+open FSharp.Data
 open Marten
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
@@ -11,7 +12,7 @@ open Weasel.Core
 open JasperFx.CodeGeneration
 open Npgsql
 
-module DatabaseTestHelpers =
+module DatabaseHelpers =
     let execNonQueryAsync connStr commandStr =
         task {
             use conn = new NpgsqlConnection(connStr)
@@ -27,15 +28,7 @@ module DatabaseTestHelpers =
         let databasePart = parts |> Array.find (_.StartsWith("Database="))
         databasePart.Split('=') |> Array.last
 
-    let createFreeEmailDomainTableAsync databaseName =
-        let commandStr = $"CREATE TABLE IF NOT EXISTS \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\" UUID PRIMARY KEY, \"Domain\" TEXT UNIQUE);"
-        execNonQueryAsync connStr commandStr
-
-    let createFreeEmailDomainTable databaseName =
-        let commandStr = $"CREATE TABLE IF NOT EXISTS \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\" UUID PRIMARY KEY, \"Domain\" TEXT UNIQUE);"
-        execNonQueryAsync connStr commandStr |> ignore
-
-    let getTableRowCountAsync connStr databaseName =
+    let getEmailTableRowCountAsync connStr databaseName =
         task {
             let commandStr = $"SELECT COUNT(*) FROM \"%s{databaseName}\".public.\"FreeEmailProviders\";"
             use conn = new NpgsqlConnection(connStr)
@@ -45,6 +38,77 @@ module DatabaseTestHelpers =
             return result :?> int64
         }
 
+    let getGicsTableRowCountAsync connStr databaseName =
+        task {
+            let commandStr = $"SELECT COUNT(*) FROM \"%s{databaseName}\".public.\"GicsTaxonomy\";"
+            use conn = new NpgsqlConnection(connStr)
+            use cmd = new NpgsqlCommand(commandStr, conn)
+            do! conn.OpenAsync()
+            let! result = cmd.ExecuteScalarAsync() |> Async.AwaitTask
+            return result :?> int64
+        }
+
+    let createFreeEmailDomainTableAsync databaseName =
+        let commandStr = $"CREATE TABLE IF NOT EXISTS \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\" UUID PRIMARY KEY, \"Domain\" TEXT UNIQUE);"
+        execNonQueryAsync connStr commandStr
+
+    createFreeEmailDomainTableAsync connStr |> ignore
+
+    let createGicsTaxonomyTable databaseName =
+        let commandStr = $"""
+            CREATE TABLE IF NOT EXISTS "%s{databaseName}".public."GicsTaxonomy" (
+                "Id" UUID PRIMARY KEY,
+                "SubIndustryCode" TEXT UNIQUE,
+                "SubIndustry" TEXT,
+                "Definition" TEXT,
+                "IndustryCode" TEXT,
+                "Industry" TEXT,
+                "IndustryGroupCode" TEXT,
+                "IndustryGroup" TEXT,
+                "SectorCode" TEXT,
+                "Sector" TEXT
+            );
+        """
+        execNonQueryAsync connStr commandStr
+
+    type GicsCsv = CsvProvider<"GICS.csv", HasHeaders=true, Schema="SubIndustryCode (string), SubIndustry (string), Definition (string), IndustryCode (string), Industry (string), IndustryGroupCode (string), IndustryGroup (string), SectorCode (string), Sector (string)">
+
+    let upsertGicsTaxonomyAsync =
+        task {
+            let filePath = "GICS.csv"
+            let databaseName = parseDatabase connStr
+            do! createGicsTaxonomyTable databaseName
+            let csv = GicsCsv.Load(filePath)
+            let rows = csv.Rows |> Seq.toArray
+            let fileRowCount = rows.Length |> int64
+            let! tableRowCount = getGicsTableRowCountAsync connStr databaseName
+            if tableRowCount < fileRowCount then
+                Console.WriteLine $"Upserting GicsTaxonomy table with {fileRowCount - tableRowCount} new rows."
+                for row in rows do
+                    let subIndustryCode = row.SubIndustryCode
+                    let subIndustry = row.SubIndustry
+                    let definition = row.Definition
+                    let industryCode = row.IndustryCode
+                    let industry = row.Industry
+                    let industryGroupCode = row.IndustryGroupCode
+                    let industryGroup = row.IndustryGroup
+                    let sectorCode = row.SectorCode
+                    let sector = row.Sector
+                    let commandStr = $"""
+                        INSERT INTO "%s{databaseName}".public."GicsTaxonomy"
+                        ("Id", "SubIndustryCode", "SubIndustry", "Definition", "IndustryCode", "Industry", "IndustryGroupCode", "IndustryGroup", "SectorCode", "Sector")
+                        VALUES ('%s{Guid.NewGuid().ToString()}', '%s{subIndustryCode}', '%s{subIndustry}', '%s{definition}', '%s{industryCode}', '%s{industry}', '%s{industryGroupCode}', '%s{industryGroup}', '%s{sectorCode}', '%s{sector}')
+                        ON CONFLICT ("SubIndustryCode") DO UPDATE
+                        SET "SubIndustry" = EXCLUDED."SubIndustry", "Definition" = EXCLUDED."Definition", "IndustryCode" = EXCLUDED."IndustryCode", "Industry" = EXCLUDED."Industry", "IndustryGroupCode" = EXCLUDED."IndustryGroupCode", "IndustryGroup" = EXCLUDED."IndustryGroup", "SectorCode" = EXCLUDED."SectorCode", "Sector" = EXCLUDED."Sector";
+                    """
+                    do! execNonQueryAsync connStr commandStr
+            else
+                Console.WriteLine "No new GICS Taxonomy rows to upsert."
+        }
+
+    upsertGicsTaxonomyAsync |> ignore
+
+
     let upsertFreeEmailDomainsAsync =
         task {
             let filePath = "FreeEmailDomains.txt"
@@ -53,14 +117,14 @@ module DatabaseTestHelpers =
             let! fileLines = File.ReadAllLinesAsync(filePath) |> Async.AwaitTask
             let domains = fileLines |> Array.filter (fun line -> not (String.IsNullOrWhiteSpace(line))) |> Set.ofArray |> Set.toArray
             let fileRowCount = domains.Length |> int64
-            let! tableRowCount = getTableRowCountAsync connStr databaseName
+            let! tableRowCount = getEmailTableRowCountAsync connStr databaseName
             if tableRowCount < fileRowCount then
                 Console.WriteLine $"Upserting FreeEmailProviders table with {fileRowCount - tableRowCount} new rows."
                 for domainName in domains do
                     let commandStr = $"INSERT INTO \"%s{databaseName}\".public.\"FreeEmailProviders\" (\"Id\", \"Domain\") VALUES ('%s{Guid.NewGuid().ToString()}', '%s{domainName}') ON CONFLICT (\"Domain\") DO NOTHING;"
                     do! execNonQueryAsync connStr commandStr
             else
-                Console.WriteLine "No new rows to upsert."
+                Console.WriteLine "No new Webmail Domain rows to upsert."
         }
 
     upsertFreeEmailDomainsAsync |> ignore

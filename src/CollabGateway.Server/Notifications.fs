@@ -4,19 +4,18 @@ open System
 open CollabGateway.Server.Aggregates
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
+open Fake.Core.Xml
 open Giraffe
 open Microsoft.AspNetCore.Http
 
 let private notificationKey =
     let value = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
-    printfn $"Notifications: Raw NOTIFICATION_KEY environment variable: %s{value}"
     match value with
     | null | "" -> failwith "NOTIFICATION_KEY environment variable is not set."
     | value -> value
 
 let private webServerName =
     let value = Environment.GetEnvironmentVariable("VITE_WEB_URL")
-    printfn $"Notifications: Raw VITE_WEB_URL environment variable: %s{value}"
     match value with
     | null | "" -> failwith "VITE_WEB_URL environment variable is not set."
     | value -> value
@@ -79,7 +78,7 @@ let getUnsubscribeStatus (subToken: SubscriptionToken): Async<StreamToken * Emai
     }
 
 
-let processEmailVerificationCompletion (timeStamp: EventDateTime, streamToken: StreamToken, subToken: SubscriptionToken, emailAddress: EmailAddress, status: EmailStatus) = async {
+let processEmailVerificationCompletion (timeStamp, streamToken, subToken: SubscriptionToken, emailAddress, status) = async {
     try
         Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, subToken, emailAddress, status))
         let! nameOption = getUserName streamToken
@@ -107,7 +106,7 @@ let getUnsubscribeToken (streamToken: StreamToken): Async<SubscriptionToken opti
         return unsubscribeToken
     }
 
-let processUnsubscribeCompletion (timeStamp: EventDateTime, streamToken: StreamToken, subToken: SubscriptionToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
+let processUnsubscribeCompletion (timeStamp, streamToken, subToken, emailAddress, status) = async {
     try
         Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subToken, emailAddress, status))
         let! nameOption = getUserName streamToken
@@ -135,7 +134,8 @@ let emailVerificationHandler (next: HttpFunc) (ctx: HttpContext) =
         if emailStatus = EmailStatus.Open then
             let timeStamp = DateTime.Now
             let status = EmailStatus.Verified
-            do! processEmailVerificationCompletion (timeStamp, streamToken, verificationToken, email, status)
+            let! subscriptionToken = getLatestSubscriptionToken (streamToken, email)
+            do! processEmailVerificationCompletion (timeStamp, streamToken, subscriptionToken, email, status)
             ctx.Response.StatusCode <- 302
             ctx.Response.Headers["Location"] <- $"{webServerName}/activity?ref={streamToken}"
             return! next ctx

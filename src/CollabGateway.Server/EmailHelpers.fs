@@ -21,14 +21,12 @@ let private logTemplateRead filePath content =
 
 let private serverName =
     let value = Environment.GetEnvironmentVariable("VITE_BACKEND_URL")
-    printfn $"Raw VITE_BACKEND_URL environment variable: %s{value}"
     match value with
     | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
     | value -> value
 
 let private webServerName =
     let value = Environment.GetEnvironmentVariable("VITE_WEB_URL")
-    printfn $"Raw VITE_WEB_URL environment variable: %s{value}"
     match value with
     | null | "" -> failwith "VITE_WEB_URL environment variable is not set."
     | value -> value
@@ -168,6 +166,7 @@ let createAndSendEmail (toAddress: EmailAddress) (name: UserName) (subject: stri
 let sendEmailVerification (name: UserName, email: EmailAddress, verificationToken: VerificationToken, unsubscribeToken: SubscriptionToken) =
     task {
         try
+            Console.WriteLine $"Sending email verification to {email}... verToken: {verificationToken} and subToken: {unsubscribeToken}"
             let body = verifyEmailBody(name, verificationToken, unsubscribeToken)
             createAndSendEmail email name "Rower Collab Gateway: Verify Your Email Address" body
         with
