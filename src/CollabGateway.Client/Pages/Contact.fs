@@ -196,7 +196,10 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             { newState with CurrentStep = 2 }, Cmd.none
     | FormSubmitted (Ok _) ->
         let newState = { model with IsFormSubmitComplete = true }
-        { newState with CurrentStep = 2 }, Cmd.ofMsg UpdateVerificationToken
+        if newState.IsEmailVerified then
+            { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
+        else
+            { newState with CurrentStep = 2 }, Cmd.ofMsg UpdateVerificationToken
     | FormSubmitted (Result.Error ex) ->
         if ex = ServerError.Exception "Ignore" then
             model, Cmd.none
