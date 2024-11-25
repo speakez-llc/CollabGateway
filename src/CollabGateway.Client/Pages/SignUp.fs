@@ -435,8 +435,48 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             | None -> parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Warning))
         } |> ignore
 
-    let updateSector (sector: string) =
-        dispatch (UpdateIndustry sector)
+    let updateTaxonomy (taxonomyCode: string) =
+        let selectedTaxonomy =
+            state.GicsTaxonomy.Value
+            |> Array.collect (fun g ->
+                let sectorPath = [g.SectorName]
+                let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
+                let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
+                let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
+                let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
+                [|
+                    (g.SectorCode, String.concat " > " sectorPath)
+                    (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
+                    (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
+                    (g.SubIndustryCode, String.concat " > " fullPath)
+                |]
+            )
+            |> Array.tryFind (fun (code, _) -> code = taxonomyCode)
+
+        match selectedTaxonomy with
+        | Some (code, path) ->
+            dispatch (UpdateIndustry code)
+            dispatch ToggleIndustryModal
+        | None -> ()
+
+    let generateBreadcrumbPaths (taxonomy: GicsTaxonomy[]) =
+        taxonomy
+        |> Array.collect (fun g ->
+            let sectorPath = [g.SectorName]
+            let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
+            let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
+            let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
+            let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
+            [|
+                (g.SectorCode, String.concat " > " sectorPath)
+                (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
+                (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
+                (g.SubIndustryCode, String.concat " > " fullPath)
+            |]
+        )
+        |> Array.distinctBy snd
+        |> Array.sortBy fst
+        |> Map.ofArray
 
     let renderStep1 () =
         Html.div [
@@ -633,7 +673,22 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                                 Html.input [
                                                                     prop.className "input input-bordered rounded-l-lg h-10 flex-grow pl-4 bg-base-200 join-item"
                                                                     prop.placeholder "Industry"
-                                                                    prop.value state.SignUpForm.Industry
+                                                                    prop.style [
+                                                                        style.overflowX.scroll
+                                                                        style.maxHeight (length.px 40)
+                                                                    ]
+                                                                    prop.value (
+                                                                        match state.GicsTaxonomy with
+                                                                        | Some taxonomy ->
+                                                                            let selectedPath =
+                                                                                taxonomy
+                                                                                |> generateBreadcrumbPaths
+                                                                                |> Map.tryFind state.SignUpForm.Industry
+                                                                            match selectedPath with
+                                                                            | Some path -> path
+                                                                            | None -> ""
+                                                                        | None -> ""
+                                                                    )
                                                                     prop.readOnly true
                                                                 ]
                                                                 Html.button [
@@ -890,22 +945,26 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
                 prop.children [
                     Html.div [
-                        prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-5/6 md:w-1/2 max-h-screen overflow-y-auto"
+                        prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto max-h-screen overflow-y-auto"
                         prop.children [
                             Html.h2 [
                                 prop.className "text-xl font-bold mb-4"
                                 prop.text "Select Industry"
                             ]
                             Html.select [
-                                prop.value (state.SignUpForm.Industry)
+                                prop.value state.SignUpForm.Industry
                                 prop.onChange (fun (ev: Browser.Types.Event) ->
                                     let target = ev.target :?> Browser.Types.HTMLSelectElement
-                                    let selectedSector = state.GicsTaxonomy.Value |> Array.find (fun g -> g.SectorName = target.value)
-                                    updateSector selectedSector.SectorCode
+                                    let selectedCode = target.value
+                                    updateTaxonomy selectedCode
                                 )
                                 prop.children (
-                                    Html.option [ prop.value ""; prop.text "Select Sector" ] ::
-                                    (state.GicsTaxonomy.Value |> Array.map (fun g -> Html.option [ prop.value g.SectorName; prop.text g.SectorName ]) |> Array.toList)
+                                    Html.option [ prop.value ""; prop.text "Select Industry" ] ::
+                                    (state.GicsTaxonomy.Value
+                                     |> generateBreadcrumbPaths
+                                     |> Map.toList
+                                     |> List.map (fun (code, path) -> Html.option [ prop.value code; prop.text path ])
+                                    )
                                 )
                             ]
                             Html.div [
