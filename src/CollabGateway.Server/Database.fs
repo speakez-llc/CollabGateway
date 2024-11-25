@@ -58,10 +58,10 @@ module DatabaseHelpers =
         let commandStr = $"""
             CREATE TABLE IF NOT EXISTS "%s{databaseName}".public."GicsTaxonomy" (
                 "Id" UUID PRIMARY KEY,
-                "SubIndustryCode" TEXT UNIQUE,
+                "SubIndustryCode" TEXT,
                 "SubIndustry" TEXT,
                 "Definition" TEXT,
-                "IndustryCode" TEXT,
+                "IndustryCode" TEXT NOT NULL,
                 "Industry" TEXT,
                 "IndustryGroupCode" TEXT,
                 "IndustryGroup" TEXT,
@@ -71,43 +71,38 @@ module DatabaseHelpers =
         """
         execNonQueryAsync connStr commandStr
 
+
     type GicsCsv = CsvProvider<"GICS.csv", HasHeaders=true, Schema="SubIndustryCode (string), SubIndustry (string), Definition (string), IndustryCode (string), Industry (string), IndustryGroupCode (string), IndustryGroup (string), SectorCode (string), Sector (string)">
 
-    let upsertGicsTaxonomyAsync =
+    let insertGicsTaxonomyAsync =
         task {
             let filePath = "GICS.csv"
             let databaseName = parseDatabase connStr
             do! createGicsTaxonomyTable databaseName
+            let truncateCommandStr = $"TRUNCATE TABLE \"%s{databaseName}\".public.\"GicsTaxonomy\";"
+            do! execNonQueryAsync connStr truncateCommandStr
             let csv = GicsCsv.Load(filePath)
             let rows = csv.Rows |> Seq.toArray
-            let fileRowCount = rows.Length |> int64
-            let! tableRowCount = getGicsTableRowCountAsync connStr databaseName
-            if tableRowCount < fileRowCount then
-                Console.WriteLine $"Upserting GicsTaxonomy table with {fileRowCount - tableRowCount} new rows."
-                for row in rows do
-                    let subIndustryCode = row.SubIndustryCode
-                    let subIndustry = row.SubIndustry
-                    let definition = row.Definition
-                    let industryCode = row.IndustryCode
-                    let industry = row.Industry
-                    let industryGroupCode = row.IndustryGroupCode
-                    let industryGroup = row.IndustryGroup
-                    let sectorCode = row.SectorCode
-                    let sector = row.Sector
-                    let commandStr = $"""
-                        INSERT INTO "%s{databaseName}".public."GicsTaxonomy"
-                        ("Id", "SubIndustryCode", "SubIndustry", "Definition", "IndustryCode", "Industry", "IndustryGroupCode", "IndustryGroup", "SectorCode", "Sector")
-                        VALUES ('%s{Guid.NewGuid().ToString()}', '%s{subIndustryCode}', '%s{subIndustry}', '%s{definition}', '%s{industryCode}', '%s{industry}', '%s{industryGroupCode}', '%s{industryGroup}', '%s{sectorCode}', '%s{sector}')
-                        ON CONFLICT ("SubIndustryCode") DO UPDATE
-                        SET "SubIndustry" = EXCLUDED."SubIndustry", "Definition" = EXCLUDED."Definition", "IndustryCode" = EXCLUDED."IndustryCode", "Industry" = EXCLUDED."Industry", "IndustryGroupCode" = EXCLUDED."IndustryGroupCode", "IndustryGroup" = EXCLUDED."IndustryGroup", "SectorCode" = EXCLUDED."SectorCode", "Sector" = EXCLUDED."Sector";
-                    """
-                    do! execNonQueryAsync connStr commandStr
-            else
-                Console.WriteLine "No new GICS Taxonomy rows to upsert."
+            Console.WriteLine $"Inserting GicsTaxonomy table with {rows.Length} rows."
+            for row in rows do
+                let subIndustryCode = if String.IsNullOrWhiteSpace(row.SubIndustryCode) then "NULL" else $"'{row.SubIndustryCode}'"
+                let subIndustry = if String.IsNullOrWhiteSpace(row.SubIndustry) then "NULL" else $"'{row.SubIndustry}'"
+                let definition = if String.IsNullOrWhiteSpace(row.Definition) then "NULL" else $"'{row.Definition}'"
+                let industryCode = row.IndustryCode
+                let industry = row.Industry
+                let industryGroupCode = row.IndustryGroupCode
+                let industryGroup = row.IndustryGroup
+                let sectorCode = row.SectorCode
+                let sector = row.Sector
+                let commandStr = $"""
+                    INSERT INTO "%s{databaseName}".public."GicsTaxonomy"
+                    ("Id", "SubIndustryCode", "SubIndustry", "Definition", "IndustryCode", "Industry", "IndustryGroupCode", "IndustryGroup", "SectorCode", "Sector")
+                    VALUES ('%s{Guid.NewGuid().ToString()}', %s{subIndustryCode}, %s{subIndustry}, %s{definition}, '%s{industryCode}', '%s{industry}', '%s{industryGroupCode}', '%s{industryGroup}', '%s{sectorCode}', '%s{sector}');
+                """
+                do! execNonQueryAsync connStr commandStr
         }
 
-    upsertGicsTaxonomyAsync |> ignore
-
+    insertGicsTaxonomyAsync |> ignore
 
     let upsertFreeEmailDomainsAsync =
         task {
@@ -161,6 +156,8 @@ let getGeoInfo (clientIP: ClientIP) =
             | ex -> return failwith $"Failed to deserialize GeoInfo: {ex.Message}"
     }
     |> Async.AwaitTask
+
+
 
 let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {

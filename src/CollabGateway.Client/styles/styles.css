@@ -17,3 +17,11 @@
     background-color: ghostwhite;
     border-radius: 12px;
 }
+
+.btn:disabled {
+    @apply border-dashed border-primary;
+}
+
+.btn:hover {
+    @apply border-2 border-primary;
+}

@@ -142,6 +142,38 @@ let flagEmailDomain (domain: string) = async {
     return count > 0L
 }
 
+let parseDatabase (connectionString: string) =
+        let parts = connectionString.Split(';')
+        let databasePart = parts |> Array.find (_.StartsWith("Database="))
+        databasePart.Split('=') |> Array.last
+
+let getGicsTaxonomyAsync () =
+    async {
+        let connStr = Environment.GetEnvironmentVariable("GATEWAY_STORE")
+        let databaseName = parseDatabase(connStr)
+        let commandStr = $"SELECT * FROM \"%s{databaseName}\".public.\"GicsTaxonomy\";"
+        use conn = new NpgsqlConnection(connStr)
+        use cmd = new NpgsqlCommand(commandStr, conn)
+        do! conn.OpenAsync() |> Async.AwaitTask
+        use! reader = cmd.ExecuteReaderAsync() |> Async.AwaitTask
+        let results = ResizeArray<GicsTaxonomy>()
+        while reader.Read() do
+            let subIndustryCode = if reader.IsDBNull(1) then "" else reader.GetString(1)
+            let subIndustryName = if reader.IsDBNull(2) then "" else reader.GetString(2)
+            let gicsTaxonomy = {
+                SectorCode = reader.GetString(8)
+                SectorName = reader.GetString(9)
+                IndustryGroupCode = reader.GetString(6)
+                IndustryGroupName = reader.GetString(7)
+                IndustryCode = reader.GetString(4)
+                IndustryName = reader.GetString(5)
+                SubIndustryCode = subIndustryCode
+                SubIndustryName = subIndustryName
+            }
+            results.Add(gicsTaxonomy)
+        return results.ToArray()
+    }
+
 let service = {
     GetMessage = getMessage
     EstablishStreamToken = establishStreamToken
@@ -171,6 +203,7 @@ let service = {
     RetrieveVerifiedEmailDomains = Projections.retrieveVerifiedEmailDomains
     SendEmailVerification = sendEmailVerification
     CheckIfAdmin = Aggregates.retrieveAdminStatus
+    LoadGicsTaxonomy = getGicsTaxonomyAsync
 }
 
 let webApp : HttpHandler =

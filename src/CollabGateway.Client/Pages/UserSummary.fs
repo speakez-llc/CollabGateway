@@ -159,7 +159,7 @@ let renderSmartFormReturn (form: SignUpForm) =
                 prop.children [
                     renderRow "Name" form.Name "Email" form.Email
                     renderRow "Job Title" form.JobTitle "Phone" form.Phone
-                    renderRow "Department" form.Department "Company" form.Company
+                    renderRow "Department" form.Department "Industry" form.Industry
                     renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
                     renderRow "City" form.City "State or Province" form.StateProvince
                     renderRow "Postal Code" form.PostCode "Country" form.Country
@@ -219,7 +219,7 @@ let renderSignUpForm (form: SignUpForm) =
                 prop.children [
                     renderRow "Name" form.Name "Email" form.Email
                     renderRow "Job Title" form.JobTitle "Phone" form.Phone
-                    renderRow "Department" form.Department "Company" form.Company
+                    renderRow "Department" form.Department "Industry" form.Industry
                     renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
                     renderRow "City" form.City "State or Province" form.StateProvince
                     renderRow "Postal Code" form.PostCode "Country" form.Country

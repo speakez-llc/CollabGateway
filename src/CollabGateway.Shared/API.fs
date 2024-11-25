@@ -90,7 +90,7 @@ type SignUpForm = {
     JobTitle : string
     Phone : string
     Department : string
-    Company : string
+    Industry : string
     StreetAddress1 : string
     StreetAddress2 : string
     City : string
@@ -256,6 +256,17 @@ type EventEnvelope = {
     Data: obj
 }
 
+type GicsTaxonomy = {
+    SectorCode: string
+    SectorName: string
+    IndustryGroupCode: string
+    IndustryGroupName: string
+    IndustryCode: string
+    IndustryName: string
+    SubIndustryCode: string
+    SubIndustryName: string
+}
+
 type Service = {
     GetMessage : string -> Async<string>
     EstablishStreamToken : EventDateTime * StreamToken -> Async<unit>
@@ -285,6 +296,7 @@ type Service = {
     RetrieveVerifiedEmailDomains : unit -> Async<(string * int) list>
     SendEmailVerification: UserName * EmailAddress * VerificationToken * SubscriptionToken -> Async<unit>
     CheckIfAdmin: StreamToken -> Async<bool>
+    LoadGicsTaxonomy: unit -> Async<GicsTaxonomy[]>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

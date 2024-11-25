@@ -17,32 +17,35 @@ open Browser.Navigator
 type State = {
     IsFormSubmitComplete: bool
     IsEmailVerified: bool
-    SignUpForm : SignUpForm
     IsEmailValid: bool option
     IsSubscriptionTokenPresent: bool
     IsWebmailDomain: bool option
+    IsProcessing: bool
+    IsSubmitActive: bool
+    IsIndustryModalOpen: bool
+    SignUpForm : SignUpForm
     Errors: Map<string, string>
     Message : string
     ResponseMessage: string
     Accordion1Open : bool
     Accordion2Open : bool
     Accordion3Open : bool
-    IsProcessing: bool
-    IsSubmitActive: bool
     FormSubmittedCount: int
     CurrentStep: int
     VerificationToken: VerificationToken
     SubscriptionToken: SubscriptionToken
+    GicsTaxonomy: GicsTaxonomy[] option
 }
 
 type Msg =
     | AskForMessage of bool
+    | GicsTaxonomyLoaded of GicsTaxonomy[]
     | UpdateName of string
     | UpdateEmail of string
     | UpdateJobTitle of string
     | UpdatePhone of string
     | UpdateDepartment of string
-    | UpdateCompany of string
+    | UpdateIndustry of string
     | UpdateStreetAddress1 of string
     | UpdateStreetAddress2 of string
     | UpdateCity of string
@@ -54,6 +57,7 @@ type Msg =
     | ToggleAccordion1
     | ToggleAccordion2
     | ToggleAccordion3
+    | ToggleIndustryModal
     | SubmitForm
     | ClearForm
     | FormSubmitted of ServerResult<string>
@@ -138,7 +142,7 @@ let init () : State * Cmd<Msg> =
             JobTitle = ""
             Phone = ""
             Department = ""
-            Company = ""
+            Industry = ""
             StreetAddress1 = ""
             StreetAddress2 = ""
             City = ""
@@ -151,11 +155,13 @@ let init () : State * Cmd<Msg> =
         IsWebmailDomain = None
         IsEmailVerified = false
         IsSubscriptionTokenPresent = false
+        IsIndustryModalOpen = false
         CurrentStep = 1
         Errors = Map.empty
         IsSubmitActive = false
         VerificationToken = Guid.Empty
         SubscriptionToken = Guid.Empty
+        GicsTaxonomy = None
     }
 
     let checkFormSubmissionCmd =
@@ -172,7 +178,10 @@ let init () : State * Cmd<Msg> =
            | Some (_, _, EmailStatus.Verified) -> EmailVerificationChecked true
            | _ -> EmailVerificationChecked false)
 
-    initialState, Cmd.batch [checkFormSubmissionCmd; checkIfEmailIsVerifiedCmd]
+    let getGicsTaxonomyCmd =
+        Cmd.OfAsync.perform (fun () -> service.LoadGicsTaxonomy ()) () GicsTaxonomyLoaded
+
+    initialState, Cmd.batch [checkFormSubmissionCmd; checkIfEmailIsVerifiedCmd; getGicsTaxonomyCmd]
 
 let private closeAccordion label model =
     match label with
@@ -187,7 +196,7 @@ let isFormEmpty (form: SignUpForm) =
     String.IsNullOrWhiteSpace(form.JobTitle) &&
     String.IsNullOrWhiteSpace(form.Phone) &&
     String.IsNullOrWhiteSpace(form.Department) &&
-    String.IsNullOrWhiteSpace(form.Company) &&
+    String.IsNullOrWhiteSpace(form.Industry) &&
     String.IsNullOrWhiteSpace(form.StreetAddress1) &&
     String.IsNullOrWhiteSpace(form.StreetAddress2) &&
     String.IsNullOrWhiteSpace(form.City) &&
@@ -203,6 +212,10 @@ let private checkEmailVerificationWithDelay streamToken =
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
+    | ToggleIndustryModal ->
+        { model with IsIndustryModalOpen = not model.IsIndustryModalOpen }, Cmd.none
+    | GicsTaxonomyLoaded taxonomy ->
+        { model with GicsTaxonomy = Some taxonomy }, Cmd.none
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name ->
         let newModel = { model with State.SignUpForm.Name = name }
@@ -232,7 +245,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | UpdateJobTitle jobTitle -> { model with State.SignUpForm.JobTitle = jobTitle }, Cmd.none
     | UpdatePhone phone -> { model with State.SignUpForm.Phone = phone }, Cmd.none
     | UpdateDepartment department -> { model with State.SignUpForm.Department = department }, Cmd.none
-    | UpdateCompany company -> { model with State.SignUpForm.Company = company }, Cmd.none
+    | UpdateIndustry industry -> { model with State.SignUpForm.Industry = industry }, Cmd.none
     | UpdateStreetAddress1 streetAddress1 -> { model with State.SignUpForm.StreetAddress1 = streetAddress1 }, Cmd.none
     | UpdateStreetAddress2 streetAddress2 -> { model with State.SignUpForm.StreetAddress2 = streetAddress2 }, Cmd.none
     | UpdateCity city -> { model with State.SignUpForm.City = city }, Cmd.none
@@ -329,7 +342,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
                     JobTitle = ""
                     Phone = ""
                     Department = ""
-                    Company = ""
+                    Industry = ""
                     StreetAddress1 = ""
                     StreetAddress2 = ""
                     City = ""
@@ -421,6 +434,9 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             | Some clipboardText -> dispatch (ProcessSmartFormRawContent clipboardText)
             | None -> parentDispatch (ShowToast ("No text in clipboard", AlertLevel.Warning))
         } |> ignore
+
+    let updateSector (sector: string) =
+        dispatch (UpdateIndustry sector)
 
     let renderStep1 () =
         Html.div [
@@ -611,14 +627,22 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                 Html.div [
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
-                                                        Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
-                                                            prop.placeholder "Company Name"
-                                                            prop.autoComplete "organization"
-                                                            prop.value state.SignUpForm.Company
-                                                            prop.onChange (fun (e: Browser.Types.Event) ->
-                                                                let target = e.target :?> Browser.Types.HTMLInputElement
-                                                                dispatch (UpdateCompany target.value))
+                                                        Html.div [
+                                                            prop.className "join flex w-full"
+                                                            prop.children [
+                                                                Html.input [
+                                                                    prop.className "input input-bordered rounded-l-lg h-10 flex-grow pl-4 bg-base-200 join-item"
+                                                                    prop.placeholder "Industry"
+                                                                    prop.value state.SignUpForm.Industry
+                                                                    prop.readOnly true
+                                                                ]
+                                                                Html.button [
+                                                                    prop.className "btn h-10 btn-secondary h-10 btn-sm join-item"
+                                                                    prop.text "Select"
+                                                                    prop.type' "button"
+                                                                    prop.onClick (fun _ -> dispatch ToggleIndustryModal)
+                                                                ]
+                                                            ]
                                                         ]
                                                     ]
                                                 ]
@@ -861,4 +885,41 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             ]
         ]
         renderCurrentStep()
+        if state.IsIndustryModalOpen then
+            Html.div [
+                prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
+                prop.children [
+                    Html.div [
+                        prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-5/6 md:w-1/2 max-h-screen overflow-y-auto"
+                        prop.children [
+                            Html.h2 [
+                                prop.className "text-xl font-bold mb-4"
+                                prop.text "Select Industry"
+                            ]
+                            Html.select [
+                                prop.value (state.SignUpForm.Industry)
+                                prop.onChange (fun (ev: Browser.Types.Event) ->
+                                    let target = ev.target :?> Browser.Types.HTMLSelectElement
+                                    let selectedSector = state.GicsTaxonomy.Value |> Array.find (fun g -> g.SectorName = target.value)
+                                    updateSector selectedSector.SectorCode
+                                )
+                                prop.children (
+                                    Html.option [ prop.value ""; prop.text "Select Sector" ] ::
+                                    (state.GicsTaxonomy.Value |> Array.map (fun g -> Html.option [ prop.value g.SectorName; prop.text g.SectorName ]) |> Array.toList)
+                                )
+                            ]
+                            Html.div [
+                                prop.className "flex justify-end mt-4"
+                                prop.children [
+                                    Html.button [
+                                        prop.className "btn btn-sm btn-secondary"
+                                        prop.text "Cancel"
+                                        prop.onClick (fun _ -> dispatch ToggleIndustryModal)
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
     ]

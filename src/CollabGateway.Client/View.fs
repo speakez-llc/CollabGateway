@@ -12,7 +12,7 @@ open Fable.FontAwesome
 open Router
 open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
-open CollabGateway.Client.DataPolicyModal
+open CollabGateway.Client.Components.DataPolicyModal
 
 let getQueryParam (param: string) =
     let search = window.location.search

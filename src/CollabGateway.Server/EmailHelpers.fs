@@ -96,7 +96,6 @@ let confirmEmailParameters (name: UserName, streamToken: StreamToken, unsubscrib
     let unsubscribeLink = unsubscribeLink unsubscribeToken
     let activityPageLink = activityPageLink streamToken
     let svgDataUri = svgToDataUri "./Templates/CollabNarrow.svg"
-
     let parameters = Map.ofList [
         ("{{first_name}}", firstName)
         ("{{activity_page_link}}", activityPageLink)

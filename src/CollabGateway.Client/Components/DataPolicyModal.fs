@@ -1,4 +1,4 @@
-﻿module CollabGateway.Client.DataPolicyModal
+﻿module CollabGateway.Client.Components.DataPolicyModal
 
 open Feliz
 open CollabGateway.Client.ViewMsg
