@@ -162,3 +162,46 @@
 60201020,Real Estate Operating Companies,"Companies engaged in operating real estate properties for the purpose of leasing & management, including real estate property managers.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
 60201030,Real Estate Development,"Companies that develop real estate and sell the properties after development, including developers of active senior communities. This Sub-Industry excludes companies classified in the Homebuilding Sub-Industry.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
 60201040,Real Estate Services,"Real estate service providers such as real estate agents, brokers, real estate appraisers and other real estate related services. This Sub-Industry includes providers of real estate information, analytics, data and tools. This Sub-Industry excludes online real estate platforms that offer mainly information and earn revenue from pay-per-click advertising classified in the Interactive Media & Services Sub-Industry.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
+,,,901010,Individual Support & Outreach Services,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,,901020,Education and Research,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,,901030,Health and Medical,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,,901040,Environmental Services,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,,901050,Animal Welfare,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,,902010,Private Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,,902020,Community Foundation,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,,902030,Corporate Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,,903010,Churches and Religious Institution,9030,Religious Organizations,90,Non-Profit & NGOs
+,,,903020,Faith-Based Charities,9030,Religious Organizations,90,Non-Profit & NGOs
+,,,904010,Advocacy Groups,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
+,,,904020,Civic and Social Organizations,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
+,,,905010,Humanitarian Aid,9050,International NGOs,90,Non-Profit & NGOs
+,,,905020,Development and Relief Services,9050,International NGOs,90,Non-Profit & NGOs
+,,,905030,International Health Services,9050,International NGOs,90,Non-Profit & NGOs
+,,,905040,Environmental NGOs,9050,International NGOs,90,Non-Profit & NGOs
+,,,906010,Professional Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,,906020,Trade Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,,906030,Labor Unions,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,,951010,Central Government,9510,General Administration,95,Public Sector
+,,,951020,Regional Government,9510,General Administration,95,Public Sector
+,,,951030,State/Provincial Government,9510,General Administration,95,Public Sector
+,,,951040,Local/Municipal Government,9510,General Administration,95,Public Sector
+,,,952010,Education Services,9520,Public Services,95,Public Sector
+,,,952020,Healthcare Services,9520,Public Services,95,Public Sector
+,,,952030,Social Services,9520,Public Services,95,Public Sector
+,,,953010,Law Enforcement,9530,Public Safety,95,Public Sector
+,,,953020,Fire and Rescue Services,9530,Public Safety,95,Public Sector
+,,,953030,Emergency Management,9530,Public Safety,95,Public Sector
+,,,954010,Transportation Services,9540,Infrastructure and Utilities,95,Public Sector
+,,,954020,Utility Services,9540,Infrastructure and Utilities,95,Public Sector
+,,,955010,Armed Services ,9550,Defense and Security,95,Public Sector
+,,,955020,National Security,9550,Defense and Security,95,Public Sector
+,,,955030,Cybersecurity,9550,Defense and Security,95,Public Sector
+,,,956010,Conservation Service,9560,Environmental Management,95,Public Sector
+,,,956020,Environmental Protection,9560,Environmental Management,95,Public Sector
+,,,956030,Parks and Recreation,9560,Environmental Management,95,Public Sector
+,,,957010,Revenue Services,9570,Public Finance,95,Public Sector
+,,,957010,Public Budgeting,9570,Public Finance,95,Public Sector
+,,,957020,Government Accounting,9570,Public Finance,95,Public Sector
+,,,958010,Financial Regulation,9580,Regulatory Agencies,95,Public Sector
+,,,958020,Health and Safety Regulation,9580,Regulatory Agencies,95,Public Sector
+,,,958030,Environmental Regulation,9580,Regulatory Agencies,95,Public Sector
