@@ -264,7 +264,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.input [
-                    prop.className "input input-bordered rounded-lg h-10 w-2/3 md:w-1/3 shadow bg-base-300 pl-2 required"
+                    prop.className "input input-bordered h-10 w-2/3 md:w-1/3 shadow bg-base-300 pl-2 required"
                     prop.placeholder "Name is required"
                     prop.autoComplete "Name"
                     prop.value state.ContactForm.Name
@@ -273,7 +273,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         dispatch (UpdateName target.value))
                 ]
                 Html.input [
-                    prop.className $"input input-bordered rounded-lg h-10 w-2/3 lg:w-1/3 shadow bg-base-300 pl-2 required {emailInputClass}"
+                    prop.className $"input input-bordered h-10 w-2/3 lg:w-1/3 shadow bg-base-300 pl-2 required {emailInputClass}"
                     prop.placeholder "A non-webmail email is required"
                     prop.autoComplete "Email"
                     prop.value state.ContactForm.Email
@@ -282,7 +282,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                         dispatch (UpdateEmail target.value))
                 ]
                 Html.textarea [
-                    prop.className "input input-bordered rounded-lg h-32 w-full lg:w-1/2 shadow bg-base-300 p-2 required"
+                    prop.className "input input-bordered h-32 w-full lg:w-1/2 shadow bg-base-300 p-2 required"
                     prop.placeholder "A message is required"
                     prop.value state.ContactForm.MessageBody
                     prop.onChange (fun (e: Browser.Types.Event) ->

@@ -602,7 +602,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200 required"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200 required"
                                                             prop.placeholder "Name is required"
                                                             prop.autoComplete "name"
                                                             prop.required true
@@ -617,7 +617,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className $"input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200 required {emailInputClass}"
+                                                            prop.className $"input input-bordered h-10 w-full pl-4 bg-base-200 required {emailInputClass}"
                                                             prop.placeholder "A work email is required"
                                                             prop.autoComplete "email"
                                                             prop.required true
@@ -637,7 +637,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Job Title"
                                                             prop.autoComplete "organization-title"
                                                             prop.value state.SignUpForm.JobTitle
@@ -651,7 +651,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Phone Number"
                                                             prop.autoComplete "tel"
                                                             prop.value state.SignUpForm.Phone
@@ -670,7 +670,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Department/Division"
                                                             prop.autoComplete "division"
                                                             prop.value state.SignUpForm.Department
@@ -687,7 +687,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                             prop.className "join flex w-full"
                                                             prop.children [
                                                                 Html.input [
-                                                                    prop.className "input input-bordered rounded-l-lg flex-grow pl-4 bg-base-200 join-item overflow-x-auto"
+                                                                    prop.className "input input-bordered flex-grow gap-4 bg-base-200 join-item overflow-x-auto"
                                                                     prop.placeholder "Industry"
                                                                     prop.style [
                                                                         style.overflowX.scroll
@@ -710,7 +710,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                                     prop.readOnly true
                                                                 ]
                                                                 Html.button [
-                                                                    prop.className "btn h-10 btn-secondary h-10 btn-sm join-item"
+                                                                    prop.className "btn h-10 btn-secondary btn-sm join-item"
                                                                     prop.text "Select"
                                                                     prop.type' "button"
                                                                     prop.onClick (fun _ -> dispatch ToggleIndustryModal)
@@ -728,7 +728,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Street Address"
                                                             prop.autoComplete "address-line1"
                                                             prop.value state.SignUpForm.StreetAddress1
@@ -742,7 +742,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Street Address 2"
                                                             prop.autoComplete "address-line2"
                                                             prop.value state.SignUpForm.StreetAddress2
@@ -761,7 +761,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "City"
                                                             prop.autoComplete "address-level2"
                                                             prop.value state.SignUpForm.City
@@ -775,7 +775,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "State/Province"
                                                             prop.autoComplete "address-level1"
                                                             prop.value state.SignUpForm.StateProvince
@@ -794,7 +794,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "Country"
                                                             prop.autoComplete "country"
                                                             prop.value state.SignUpForm.Country
@@ -808,7 +808,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered rounded-lg h-10 w-full pl-4 bg-base-200"
+                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
                                                             prop.placeholder "PostCode"
                                                             prop.autoComplete "postal-code"
                                                             prop.value state.SignUpForm.PostCode
@@ -975,18 +975,18 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
         if state.IsIndustryModalOpen then
             let sectorIcons = Map.ofList [
                 ("10", ("fas fa-oil-well", "Energy"))
-                ("15", ("fas fa-tools", "Materials"))
+                ("15", ("fas fa-trowel-bricks", "Materials"))
                 ("20", ("fas fa-industry", "Industrials"))
                 ("25", ("fas fa-car", "Consumer Discretionary"))
                 ("30", ("fas fa-shopping-cart", "Consumer Staples"))
                 ("35", ("fas fa-heartbeat", "Health Care"))
-                ("40", ("fas fa-university", "Financials"))
+                ("40", ("fas fa-file-invoice-dollar", "Financials"))
                 ("45", ("fas fa-computer", "Information Technology"))
                 ("50", ("fas fa-tower-cell", "Communication Services"))
-                ("55", ("fas fa-home", "Utilities"))
-                ("60", ("fas fa-building", "Real Estate"))
-                ("90", ("fas fa-building-ngo", "Non-Profit & NGOs"))
-                ("95", ("fas fa-globe", "Public Sector"))
+                ("55", ("fas fa-hand-holding-droplet", "Utilities"))
+                ("60", ("fas fa-home", "Real Estate"))
+                ("90", ("fas fa-handshake-angle", "Non-Profit & NGOs"))
+                ("95", ("fas fa-university", "Public Sector"))
             ]
 
             let getSectorIcon sectorCode =
