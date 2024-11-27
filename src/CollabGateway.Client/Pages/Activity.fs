@@ -239,7 +239,7 @@ let IndexView (parentDispatch: ViewMsg -> unit) =
                                         prop.className "flex items-center space-x-2 justify-center"
                                         prop.children [
                                             Html.div [
-                                                prop.className "loading loading-ring loading-md text-warning animate-spin"
+                                                prop.className "loading loading-dots loading-md text-warning"
                                             ]
                                             Html.span [
                                                 prop.className "text-warning text-xl"

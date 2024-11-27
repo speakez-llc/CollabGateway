@@ -1,6 +1,9 @@
 ﻿module CollabGateway.Server.Database
 
 open System
+open System.Data.Common
+open System.Threading
+open System.Threading.Tasks
 open System.IO
 open System.Net.Http
 open FSharp.Data
@@ -11,6 +14,7 @@ open Newtonsoft.Json
 open Weasel.Core
 open JasperFx.CodeGeneration
 open Npgsql
+open Npgsql.FSharp
 
 module DatabaseHelpers =
     let execNonQueryAsync connStr commandStr =
@@ -123,6 +127,7 @@ module DatabaseHelpers =
         }
 
     upsertFreeEmailDomainsAsync |> ignore
+
 
 let configureMarten (options: StoreOptions) =
     let connectionString =

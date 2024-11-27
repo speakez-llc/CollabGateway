@@ -11,6 +11,7 @@ open CollabGateway.Shared.API
 open UseElmish
 
 type private State = {
+    IsLoading: bool
     IsFormSubmitComplete: bool
     IsEmailVerified: bool
     ContactForm: ContactForm
@@ -21,7 +22,7 @@ type private State = {
     IsProcessing: bool
     InFormMessage: string
     IsSubmitActive: bool
-    CurrentStep: int
+    CurrentStep: int option
 }
 
 type private Msg =
@@ -49,7 +50,8 @@ let private init () : State * Cmd<Msg> =
         Email = ""
         MessageBody = ""
     }
-    let initialState = { IsFormSubmitComplete = false
+    let initialState = { IsLoading = true
+                         IsFormSubmitComplete = false
                          IsEmailVerified = false
                          ContactForm = initialContactForm
                          InFormMessage = "Feel Free To Reach Out"
@@ -59,7 +61,7 @@ let private init () : State * Cmd<Msg> =
                          IsWebmailDomain = None
                          IsProcessing = false
                          IsSubmitActive = false
-                         CurrentStep = 1 }
+                         CurrentStep = Some 1 }
 
     let streamToken : StreamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
 
@@ -189,20 +191,20 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         else
             { model with IsProcessing = false }, Cmd.none
     | FormSubmitted (Ok "FormSubmitted") ->
-        let newState = { model with IsFormSubmitComplete = true }
+        let newState = { model with IsFormSubmitComplete = true; IsLoading = false }
         if newState.IsEmailVerified then
-            { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
+            { newState with IsLoading = false; IsProcessing = false; CurrentStep = Some 3 }, Cmd.none
         else
-            { newState with CurrentStep = 2 }, Cmd.none
+            { newState with IsLoading = false; CurrentStep = Some 2 }, Cmd.none
     | FormSubmitted (Ok _) ->
         let newState = { model with IsFormSubmitComplete = true }
         if newState.IsEmailVerified then
-            { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
+            { newState with IsProcessing = false; CurrentStep = Some 3 }, Cmd.none
         else
-            { newState with CurrentStep = 2 }, Cmd.ofMsg UpdateVerificationToken
+            { newState with CurrentStep = Some 2 }, Cmd.ofMsg UpdateVerificationToken
     | FormSubmitted (Result.Error ex) ->
         if ex = ServerError.Exception "Ignore" then
-            model, Cmd.none
+            { model with IsLoading = false } , Cmd.none
         else
             parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
             { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
@@ -216,12 +218,12 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | EmailVerificationChecked isVerified ->
         let newState = { model with IsEmailVerified = isVerified }
         let nextCmd =
-            if not isVerified then
+            if not isVerified && newState.IsFormSubmitComplete then
                 Cmd.ofMsg CheckEmailVerification
             else
                 Cmd.none
         if newState.IsFormSubmitComplete && newState.IsEmailVerified then
-            { newState with CurrentStep = 3 }, Cmd.none
+            { newState with CurrentStep = Some 3 }, Cmd.none
         else
             newState, nextCmd
 
@@ -385,33 +387,47 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
     let renderCurrentStep () =
         match state.CurrentStep with
-        | 1 -> renderStep1()
-        | 2 -> renderStep2()
-        | 3 -> renderStep3()
+        | Some 1 -> renderStep1()
+        | Some 2 -> renderStep2()
+        | Some 3 -> renderStep3()
         | _ -> Html.none
 
     React.fragment [
         Html.div [
-                prop.className "flex justify-center items-center w-full p-4 rounded-3xl mx-auto"
-                prop.children [
-                    Html.div [
-                        prop.className "flex items-center flex-col steps w-full md:w-3/4 duration-900 ease-in-out max-w-screen-xl lg:steps-horizontal"
-                        prop.children [
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 1 then "step step-primary" else "step")
-                                prop.text "Submit Form"
-                            ]
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 2 then "step step-primary" else "step")
-                                prop.text "Verify Email"
-                            ]
-                            Html.div [
-                                prop.className (if state.CurrentStep >= 3 then "step step-primary" else "step")
-                                prop.text "Confirmation"
-                            ]
+            prop.className "flex justify-center items-center w-full p-4 rounded-3xl mx-auto"
+            prop.children [
+                Html.div [
+                    prop.className "flex items-center flex-col steps w-full md:w-3/4 duration-900 ease-in-out max-w-screen-xl lg:steps-horizontal"
+                    prop.children [
+                        Html.div [
+                            prop.className (if state.CurrentStep >= Some 1 then "step step-primary" else "step")
+                            prop.text "Submit Form"
+                        ]
+                        Html.div [
+                            prop.className (if state.CurrentStep >= Some 2 then "step step-primary" else "step")
+                            prop.text "Verify Email"
+                        ]
+                        Html.div [
+                            prop.className (if state.CurrentStep >= Some 3 then "step step-primary" else "step")
+                            prop.text "Confirmation"
                         ]
                     ]
                 ]
             ]
-        renderCurrentStep()
+        ]
+        if state.IsLoading then
+            Html.div [
+                prop.className "flex items-center space-x-2 justify-center mt-6"
+                prop.children [
+                    Html.div [
+                        prop.className "loading loading-dots loading-md text-warning"
+                    ]
+                    Html.span [
+                        prop.className "text-warning text-xl"
+                        prop.text "Loading..."
+                    ]
+                ]
+            ]
+        else
+            renderCurrentStep()
     ]

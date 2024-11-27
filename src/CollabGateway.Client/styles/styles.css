@@ -25,3 +25,23 @@
 .btn:hover {
     @apply border-2 border-primary;
 }
+
+.breadcrumb-select option {
+    white-space: pre-wrap;
+}
+
+.breadcrumb-select option::before {
+    content: attr(data-text);
+    display: block;
+    white-space: pre-wrap;
+}
+
+.breadcrumb-select option[data-text]::before {
+    content: attr(data-text);
+    display: block;
+    white-space: pre-wrap;
+}
+
+.breadcrumb-select option[data-text] {
+    display: none;
+}

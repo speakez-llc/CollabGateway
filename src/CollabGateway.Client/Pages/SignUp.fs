@@ -15,6 +15,7 @@ open Browser.Dom
 open Browser.Navigator
 
 type State = {
+    IsLoading: bool
     IsFormSubmitComplete: bool
     IsEmailVerified: bool
     IsEmailValid: bool option
@@ -35,11 +36,13 @@ type State = {
     VerificationToken: VerificationToken
     SubscriptionToken: SubscriptionToken
     GicsTaxonomy: GicsTaxonomy[] option
+    GicsQuery: string
 }
 
 type Msg =
     | AskForMessage of bool
     | GicsTaxonomyLoaded of GicsTaxonomy[]
+    | UpdateGicsQuery of string
     | UpdateName of string
     | UpdateEmail of string
     | UpdateJobTitle of string
@@ -129,6 +132,7 @@ let getVerificationToken streamToken email =
 let init () : State * Cmd<Msg> =
     let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
     let initialState = {
+        IsLoading = true
         Message = "Take The First Step!"
         FormSubmittedCount = 0
         IsProcessing = false
@@ -162,6 +166,7 @@ let init () : State * Cmd<Msg> =
         VerificationToken = Guid.Empty
         SubscriptionToken = Guid.Empty
         GicsTaxonomy = None
+        GicsQuery = ""
     }
 
     let checkFormSubmissionCmd =
@@ -216,6 +221,8 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         { model with IsIndustryModalOpen = not model.IsIndustryModalOpen }, Cmd.none
     | GicsTaxonomyLoaded taxonomy ->
         { model with GicsTaxonomy = Some taxonomy }, Cmd.none
+    | UpdateGicsQuery query ->
+        { model with GicsQuery = query }, Cmd.none
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name ->
         let newModel = { model with State.SignUpForm.Name = name }
@@ -292,23 +299,23 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         else
             { model with IsProcessing = false }, Cmd.none
     | FormSubmitted (Ok "FormSubmitted") ->
-        let newState = { model with IsFormSubmitComplete = true }
+        let newState = { model with IsFormSubmitComplete = true; IsLoading = false }
         if newState.IsEmailVerified then
             { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
         else
             { newState with CurrentStep = 2 }, Cmd.none
     | FormSubmitted (Ok _) ->
-        let newState = { model with IsFormSubmitComplete = true }
+        let newState = { model with IsFormSubmitComplete = true; IsLoading = false }
         if newState.IsEmailVerified then
             { newState with IsProcessing = false; CurrentStep = 3 }, Cmd.none
         else
             { newState with CurrentStep = 2 }, Cmd.ofMsg UpdateVerificationToken
     | FormSubmitted (Result.Error ex) ->
         if ex = ServerError.Exception "Ignore" then
-            model, Cmd.none
+            { model with IsLoading = false }, Cmd.none
         else
             parentDispatch (ShowToast ("Failed to send contact form", AlertLevel.Error))
-            { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false }, Cmd.none
+            { model with ResponseMessage = $"Failed to submit form: {ex.ToString()}"; IsProcessing = false; IsLoading = false }, Cmd.none
     | ProcessSmartFormRawContent clipboardText ->
         if clipboardText = "" then
             parentDispatch (ShowToast ("Clipboard is empty", AlertLevel.Warning))
@@ -387,7 +394,7 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | EmailVerificationChecked isVerified ->
         let newState = { model with IsEmailVerified = isVerified }
         let nextCmd =
-            if not isVerified then
+            if not isVerified && newState.IsFormSubmitComplete then
                 Cmd.ofMsg CheckEmailVerification
             else
                 Cmd.none
@@ -477,6 +484,15 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
         |> Array.distinctBy snd
         |> Array.sortBy fst
         |> Map.ofArray
+
+    let filteredOptions =
+        match state.GicsTaxonomy with
+        | Some taxonomy ->
+            taxonomy
+            |> generateBreadcrumbPaths
+            |> Map.toList
+            |> List.filter (fun (_, path) -> path.ToLower().Contains(state.GicsQuery.ToLower()))
+        | None -> []
 
     let renderStep1 () =
         Html.div [
@@ -671,11 +687,13 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                             prop.className "join flex w-full"
                                                             prop.children [
                                                                 Html.input [
-                                                                    prop.className "input input-bordered rounded-l-lg h-10 flex-grow pl-4 bg-base-200 join-item"
+                                                                    prop.className "input input-bordered rounded-l-lg flex-grow pl-4 bg-base-200 join-item overflow-x-auto"
                                                                     prop.placeholder "Industry"
                                                                     prop.style [
                                                                         style.overflowX.scroll
                                                                         style.maxHeight (length.px 40)
+                                                                        style.direction.rightToLeft
+                                                                        style.textAlign.left
                                                                     ]
                                                                     prop.value (
                                                                         match state.GicsTaxonomy with
@@ -939,19 +957,143 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                 ]
             ]
         ]
-        renderCurrentStep()
+        if state.IsLoading then
+            Html.div [
+                prop.className "flex items-center space-x-2 justify-center mt-6"
+                prop.children [
+                    Html.div [
+                        prop.className "loading loading-dots loading-md text-warning"
+                    ]
+                    Html.span [
+                        prop.className "text-warning text-xl"
+                        prop.text "Loading..."
+                    ]
+                ]
+            ]
+        else
+            renderCurrentStep()
         if state.IsIndustryModalOpen then
+            let sectorIcons = Map.ofList [
+                ("10", ("fas fa-oil-well", "Energy"))
+                ("15", ("fas fa-tools", "Materials"))
+                ("20", ("fas fa-industry", "Industrials"))
+                ("25", ("fas fa-car", "Consumer Discretionary"))
+                ("30", ("fas fa-shopping-cart", "Consumer Staples"))
+                ("35", ("fas fa-heartbeat", "Health Care"))
+                ("40", ("fas fa-university", "Financials"))
+                ("45", ("fas fa-computer", "Information Technology"))
+                ("50", ("fas fa-tower-cell", "Communication Services"))
+                ("55", ("fas fa-home", "Utilities"))
+                ("60", ("fas fa-building", "Real Estate"))
+                ("90", ("fas fa-building-ngo", "Non-Profit & NGOs"))
+                ("95", ("fas fa-globe", "Public Sector"))
+            ]
+
+            let getSectorIcon sectorCode =
+                match Map.tryFind sectorCode sectorIcons with
+                | Some (icon, _) -> icon
+                | None -> "fas fa-question-circle"
+
+            let getSectorName sectorCode =
+                match Map.tryFind sectorCode sectorIcons with
+                | Some (_, name) -> name
+                | None -> "Unknown Sector"
+
             Html.div [
                 prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
                 prop.children [
                     Html.div [
-                        prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto max-h-screen overflow-y-auto"
+                        prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-full max-w-7xl mx-auto max-h-screen overflow-y-auto"
                         prop.children [
                             Html.h2 [
                                 prop.className "text-xl font-bold mb-4"
                                 prop.text "Select Industry"
                             ]
+                            Html.div [
+                                prop.className "card bg-base-200 shadow-lg p-4 rounded-3xl mb-4"
+                                prop.children [
+                                    Html.h3 [
+                                        prop.className "text-lg font-bold"
+                                        prop.text "GICS Standard with Additional Sectors"
+                                    ]
+                                    Html.p [
+                                        prop.text "We use the GICS standard plus two additional sectors for Non-Profits & NGOs and Public Sector. Use the search field below to narrow your choices."
+                                    ]
+                                ]
+                            ]
+                            Html.div [
+                                prop.className "flex flex-wrap gap-x-4 justify-around"
+                                prop.children (
+                                    sectorIcons
+                                    |> Map.toList
+                                    |> List.map (fun (sectorCode, _) ->
+                                        Html.div [
+                                            prop.className "avatar flex flex-col items-center group"
+                                            prop.children [
+                                                Html.div [
+                                                    prop.className "rounded-full w-12 h-12 bg-orange-500 mb-6 relative"
+                                                    prop.style [
+                                                        style.display.flex
+                                                        style.alignItems.center
+                                                        style.justifyContent.center
+                                                    ]
+                                                    prop.title (getSectorName sectorCode)
+                                                    prop.onClick (fun _ ->
+                                                        let sectorName = getSectorName sectorCode
+                                                        dispatch (UpdateGicsQuery sectorName)
+                                                        let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
+                                                        selectElement.size <- selectElement.options.length
+                                                    )
+                                                    prop.children [
+                                                        Html.div [
+                                                            prop.className "absolute inset-0 rounded-full border-t-2 border-r-2 border-transparent group-hover:border-orange-300 group-hover:animate-spin"
+                                                        ]
+                                                        Html.i [
+                                                            prop.className (getSectorIcon sectorCode)
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    )
+                                )
+                            ]
+                            Html.div [
+                                prop.className "input-group join w-full mb-4"
+                                prop.children [
+                                    Html.input [
+                                        prop.className "input input-bordered join-item flex-grow"
+                                        prop.placeholder "Search Industry"
+                                        prop.value state.GicsQuery
+                                        prop.onChange (fun (ev: Browser.Types.Event) ->
+                                            let target = ev.target :?> Browser.Types.HTMLInputElement
+                                            dispatch (UpdateGicsQuery target.value)
+                                            let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
+                                            let filteredOptionsCount =
+                                                match state.GicsTaxonomy with
+                                                | Some taxonomy ->
+                                                    taxonomy
+                                                    |> generateBreadcrumbPaths
+                                                    |> Map.toList
+                                                    |> List.filter (fun (_, path) -> path.ToLower().Contains(target.value.ToLower()))
+                                                    |> List.length
+                                                | None -> 0
+                                            selectElement.size <- if filteredOptionsCount > 0 then filteredOptionsCount else 1
+                                        )
+                                    ]
+                                    Html.button [
+                                        prop.className "btn join-item btn-secondary"
+                                        prop.text "Clear Search"
+                                        prop.onClick (fun _ ->
+                                            dispatch (UpdateGicsQuery "")
+                                            let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
+                                            selectElement.size <- 1
+                                        )
+                                    ]
+                                ]
+                            ]
                             Html.select [
+                                prop.className "w-full max-h-60 overflow-y-auto breadcrumb-select"
                                 prop.value state.SignUpForm.Industry
                                 prop.onChange (fun (ev: Browser.Types.Event) ->
                                     let target = ev.target :?> Browser.Types.HTMLSelectElement
@@ -959,11 +1101,15 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     updateTaxonomy selectedCode
                                 )
                                 prop.children (
-                                    Html.option [ prop.value ""; prop.text "Select Industry" ] ::
-                                    (state.GicsTaxonomy.Value
-                                     |> generateBreadcrumbPaths
-                                     |> Map.toList
-                                     |> List.map (fun (code, path) -> Html.option [ prop.value code; prop.text path ])
+                                    Html.option [ prop.value ""; prop.text "Select an Industry" ] ::
+                                    (filteredOptions
+                                     |> List.mapi (fun index (code, path) ->
+                                         Html.option [
+                                             prop.value code
+                                             prop.text path
+                                             prop.className (if index % 2 = 0 then "bg-base-100" else "bg-base-300")
+                                         ]
+                                     )
                                     )
                                 )
                             ]
