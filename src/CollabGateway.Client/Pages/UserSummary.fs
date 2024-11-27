@@ -10,6 +10,25 @@ open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
 open UseElmish
 
+let generateBreadcrumbPaths (taxonomy: GicsTaxonomy[]) =
+    taxonomy
+    |> Array.collect (fun g ->
+        let sectorPath = [g.SectorName]
+        let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
+        let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
+        let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
+        let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
+        [|
+            (g.SectorCode, String.concat " > " sectorPath)
+            (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
+            (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
+            (g.SubIndustryCode, String.concat " > " fullPath)
+        |]
+    )
+    |> Array.distinctBy snd
+    |> Array.sortBy fst
+    |> Map.ofArray
+
 type State = {
     FullUserStream: FullUserStreamProjection option
     TimelineStartEnd: int
@@ -168,7 +187,13 @@ let renderSmartFormReturn (form: SignUpForm) =
         ]
     ]
 
-let renderSignUpForm (form: SignUpForm) =
+let renderSignUpForm (form: SignUpForm) (taxonomy: GicsTaxonomy[]) =
+    let breadcrumbPaths = generateBreadcrumbPaths taxonomy
+    let industryPath =
+        match Map.tryFind form.Industry breadcrumbPaths with
+        | Some path -> path
+        | None -> form.Industry
+
     let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
         Html.div [
             prop.className "flex space-x-4"
@@ -219,7 +244,7 @@ let renderSignUpForm (form: SignUpForm) =
                 prop.children [
                     renderRow "Name" form.Name "Email" form.Email
                     renderRow "Job Title" form.JobTitle "Phone" form.Phone
-                    renderRow "Department" form.Department "Industry" form.Industry
+                    renderRow "Department" form.Department "Industry" industryPath
                     renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
                     renderRow "City" form.City "State or Province" form.StateProvince
                     renderRow "Postal Code" form.PostCode "Country" form.Country
@@ -415,7 +440,13 @@ let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit
                 | FullUserStreamEvent.DataPolicyResetButtonClicked date -> (date, "Data Policy Reset Button Clicked", Html.none)
                 | FullUserStreamEvent.SummaryActivityButtonClicked date -> (date, "Summary Activity Button Clicked", Html.none)
                 | FullUserStreamEvent.ContactFormSubmitted (date, form) -> (date, "Contact Form Submitted", renderContactForm form)
-                | FullUserStreamEvent.SignUpFormSubmitted (date, form) -> (date, "SignUp Form Submitted", renderSignUpForm form)
+                | FullUserStreamEvent.SignUpFormSubmitted (date, form) ->
+                    let loadTaxonomyAsync () = async {
+                        let! taxonomy = service.LoadGicsTaxonomy()
+                        return taxonomy
+                    }
+                    let taxonomy = Async.RunSynchronously (loadTaxonomyAsync ())
+                    (date, "SignUp Form Submitted", renderSignUpForm form taxonomy)
                 | FullUserStreamEvent.SmartFormSubmitted (date, input) ->
                     let renderSmartFormSubmitted (input: string) =
                         Html.div [
@@ -442,6 +473,8 @@ let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit
                 | FullUserStreamEvent.SubscribeStatusAppended (date, status) -> (date, "Subscribe Status Appended", Html.text (sprintf "%A" status))
                 | FullUserStreamEvent.UserClientIPDetected (date, geoInfo) -> (date, "User ClientIP Detected", renderGeoInfo geoInfo)
                 | FullUserStreamEvent.UserClientIPUpdated (date, geoInfo) -> (date, "User ClientIP Updated", renderGeoInfo geoInfo)
+                | FullUserStreamEvent.ContactActivityButtonClicked date -> (date, "Contact Activity Button Clicked", Html.none)
+                | FullUserStreamEvent.SignUpActivityButtonClicked date -> (date, "Sign Up Activity Button Clicked", Html.none)
             (date, title, description)
         )
 

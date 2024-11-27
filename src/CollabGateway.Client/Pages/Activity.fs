@@ -10,9 +10,29 @@ open CollabGateway.Shared.API
 open CollabGateway.Client.ViewMsg
 open UseElmish
 
+let generateBreadcrumbPaths (taxonomy: GicsTaxonomy[]) =
+    taxonomy
+    |> Array.collect (fun g ->
+        let sectorPath = [g.SectorName]
+        let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
+        let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
+        let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
+        let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
+        [|
+            (g.SectorCode, String.concat " > " sectorPath)
+            (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
+            (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
+            (g.SubIndustryCode, String.concat " > " fullPath)
+        |]
+    )
+    |> Array.distinctBy snd
+    |> Array.sortBy fst
+    |> Map.ofArray
+
 type State = {
     UserSummary: UserSummaryAggregate option
     TimelineStartEnd: int
+    GicsTaxonomy: GicsTaxonomy[] option
 }
 
 type Msg =
@@ -21,19 +41,20 @@ type Msg =
     | FetchUserSummaryFailed of exn
     | IncrementTimelineStartEnd
     | ResetTimelineStartEnd
+    | GicsTaxonomyLoaded of GicsTaxonomy[]
 
 let init () =
-    let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
 
     let initialState = {
         UserSummary = None
         TimelineStartEnd = 0
+        GicsTaxonomy = None
     }
 
-    let fetchUserSummaryCmd =
-        Cmd.OfAsync.perform (fun () -> service.RetrieveUserSummary streamToken) () UserSummaryReceived
+    let getGicsTaxonomyCmd =
+        Cmd.OfAsync.perform (fun () -> service.LoadGicsTaxonomy ()) () GicsTaxonomyLoaded
 
-    initialState, fetchUserSummaryCmd
+    initialState, getGicsTaxonomyCmd
 
 let update (msg: Msg) (model: State) : State * Cmd<Msg> =
     match msg with
@@ -49,6 +70,8 @@ let update (msg: Msg) (model: State) : State * Cmd<Msg> =
         { model with TimelineStartEnd = model.TimelineStartEnd + 1 }, Cmd.none
     | ResetTimelineStartEnd ->
         { model with TimelineStartEnd = 0 }, Cmd.none
+    | GicsTaxonomyLoaded taxonomy ->
+        { model with GicsTaxonomy = Some taxonomy }, Cmd.ofMsg FetchUserSummary
 
 let renderContactForm (form: ContactForm) =
     let calculateRows (text: string) =
@@ -102,8 +125,14 @@ let renderContactForm (form: ContactForm) =
         ]
     ]
 
-let renderSignUpForm (form: SignUpForm) =
-    let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
+let renderSignUpForm (form: SignUpForm) (taxonomy: GicsTaxonomy[]) =
+    let breadcrumbPaths = generateBreadcrumbPaths taxonomy
+    let industryPath =
+        match Map.tryFind form.Industry breadcrumbPaths with
+        | Some path -> path
+        | None -> form.Industry
+
+    let renderRow (label1: string) (value1: string) (label2: string) (value2: string) (isIndustry: bool) =
         Html.div [
             prop.className "flex space-x-4"
             prop.children [
@@ -132,18 +161,42 @@ let renderSignUpForm (form: SignUpForm) =
                             prop.className "form-control bg-base-200 input-bordered input-ghost input-s p-2 rounded-xl w-full"
                             prop.readOnly true
                             prop.value value2
+                            if isIndustry then
+                                prop.style [
+                                    style.overflowX.scroll
+                                    style.maxHeight (length.px 40)
+                                    style.direction.rightToLeft
+                                    style.textAlign.left
+                                ]
                         ]
                     ]
                 ]
             ]
         ]
+
     Html.div [
-        renderRow "Name" form.Name "Email" form.Email
-        renderRow "Job Title" form.JobTitle "Phone" form.Phone
-        renderRow "Department" form.Department "Industry" form.Industry
-        renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2
-        renderRow "City" form.City "State or Province" form.StateProvince
-        renderRow "Postal Code" form.PostCode "Country" form.Country
+        prop.className "collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+        prop.children [
+            Html.input [
+                prop.type' "checkbox"
+                prop.defaultChecked true
+            ]
+            Html.div [
+                prop.className "collapse-title bg-base-200 font-medium text-gold"
+                prop.text "Sign Up Information"
+            ]
+            Html.div [
+                prop.className "collapse-content"
+                prop.children [
+                    renderRow "Name" form.Name "Email" form.Email false
+                    renderRow "Job Title" form.JobTitle "Phone" form.Phone false
+                    renderRow "Department" form.Department "Industry" industryPath true
+                    renderRow "Street Address 1" form.StreetAddress1 "Street Address 2" form.StreetAddress2 false
+                    renderRow "City" form.City "State or Province" form.StateProvince false
+                    renderRow "Postal Code" form.PostCode "Country" form.Country false
+                ]
+            ]
+        ]
     ]
 
 let timelineItem (index: int) (time: string) (title: string) (content: ReactElement) =
@@ -172,7 +225,7 @@ let timelineItem (index: int) (time: string) (title: string) (content: ReactElem
         Html.hr []
     ]
 
-let renderTimeline (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
+let renderTimeline (state: State) (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
     dispatch ResetTimelineStartEnd
 
     let events = [
@@ -188,19 +241,26 @@ let renderTimeline (userSummary: UserSummaryAggregate) (dispatch: Msg -> unit) =
             yield (date, 0, "Latest Contact Form Sent", renderContactForm form)
         | None -> ()
 
-        match userSummary.SignUpFormSubmitted with
-        | Some (date, form) ->
-            yield (date, 1, "Latest Sign Up Form Sent", renderSignUpForm form)
-        | None -> ()
+        match state.GicsTaxonomy with
+        | Some taxonomy ->
+            match userSummary.SignUpFormSubmitted with
+            | Some (date, form) ->
+                yield (date, 1, "Latest Sign Up Form Sent", renderSignUpForm form taxonomy)
+            | None -> ()
+        | None ->
+            yield (DateTime.Now, 1, "Loading Sign Up Form...", Html.div [
+                prop.className "loading loading-dots loading-md text-warning"
+                prop.text "Loading GICS Taxonomy..."
+            ])
 
         match userSummary.EmailStatus with
         | Some (date, email, status) ->
-            yield (date, 0, $"Email Status: %s{status.ToString()}", Html.text $"email: %s{email}")
+            yield (date, 0, $"Email Status: {status.ToString()}", Html.text $"email: {email}")
         | None -> ()
 
         match userSummary.SubscribeStatus with
         | Some (date, email, status) ->
-            yield (date, 1, $"Marketing Email Status: %s{status.ToString()}", Html.text $"email: %s{email}")
+            yield (date, 1, $"Marketing Email Status: {status.ToString()}", Html.text $"email: {email}")
         | None -> ()
     ]
 
@@ -234,7 +294,7 @@ let IndexView (parentDispatch: ViewMsg -> unit) =
                         prop.text "User Activity Summary"
                     ]
                     match state.UserSummary with
-                    | Some summary -> renderTimeline summary dispatch
+                    | Some summary -> renderTimeline state summary dispatch
                     | None -> Html.div [
                                         prop.className "flex items-center space-x-2 justify-center"
                                         prop.children [
