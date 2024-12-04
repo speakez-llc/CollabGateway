@@ -147,7 +147,18 @@ let filterEventsByInterval (interval: (IntervalStart * IntervalEnd) option): Asy
         let filteredEvents =
             match interval with
             | Some (start, ``end``) ->
-                allEvents |> Seq.filter (fun e -> e.Timestamp > start && e.Timestamp <= ``end``)
+                allEvents
+                |> Seq.filter (fun e -> e.Timestamp > start && e.Timestamp <= ``end``)
+                |> Seq.filter (fun e ->
+                    match e.Data with
+                    | :? FormEventCase as formEvent ->
+                        match formEvent with
+                        | ContactFormSubmitted { Form = { Email = email } }
+                        | SignUpFormSubmitted { Form = { Email = email } } ->
+                            not (email.EndsWith("@rowerconsulting.com"))
+                        | _ -> true
+                    | _ -> true
+                )
             | None -> allEvents
         return filteredEvents
     }
