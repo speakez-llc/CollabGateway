@@ -19,7 +19,6 @@ open Npgsql
 let private apiKey = Environment.GetEnvironmentVariable("NOTIFICATION_KEY")
 let private serverName =
     let value = Environment.GetEnvironmentVariable("VITE_BACKEND_URL")
-    printfn $"Raw VITE_BACKEND_URL environment variable: %s{value}"
     match value with
     | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
     | value -> value

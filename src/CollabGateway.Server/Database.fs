@@ -1,11 +1,9 @@
 ﻿module CollabGateway.Server.Database
 
 open System
-open System.Data.Common
-open System.Threading
-open System.Threading.Tasks
 open System.IO
 open System.Net.Http
+open System.Threading.Tasks
 open FSharp.Data
 open Marten
 open CollabGateway.Shared.API
@@ -14,8 +12,8 @@ open Newtonsoft.Json
 open Weasel.Core
 open JasperFx.CodeGeneration
 open Npgsql
-open Npgsql.FSharp
 
+[<AutoOpen>]
 module DatabaseHelpers =
     let execNonQueryAsync connStr commandStr =
         task {
@@ -106,7 +104,7 @@ module DatabaseHelpers =
                 do! execNonQueryAsync connStr commandStr
         }
 
-    insertGicsTaxonomyAsync |> ignore
+
 
     let upsertFreeEmailDomainsAsync =
         task {
@@ -126,8 +124,9 @@ module DatabaseHelpers =
                 Console.WriteLine "No new Webmail Domain rows to upsert."
         }
 
-    upsertFreeEmailDomainsAsync |> ignore
 
+    Task.Run(fun () -> upsertFreeEmailDomainsAsync :> Task) |> ignore
+    Task.Run(fun () -> insertGicsTaxonomyAsync :> Task) |> ignore
 
 let configureMarten (options: StoreOptions) =
     let connectionString =
