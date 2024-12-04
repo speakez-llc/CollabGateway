@@ -140,6 +140,17 @@ let retrieveUserNameProjection (): Async<UserStreamProjection> =
         return userStreamInfos |> List.ofArray
     }
 
+let filterEventsByDomain (domain: string) (events: seq<EventEnvelope>) =
+    events
+    |> Seq.choose (fun e ->
+        match e.Data with
+        | :? FormEventCase as formEvent ->
+            match formEvent with
+            | ContactFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> None
+            | SignUpFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> None
+            | _ -> Some e
+        | _ -> Some e)
+
 let filterEventsByInterval (interval: (IntervalStart * IntervalEnd) option): Async<seq<Marten.Events.IEvent>> =
     async {
         use session = Database.store.LightweightSession()
@@ -320,8 +331,12 @@ let retrieveUniqueClientIPDomains (): Async<(string * int) list> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
-        let domainCounts =
+        let eventEnvelopes =
             allEvents
+            |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
+        let filteredEvents = filterEventsByDomain "rowerconsulting.com" eventEnvelopes
+        let domainCounts =
+            filteredEvents
             |> Seq.choose (fun e ->
                 match e.Data with
                 | :? ClientIPEventCase as eventCase ->
@@ -339,8 +354,12 @@ let retrieveClientIPLocations (): Async<(string * float * float * int) list> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
-        let cityLatLons =
+        let eventEnvelopes =
             allEvents
+            |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
+        let filteredEvents = filterEventsByDomain "rowerconsulting.com" eventEnvelopes
+        let cityLatLons =
+            filteredEvents
             |> Seq.choose (fun e ->
                 match e.Data with
                 | :? ClientIPEventCase as eventCase ->
