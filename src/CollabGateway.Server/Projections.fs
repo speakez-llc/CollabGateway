@@ -36,6 +36,8 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
                     | PartnersPageVisited _ -> FullUserStreamEvent.PartnersPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
                     | DataPolicyPageVisited _ -> FullUserStreamEvent.DataPolicyPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
                     | SummaryActivityPageVisited _ -> FullUserStreamEvent.SummaryActivityPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | OverviewPageVisited _ -> FullUserStreamEvent.OverviewPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
+                    | UserSummaryPageVisited _ -> FullUserStreamEvent.UserSummaryPageVisited (Aggregates.unwrapEventTimeStamp e.Data)
                 | :? ButtonEventCase as eventCase ->
                     match eventCase with
                     | HomeButtonClicked _ -> FullUserStreamEvent.HomeButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
@@ -67,6 +69,8 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
                     | SummaryActivityButtonClicked _ -> FullUserStreamEvent.SummaryActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                     | ContactActivityButtonClicked _ -> FullUserStreamEvent.ContactActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                     | SignUpActivityButtonClicked _ -> FullUserStreamEvent.SignUpActivityButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | OverviewButtonClicked _ -> FullUserStreamEvent.OverviewButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
+                    | UserSummaryButtonClicked _ -> FullUserStreamEvent.UserSummaryButtonClicked (Aggregates.unwrapEventTimeStamp e.Data)
                 | :? FormEventCase as eventCase ->
                     match eventCase with
                     | ContactFormSubmitted { Form = form } -> FullUserStreamEvent.ContactFormSubmitted (Aggregates.unwrapEventTimeStamp e.Data, form)
@@ -160,16 +164,6 @@ let filterEventsByInterval (interval: (IntervalStart * IntervalEnd) option): Asy
             | Some (start, ``end``) ->
                 allEvents
                 |> Seq.filter (fun e -> e.Timestamp > start && e.Timestamp <= ``end``)
-                |> Seq.filter (fun e ->
-                    match e.Data with
-                    | :? FormEventCase as formEvent ->
-                        match formEvent with
-                        | ContactFormSubmitted { Form = { Email = email } }
-                        | SignUpFormSubmitted { Form = { Email = email } } ->
-                            not (email.EndsWith("@rowerconsulting.com"))
-                        | _ -> true
-                    | _ -> true
-                )
             | None -> allEvents
         return filteredEvents
     }
@@ -334,9 +328,8 @@ let retrieveUniqueClientIPDomains (): Async<(string * int) list> =
         let eventEnvelopes =
             allEvents
             |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
-        let filteredEvents = filterEventsByDomain "rowerconsulting.com" eventEnvelopes
         let domainCounts =
-            filteredEvents
+            eventEnvelopes
             |> Seq.choose (fun e ->
                 match e.Data with
                 | :? ClientIPEventCase as eventCase ->
@@ -357,9 +350,8 @@ let retrieveClientIPLocations (): Async<(string * float * float * int) list> =
         let eventEnvelopes =
             allEvents
             |> Seq.map (fun e -> { StreamId = e.StreamId; Timestamp = e.Timestamp; Data = e.Data })
-        let filteredEvents = filterEventsByDomain "rowerconsulting.com" eventEnvelopes
         let cityLatLons =
-            filteredEvents
+            eventEnvelopes
             |> Seq.choose (fun e ->
                 match e.Data with
                 | :? ClientIPEventCase as eventCase ->

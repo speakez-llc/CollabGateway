@@ -211,6 +211,10 @@ type FullUserStreamEvent =
     | UserClientIPUpdated of EventDateTime * GeoInfo
     | ContactActivityButtonClicked of EventDateTime
     | SignUpActivityButtonClicked of EventDateTime
+    | OverviewButtonClicked of EventDateTime
+    | OverviewPageVisited of EventDateTime
+    | UserSummaryButtonClicked of EventDateTime
+    | UserSummaryPageVisited of EventDateTime
 
 type FullUserStreamProjection = FullUserStreamEvent list
 
