@@ -324,7 +324,7 @@ let markerWithPopover (marker: MarkerProps)  =
         prop.children [
             Html.i [
                 prop.key marker.City.Name
-                prop.className [ "fa"; "fa-location-dot"; "fa-2x" ]
+                prop.className [ "fa"; "fa-map-pin" ]
                 prop.style [
                     style.color.darkBlue
                 ]
@@ -368,7 +368,7 @@ let GeoMap (geoInfo: (string * float * float * int) list) =
     let cities = geoInfo |> List.map (fun (name, lat, lng, userCount) -> { Name = name; Latitude = lat; Longitude = lng; UserCount = userCount })
     let initialCenter = (39.8283, -98.5795)
 
-    let zoom, setZoom = React.useState 4
+    let zoom, setZoom = React.useState 3
     let center, setCenter = React.useState initialCenter
 
     Html.div [
@@ -381,6 +381,7 @@ let GeoMap (geoInfo: (string * float * float * int) list) =
                 map.center center
                 map.zoom zoom
                 map.height 500
+                map.zoomSnap true
                 map.onBoundsChanged (fun args -> setZoom (int args.zoom); setCenter args.center)
                 map.markers [ for city in cities -> renderMarker city ]
             ]
