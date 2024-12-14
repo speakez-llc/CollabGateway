@@ -152,15 +152,19 @@ let getGeoInfo (clientIP: ClientIP) =
         else
             let url = $"https://geo.ipify.org/api/v2/country,city?apiKey=%s{geoipifyToken}&ipAddress=%s{clientIP}"
             use httpClient = new HttpClient()
-            let! response = httpClient.GetStringAsync(url)
-            try
-                let geoInfo = JsonConvert.DeserializeObject<GeoInfo>(response)
-                return geoInfo
-            with
-            | ex -> return failwith $"Failed to deserialize GeoInfo: {ex.Message}"
+            let! response = httpClient.GetAsync(url)
+            if response.IsSuccessStatusCode then
+                let! responseBody = response.Content.ReadAsStringAsync()
+                try
+                    let geoInfo = JsonConvert.DeserializeObject<GeoInfo>(responseBody)
+                    return geoInfo
+                with
+                | ex -> return failwith $"Failed to deserialize GeoInfo: {ex.Message}"
+            else
+                let! responseBody = response.Content.ReadAsStringAsync()
+                return failwith $"GeoIP API request failed: {response.StatusCode} - {responseBody}"
     }
     |> Async.AwaitTask
-
 
 
 let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
