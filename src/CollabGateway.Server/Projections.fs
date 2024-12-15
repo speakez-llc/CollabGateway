@@ -88,15 +88,31 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
             |> Seq.toList
         return allStreamEvents
     }
+let createStreamFilterList (domain: string) (events: seq<Marten.Events.IEvent>) =
+    // Filter events where the email address contains the specified domain
+    events
+    |> Seq.choose (fun e ->
+        match e.Data with
+        | :? FormEventCase as formEvent ->
+            match formEvent with
+            | ContactFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> Some e.StreamId
+            | SignUpFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> Some e.StreamId
+            | _ -> None
+        | _ -> None)
+    |> Seq.distinct
+    |> Set.ofSeq
 
 let retrieveAllUserStreams (): Async<StreamToken list> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
+        let domainStreamIds = createStreamFilterList "@rowerconsulting.com" allEvents
         let streamTokens =
             allEvents
-            |> Seq.sortByDescending (_.Timestamp)
-            |> Seq.map (fun (e: Marten.Events.IEvent) -> e.StreamId)
+            |> Seq.filter (fun e -> not (domainStreamIds.Contains e.StreamId))
+            |> Seq.filter (fun e -> e.Data :? StreamEventCase)
+            |> Seq.sortByDescending (fun e -> e.Timestamp)
+            |> Seq.map (fun e -> e.StreamId)
             |> Seq.distinct
             |> Seq.toList
         return streamTokens
@@ -144,16 +160,6 @@ let retrieveUserNameProjection (): Async<UserStreamProjection> =
         return userStreamInfos |> List.ofArray
     }
 
-let filterEventsByDomain (domain: string) (events: seq<EventEnvelope>) =
-    events
-    |> Seq.choose (fun e ->
-        match e.Data with
-        | :? FormEventCase as formEvent ->
-            match formEvent with
-            | ContactFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> None
-            | SignUpFormSubmitted { Form = { Email = email } } when email.Contains(domain) -> None
-            | _ -> Some e
-        | _ -> Some e)
 
 let filterEventsByInterval (interval: (IntervalStart * IntervalEnd) option): Async<seq<Marten.Events.IEvent>> =
     async {
