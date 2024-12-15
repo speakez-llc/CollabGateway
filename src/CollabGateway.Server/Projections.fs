@@ -207,13 +207,14 @@ let retrieveTotalDataPolicyDeclined (interval: (IntervalStart * IntervalEnd) opt
                 | :? ButtonEventCase as eventCase -> Some (e.StreamId, eventCase, e.Timestamp)
                 | _ -> None)
             |> Seq.groupBy (fun (streamId, _, _) -> streamId)
-            |> Seq.choose (fun (_, events) ->
+            |> Seq.choose (fun (streamId, events) ->
                 events
                 |> Seq.sortByDescending (fun (_, _, timestamp) -> timestamp)
                 |> Seq.tryHead
                 |> function
-                    | Some (_, DataPolicyDeclineButtonClicked _, _) -> Some ()
+                    | Some (_, DataPolicyDeclineButtonClicked _, _) -> Some streamId
                     | _ -> None)
+            |> Seq.distinct
             |> Seq.length
         return declinedEvents
     }
