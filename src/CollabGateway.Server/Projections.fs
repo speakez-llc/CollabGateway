@@ -214,6 +214,8 @@ let retrieveTotalDataPolicyDeclined (interval: (IntervalStart * IntervalEnd) opt
                 |> function
                     | Some (_, DataPolicyDeclineButtonClicked _, _) -> Some ()
                     | _ -> None)
+            |> Seq.map (fun (streamId, _, _) -> streamId)
+            |> Seq.distinct
             |> Seq.length
         return declinedEvents
     }
