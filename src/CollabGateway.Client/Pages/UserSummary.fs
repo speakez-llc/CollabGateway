@@ -72,6 +72,7 @@ let renderContactForm (form: ContactForm) =
         prop.children [
             Html.input [
                 prop.type' "checkbox"
+                prop.defaultChecked true
             ]
             Html.div [
                 prop.className "collapse-title bg-base-200 font-medium text-gold"
@@ -168,6 +169,7 @@ let renderSmartFormReturn (form: SignUpForm) =
         prop.children [
             Html.input [
                 prop.type' "checkbox"
+                prop.defaultChecked true
             ]
             Html.div [
                 prop.className "collapse-title bg-base-200 font-medium text-gold"
@@ -342,6 +344,7 @@ let renderGeoInfo (geoInfo: GeoInfo) =
         prop.children [
             Html.input [
                 prop.type' "checkbox"
+                prop.defaultChecked true
             ]
             Html.div [
                 prop.className "collapse-title bg-base-200 font-medium text-gold"
