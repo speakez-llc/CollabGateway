@@ -514,7 +514,7 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                 prop.className "flex items-center space-x-2 justify-center"
                                 prop.children [
                                     Html.div [
-                                        prop.className "loading loading-ring loading-md text-warning animate-spin"
+                                        prop.className "loading loading-ring loading-lg text-warning animate-spin"
                                     ]
                                     Html.span [
                                         prop.className "text-warning text-xl"
@@ -528,10 +528,10 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                     prop.className "flex items-center space-x-2 justify-center"
                                     prop.children [
                                         Html.div [
-                                            prop.className "loading loading-ring loading-md text-warning animate-spin"
+                                            prop.className "loading loading-bars loading-sm text-info"
                                         ]
                                         Html.span [
-                                            prop.className "text-warning text-xl"
+                                            prop.className "text-info text-xl"
                                             prop.text "Select a user..."
                                         ]
                                     ]
