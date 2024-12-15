@@ -123,7 +123,6 @@ module DatabaseHelpers =
                 Console.WriteLine "No new Webmail Domain rows to upsert."
         }
 
-
     Task.Run(fun () -> upsertFreeEmailDomainsAsync :> Task) |> ignore
     Task.Run(fun () -> insertGicsTaxonomyAsync :> Task) |> ignore
 
