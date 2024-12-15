@@ -425,6 +425,16 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                GeoMap state.GeoInfo
                             ]
                         ]
+                    else
+                        Html.div [
+                            prop.className "flex items-center space-x-2 justify-center"
+                            prop.children [
+                                Html.span [
+                                    prop.className "text-warning text-xl"
+                                    prop.text "You do not have permission to view this page."
+                                ]
+                            ]
+                        ]
                 ]
             ]
         ]

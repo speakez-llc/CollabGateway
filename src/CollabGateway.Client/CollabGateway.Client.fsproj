@@ -19,8 +19,8 @@
         <Compile Include="Pages\Contact.fs" />
         <Compile Include="Pages\Activity.fs" />
         <Compile Include="Pages\UserSummary.fs" />
-        <Compile Include="Pages\Overview.fs" />
         <Compile Include="Pages\Housekeeping.fs" />
+        <Compile Include="Pages\Overview.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />
     </ItemGroup>

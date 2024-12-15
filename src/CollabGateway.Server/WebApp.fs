@@ -3,6 +3,7 @@
 open System
 open System.Net
 open System.Net.Http
+open CollabGateway.Server.Database
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -46,7 +47,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
         if String.IsNullOrEmpty(apiKey) then
             return! ServerError.failwith (ServerError.Exception "Azure OpenAI API key is not set.")
         else
-            Database.eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
+            eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
             let url = "https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview"
             use httpClient = new HttpClient()
             httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
@@ -83,7 +84,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                 let jsonResponse = JObject.Parse(responseBody)
                 let messageContent = jsonResponse.SelectToken("choices[0].message.content").ToString()
                 let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
-                Database.eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
+                eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
                 return form
             else
                 return! ServerError.failwith (ServerError.Exception $"Call failed to inference: {response.StatusCode} - {responseBody}")
@@ -91,42 +92,42 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
     |> Async.AwaitTask
 
 let establishStreamToken (timeStamp: EventDateTime, streamToken: StreamToken) = async {
-    Database.eventProcessor.Post(EstablishStreamToken (timeStamp, streamToken))
+    eventProcessor.Post(EstablishStreamToken (timeStamp, streamToken))
     }
 
 let appendUnsubscribeStatus (timeStamp: EventDateTime, streamToken: StreamToken, subscribeToken: SubscriptionToken, emailAddress: EmailAddress, status: SubscribeStatus) = async {
-    Database.eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subscribeToken, emailAddress, status))
+    eventProcessor.Post(ProcessUnsubscribeStatus (timeStamp, streamToken, subscribeToken, emailAddress, status))
     Console.WriteLine $"Event Store unsubscribe link: {serverName}/api/prefs/confirm?token={subscribeToken}&api-key={apiKey}"
     }
 
 let appendEmailStatus (timeStamp: EventDateTime, streamToken: StreamToken, verificationToken: VerificationToken, email: EmailAddress, status: EmailStatus) = async {
-    Database.eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, verificationToken, email, status))
+    eventProcessor.Post(ProcessEmailStatus (timeStamp, streamToken, verificationToken, email, status))
     Console.WriteLine $"Event Store verification link: {serverName}/api/prefs/confirm?token={verificationToken}&api-key={apiKey}"
     }
 
 let processStreamClose (timeStamp: EventDateTime, streamToken: StreamToken) = async {
-    Database.eventProcessor.Post(ProcessStreamClose (timeStamp, streamToken))
+    eventProcessor.Post(ProcessStreamClose (timeStamp, streamToken))
     }
 
 let processPageVisited (timeStamp: EventDateTime, streamToken: StreamToken, pageName: PageName) = async {
-    Database.eventProcessor.Post(ProcessPageVisited (timeStamp, streamToken, pageName))
+    eventProcessor.Post(ProcessPageVisited (timeStamp, streamToken, pageName))
     }
 
 let processButtonClicked (timeStamp: EventDateTime, streamToken: StreamToken, buttonName: ButtonName) = async {
-    Database.eventProcessor.Post(ProcessButtonClicked (timeStamp, streamToken, buttonName))
+    eventProcessor.Post(ProcessButtonClicked (timeStamp, streamToken, buttonName))
     }
 
 let processUserClientIP (timeStamp: EventDateTime,streamToken: StreamToken,  clientIP: ClientIP) = async {
-    Database.eventProcessor.Post(EstablishUserClientIP (timeStamp, streamToken, clientIP))
+    eventProcessor.Post(EstablishUserClientIP (timeStamp, streamToken, clientIP))
 }
 
 let processContactForm (timeStamp: EventDateTime,streamToken: StreamToken,  form: ContactForm) = async {
-    Database.eventProcessor.Post(ProcessContactForm (timeStamp, streamToken, form))
+    eventProcessor.Post(ProcessContactForm (timeStamp, streamToken, form))
     return "Ok"
 }
 
 let processSignUpForm (timeStamp: EventDateTime, streamToken: StreamToken, form: SignUpForm) = async {
-    Database.eventProcessor.Post(ProcessSignUpForm (timeStamp, streamToken, form))
+    eventProcessor.Post(ProcessSignUpForm (timeStamp, streamToken, form))
     return "Ok"
 }
 
@@ -203,6 +204,8 @@ let service = {
     SendEmailVerification = sendEmailVerification
     CheckIfAdmin = Aggregates.retrieveAdminStatus
     LoadGicsTaxonomy = getGicsTaxonomyAsync
+    RetrieveCountOfEmptyStreams = Projections.retrieveCountOfEmptyStreams
+    ArchiveEmptyStreams = archiveEmptyStreams
 }
 
 let webApp : HttpHandler =

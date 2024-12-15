@@ -36,7 +36,7 @@ let DataPolicyModal (state: DataPolicyChoice) (parentDispatch: ViewMsg -> unit) 
                             | _ ->
                                 Html.div [
                                     Html.p [
-                                        prop.text "We use in-house telemetry systems to operate this site and manage contact with you. No third-party cookies or outside site tracking of any kind are used. Our data collection is scoped to the following:"
+                                        prop.text "We use in-house telemetry systems to operate this site and manage contact with you. Other than collecting source IP address and related public information, no third-party cookies or outside site tracking of any kind are used. Our data collection is scoped to the following:"
                                     ]
                                     Html.ul [
                                         prop.className "list-disc ml-6 pt-4 pb-4"

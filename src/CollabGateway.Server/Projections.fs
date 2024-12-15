@@ -2,6 +2,7 @@
 
 open System
 open System.Threading.Tasks
+open CollabGateway.Server.Database
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 
@@ -88,7 +89,7 @@ let retrieveFullUserStreamProjection (streamToken: StreamToken): Async<FullUserS
             |> Seq.toList
         return allStreamEvents
     }
-let createStreamFilterList (domain: string) (events: seq<Marten.Events.IEvent>) =
+let createStreamDomainFilterList (domain: string) (events: seq<Marten.Events.IEvent>) =
     // Filter events where the email address contains the specified domain
     events
     |> Seq.choose (fun e ->
@@ -102,11 +103,13 @@ let createStreamFilterList (domain: string) (events: seq<Marten.Events.IEvent>) 
     |> Seq.distinct
     |> Set.ofSeq
 
+
+
 let retrieveAllUserStreams (): Async<StreamToken list> =
     async {
         use session = Database.store.LightweightSession()
         let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
-        let domainStreamIds = createStreamFilterList "@rowerconsulting.com" allEvents
+        let domainStreamIds = createStreamDomainFilterList "@rowerconsulting.com" allEvents
         let streamTokens =
             allEvents
             |> Seq.filter (fun e -> not (domainStreamIds.Contains e.StreamId))
@@ -213,6 +216,33 @@ let retrieveTotalDataPolicyDeclined (interval: (IntervalStart * IntervalEnd) opt
                     | _ -> None)
             |> Seq.length
         return declinedEvents
+    }
+
+let retrieveCountOfEmptyStreams (): Async<int> =
+    async {
+        use session = store.LightweightSession()
+        let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
+        let streamsWithDecision =
+            allEvents
+            |> Seq.filter (fun e ->
+                match e.Data with
+                | :? ButtonEventCase as eventCase ->
+                    match eventCase with
+                    | DataPolicyAcceptButtonClicked _ | DataPolicyDeclineButtonClicked _ -> true
+                    | _ -> false
+                | _ -> false)
+            |> Seq.map (fun e -> e.StreamId)
+            |> Seq.distinct
+            |> Set.ofSeq
+
+        let streamsWithoutDecision =
+            allEvents
+            |> Seq.map (fun e -> e.StreamId)
+            |> Seq.distinct
+            |> Seq.filter (fun streamId -> not (streamsWithDecision.Contains streamId))
+            |> Seq.length
+
+        return streamsWithoutDecision
     }
 
 let retrieveTotalContactFormsSubmitted (interval: (IntervalStart * IntervalEnd) option): Async<int> =

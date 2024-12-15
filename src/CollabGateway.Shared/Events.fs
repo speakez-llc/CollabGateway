@@ -222,4 +222,5 @@ type EventProcessingMessage =
     | ProcessSignUpForm of EventDateTime * StreamToken * SignUpForm
     | ProcessSmartFormInput of EventDateTime * StreamToken * SmartFormRawContent
     | ProcessSmartFormResult of EventDateTime * StreamToken * SignUpForm
+    | ArchiveEmptyStreams
 

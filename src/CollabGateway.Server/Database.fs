@@ -73,7 +73,6 @@ module DatabaseHelpers =
         """
         execNonQueryAsync connStr commandStr
 
-
     type GicsCsv = CsvProvider<"GICS.csv", HasHeaders=true, Schema="SubIndustryCode (string), SubIndustry (string), Definition (string), IndustryCode (string), Industry (string), IndustryGroupCode (string), IndustryGroup (string), SectorCode (string), Sector (string)">
 
     let insertGicsTaxonomyAsync =
@@ -144,6 +143,31 @@ let configureMarten (options: StoreOptions) =
 
 let store = DocumentStore.For(Action<StoreOptions>(configureMarten))
 
+let collectStreamsForArchive (events: seq<Marten.Events.IEvent>) =
+    events
+    |> Seq.groupBy (fun e -> e.StreamId)
+    |> Seq.filter (fun (_, events) ->
+        events
+        |> Seq.forall (fun e ->
+            match e.Data with
+            | :? ButtonEventCase as eventCase ->
+                match eventCase with
+                | DataPolicyAcceptButtonClicked _ | DataPolicyDeclineButtonClicked _ -> false
+                | _ -> true
+            | _ -> true))
+    |> Seq.map fst
+    |> Set.ofSeq
+
+let archiveEmptyStreams (): Async<unit> =
+    async {
+        use session = store.LightweightSession()
+        let! allEvents = session.Events.QueryAllRawEvents() |> Task.FromResult |> Async.AwaitTask
+        let streamsToArchive = collectStreamsForArchive allEvents
+        for streamId in streamsToArchive do
+            session.Events.ArchiveStream(streamId) |> ignore
+        do! session.SaveChangesAsync() |> Async.AwaitTask
+    }
+
 let getGeoInfo (clientIP: ClientIP) =
     task {
         let geoipifyToken = Environment.GetEnvironmentVariable("GEOIPIFY_TOKEN")
@@ -173,6 +197,8 @@ let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
         Console.WriteLine $"Processing message: {msg}"
         try
             match msg with
+            | ArchiveEmptyStreams ->
+                archiveEmptyStreams() |> ignore
             | EstablishStreamToken (timeStamp, streamToken) ->
                 use session = store.LightweightSession()
                 let! streamState = session.Events.FetchStreamStateAsync(streamToken) |> Async.AwaitTask

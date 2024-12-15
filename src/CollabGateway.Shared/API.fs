@@ -301,6 +301,8 @@ type Service = {
     SendEmailVerification: UserName * EmailAddress * VerificationToken * SubscriptionToken -> Async<unit>
     CheckIfAdmin: StreamToken -> Async<bool>
     LoadGicsTaxonomy: unit -> Async<GicsTaxonomy[]>
+    RetrieveCountOfEmptyStreams : unit -> Async<int>
+    ArchiveEmptyStreams: unit -> Async<unit>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

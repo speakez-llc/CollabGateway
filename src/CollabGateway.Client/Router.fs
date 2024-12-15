@@ -15,6 +15,7 @@ type Page =
     | Partners
     | Activity
     | UserSummary
+    | Housekeeping
     | Overview
 
 [<RequireQualifiedAccess>]
@@ -31,6 +32,7 @@ module Page =
         | [ "partners" ] -> Page.Partners
         | [ "activity" ] -> Page.Activity
         | [ "user-summary" ] -> Page.UserSummary
+        | [ "housekeeping" ] -> Page.Housekeeping
         | [ "overview" ] -> Page.Overview
         | [ ] -> Page.Index
         | _ -> defaultPage
@@ -47,6 +49,7 @@ module Page =
         | Page.Contact -> [ "contact" ] |> noQueryString
         | Page.Partners -> [ "partners" ] |> noQueryString
         | Page.Activity -> [ "activity" ] |> noQueryString
+        | Page.Housekeeping -> [ "housekeeping" ] |> noQueryString
         | Page.UserSummary -> [ "user-summary" ] |> noQueryString
         | Page.Overview -> [ "overview" ] |> noQueryString
 

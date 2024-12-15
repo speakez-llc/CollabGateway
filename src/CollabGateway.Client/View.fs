@@ -293,6 +293,7 @@ let AppView () =
         | Page.Partners -> Pages.Partners.IndexView dispatch
         | Page.UserSummary -> Pages.UserSummary.IndexView (state.IsAdmin, dispatch)
         | Page.Overview -> Pages.Overview.IndexView (state.IsAdmin, dispatch)
+        | Page.Housekeeping -> Pages.Housekeeping.IndexView (state.IsAdmin, dispatch)
 
     let navigationWrapper =
         Html.div [
