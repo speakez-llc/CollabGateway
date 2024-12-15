@@ -195,7 +195,6 @@ let retrieveTotalNewUserStreamCount (interval: (IntervalStart * IntervalEnd) opt
         return List.length userStreamInitiatedEvents
     }
 
-
 let retrieveTotalDataPolicyDeclined (interval: (IntervalStart * IntervalEnd) option): Async<int> =
     async {
         let! filteredEvents = filterEventsByInterval interval
