@@ -291,7 +291,7 @@ let IndexView (parentDispatch: ViewMsg -> unit) =
                 prop.children [
                     Html.h1 [
                         prop.className "page-title text-center text-2xl font-bold my-4"
-                        prop.text "User Activity Summary"
+                        prop.text "Your Activity Summary"
                     ]
                     match state.UserSummary with
                     | Some summary -> renderTimeline state summary dispatch

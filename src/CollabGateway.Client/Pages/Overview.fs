@@ -405,8 +405,16 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                     if isAdmin then
                         if List.isEmpty state.OverviewTotals then
                             Html.div [
-                                prop.className "text-center"
-                                prop.text "No data available."
+                                prop.className "flex items-center space-x-2 justify-center"
+                                prop.children [
+                                    Html.div [
+                                        prop.className "loading loading-ring loading-md text-warning animate-spin"
+                                    ]
+                                    Html.span [
+                                        prop.className "text-warning text-xl"
+                                        prop.text "Loading..."
+                                    ]
+                                ]
                             ]
                         else
                         Html.div [
