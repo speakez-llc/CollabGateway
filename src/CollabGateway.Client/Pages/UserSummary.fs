@@ -34,6 +34,8 @@ type State = {
     TimelineStartEnd: int
     SelectedUser: StreamToken option
     UserStreams: UserStreamProjection option
+    Taxonomy: GicsTaxonomy[] option
+    SelectedSignUpForm: SignUpForm option
 }
 
 type Msg =
@@ -47,6 +49,10 @@ type Msg =
     | UserStreamsFetchFailed of exn
     | UserSelected of StreamToken
     | FullUserStreamReceived of FullUserStreamProjection
+    | LoadTaxonomy
+    | TaxonomyLoaded of GicsTaxonomy[]
+    | TaxonomyLoadFailed of exn
+    | SignUpFormSelected of SignUpForm
 
 let init () =
     let initialState = {
@@ -54,12 +60,14 @@ let init () =
         TimelineStartEnd = 0
         SelectedUser = None
         UserStreams = None
+        Taxonomy = None
+        SelectedSignUpForm = None
     }
 
     let fetchUserStreamsCmd =
         Cmd.OfAsync.perform service.RetrieveAllUserNames () UserStreamsReceived
 
-    initialState, fetchUserStreamsCmd
+    initialState, Cmd.batch [fetchUserStreamsCmd; Cmd.ofMsg LoadTaxonomy]
 
 let renderContactForm (form: ContactForm) =
     let calculateRows (text: string) =
@@ -280,6 +288,8 @@ let renderUserStreamDropdown (userStreams: UserStreamProjection) (dispatch: Msg 
 
 let update (msg: Msg) (model: State) : State * Cmd<Msg> =
     match msg with
+    | SignUpFormSelected form ->
+        { model with SelectedSignUpForm = Some form }, Cmd.none
     | FetchUserSummary ->
         match model.SelectedUser with
         | Some streamToken ->
@@ -300,9 +310,22 @@ let update (msg: Msg) (model: State) : State * Cmd<Msg> =
     | UserStreamsFetchFailed _ ->
         model, Cmd.none
     | UserSelected streamToken ->
-        { model with SelectedUser = Some streamToken; FullUserStream = None }, Cmd.OfAsync.perform (fun () -> service.RetrieveFullUserStream streamToken) () FullUserStreamReceived
+        { model with
+            SelectedUser = Some streamToken
+            FullUserStream = None
+            SelectedSignUpForm = None
+        }, Cmd.batch [
+            Cmd.OfAsync.perform (fun () -> service.RetrieveFullUserStream streamToken) () FullUserStreamReceived
+            Cmd.ofMsg ResetTimelineStartEnd
+        ]
     | FullUserStreamReceived fullStream ->
         { model with FullUserStream = Some fullStream }, Cmd.ofMsg ResetTimelineStartEnd
+    | LoadTaxonomy ->
+        model, Cmd.OfAsync.perform service.LoadGicsTaxonomy () TaxonomyLoaded
+    | TaxonomyLoaded taxonomy ->
+        { model with Taxonomy = Some taxonomy }, Cmd.none
+    | TaxonomyLoadFailed _ ->
+        model, Cmd.none
 
 let renderGeoInfo (geoInfo: GeoInfo) =
     let renderRow (label1: string) (value1: string) (label2: string) (value2: string) =
@@ -393,11 +416,29 @@ let timelineItem (time: string) (title: string) (content: ReactElement) =
         Html.hr []
     ]
 
-let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit) =
+let renderSignUpFormAsync form =
+    let taxonomy, setTaxonomy = React.useState(None)
+    React.useEffect(fun () ->
+        async {
+            let! loadedTaxonomy = service.LoadGicsTaxonomy()
+            setTaxonomy(Some loadedTaxonomy)
+        } |> Async.StartImmediate
+    , [||])
+    match taxonomy with
+    | Some taxonomy -> renderSignUpForm form taxonomy
+    | None -> Html.div [ prop.text "Loading..." ]
+
+let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit) (selectedSignUpForm: SignUpForm option) (state: State) =
     let events =
         fullStream |> List.map (fun event ->
             let date, title, description =
                 match event with
+                | FullUserStreamEvent.SignUpFormSubmitted (date, form) ->
+                    let formDescription =
+                        match state.Taxonomy with
+                        | Some taxonomy -> renderSignUpForm form taxonomy
+                        | None -> Html.none
+                    (date, "SignUp Form Submitted", formDescription)
                 | FullUserStreamEvent.UserStreamInitiated date -> (date, "User Stream Initiated", Html.none)
                 | FullUserStreamEvent.UserStreamResumed date -> (date, "User Stream Resumed", Html.none)
                 | FullUserStreamEvent.UserStreamClosed date -> (date, "User Stream Closed", Html.none)
@@ -443,13 +484,6 @@ let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit
                 | FullUserStreamEvent.DataPolicyResetButtonClicked date -> (date, "Data Policy Reset Button Clicked", Html.none)
                 | FullUserStreamEvent.SummaryActivityButtonClicked date -> (date, "Summary Activity Button Clicked", Html.none)
                 | FullUserStreamEvent.ContactFormSubmitted (date, form) -> (date, "Contact Form Submitted", renderContactForm form)
-                | FullUserStreamEvent.SignUpFormSubmitted (date, form) ->
-                    let loadTaxonomyAsync () = async {
-                        let! taxonomy = service.LoadGicsTaxonomy()
-                        return taxonomy
-                    }
-                    let taxonomy = Async.RunSynchronously (loadTaxonomyAsync ())
-                    (date, "SignUp Form Submitted", renderSignUpForm form taxonomy)
                 | FullUserStreamEvent.SmartFormSubmitted (date, input) ->
                     let renderSmartFormSubmitted (input: string) =
                         Html.div [
@@ -478,6 +512,10 @@ let renderTimeline (fullStream: FullUserStreamEvent list) (dispatch: Msg -> unit
                 | FullUserStreamEvent.UserClientIPUpdated (date, geoInfo) -> (date, "User ClientIP Updated", renderGeoInfo geoInfo)
                 | FullUserStreamEvent.ContactActivityButtonClicked date -> (date, "Contact Activity Button Clicked", Html.none)
                 | FullUserStreamEvent.SignUpActivityButtonClicked date -> (date, "Sign Up Activity Button Clicked", Html.none)
+                | FullUserStreamEvent.OverviewButtonClicked date -> (date, "Overview Button Clicked", Html.none)
+                | FullUserStreamEvent.OverviewPageVisited date -> (date, "Overview Page Visited", Html.none)
+                | FullUserStreamEvent.UserSummaryButtonClicked date -> (date, "User Summary Button Clicked", Html.none)
+                | FullUserStreamEvent.UserSummaryPageVisited date -> (date, "User Summary Page Visited", Html.none)
             (date, title, description)
         )
 
@@ -526,7 +564,7 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                 ]
                            ]
                     match state.FullUserStream with
-                    | Some summary -> renderTimeline summary dispatch
+                    | Some summary -> renderTimeline summary dispatch state.SelectedSignUpForm state
                     | None -> Html.div [
                                     prop.className "flex items-center space-x-2 justify-center"
                                     prop.children [

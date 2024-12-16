@@ -67,15 +67,15 @@ let IndexView (isAdmin: bool, parentDispatch: ViewMsg -> unit) =
                                     ]
                                     Html.div [
                                         prop.className "card shadow-xl flex items-center space-x-4 justify-center aspect-w-3 aspect-h-2"
-                                        prop.text "Quadrant 2"
+                                        prop.text "IP Range blocking"
                                     ]
                                     Html.div [
                                         prop.className "card shadow-xl flex items-center space-x-4 justify-center aspect-w-3 aspect-h-2"
-                                        prop.text "Quadrant 3"
+                                        prop.text "Email Domain Blocking"
                                     ]
                                     Html.div [
                                         prop.className "card shadow-xl flex items-center space-x-4 justify-center aspect-w-3 aspect-h-2"
-                                        prop.text "Quadrant 4"
+                                        prop.text "ASN Blocking"
                                     ]
                                 ]
                             ]
