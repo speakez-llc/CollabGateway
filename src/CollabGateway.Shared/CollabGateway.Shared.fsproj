@@ -9,7 +9,10 @@
     <Compile Include="Events.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="JasperFx.RuntimeCompiler" Version="3.7.2" />
     <PackageReference Include="Marten" Version="7.31.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.0" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

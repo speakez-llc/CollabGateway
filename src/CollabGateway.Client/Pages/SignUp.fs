@@ -37,6 +37,7 @@ type State = {
     SubscriptionToken: SubscriptionToken
     GicsTaxonomy: GicsTaxonomy[] option
     GicsQuery: string
+    SemanticSearchQuery: string
 }
 
 type Msg =
@@ -76,6 +77,7 @@ type Msg =
     | UpdateVerificationToken
     | UpdateSubscriptionToken of VerificationToken
     | SendVerificationEmail of VerificationToken * SubscriptionToken
+    | UpdateSemanticSearchQuery of string
 
 
 
@@ -93,8 +95,13 @@ let flaggedWebmailDomain email =
             return false
     }
 
+let isPhoneNumberValid (phone: string) =
+    let phoneRegex = System.Text.RegularExpressions.Regex(@"^\+?(\d{1,3})?[-. (]*(\d{1,4})[-. )]*(\d{1,4})[-. ]*(\d{4,9})(?: *x(\d+))?$")
+    phoneRegex.IsMatch(phone)
+
 let private validateForm (signupForm: SignUpForm) =
     let submittedEmailIsValid = isEmailValid signupForm.Email
+    let submittedPhoneIsValid = isPhoneNumberValid signupForm.Phone
     let cmd =
         if submittedEmailIsValid then
             Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain signupForm.Email) () WebmailDomainFlagged
@@ -102,12 +109,17 @@ let private validateForm (signupForm: SignUpForm) =
             Cmd.none
 
     let errors =
-        [ if String.IsNullOrWhiteSpace(signupForm.Email) then Some("Email is required") else None
-          if String.IsNullOrWhiteSpace(signupForm.Name) then Some("Name is required") else None ]
+        [ if String.IsNullOrWhiteSpace(signupForm.Email) then Some("A work email is required") else None
+          if not submittedEmailIsValid then Some("Email is not valid") else None
+          if String.IsNullOrWhiteSpace(signupForm.Name) then Some("Your name is required") else None
+          if String.IsNullOrWhiteSpace(signupForm.JobTitle) then Some("Your job title is required") else None
+          if String.IsNullOrWhiteSpace(signupForm.Phone) then Some("A valid phone number is required") else None
+          if not submittedPhoneIsValid then Some("Phone number is not valid") else None
+          if String.IsNullOrWhiteSpace(signupForm.Industry) then Some("Industry is required") else None ]
         |> List.choose id
 
     let isSubmitActive =
-        List.isEmpty errors && submittedEmailIsValid
+        List.isEmpty errors && submittedEmailIsValid && submittedPhoneIsValid
 
     errors, not (List.isEmpty errors), cmd, isSubmitActive
 
@@ -167,6 +179,7 @@ let init () : State * Cmd<Msg> =
         SubscriptionToken = Guid.Empty
         GicsTaxonomy = None
         GicsQuery = ""
+        SemanticSearchQuery = ""
     }
 
     let checkFormSubmissionCmd =
@@ -228,18 +241,25 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         let newModel = { model with State.SignUpForm.Name = name }
         let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
     | UpdateEmail email ->
         let isEmailValid = isEmailValid email
-        let cmd =
+        let delayedCmd =
             if isEmailValid then
-                Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain email) () WebmailDomainFlagged
+                Cmd.OfAsync.perform (fun () -> async {
+                    do! Async.Sleep 500 // Delay for 500 milliseconds
+                    return! flaggedWebmailDomain email
+                }) () WebmailDomainFlagged
             else
                 Cmd.none
 
         let checkEmailVerificationCmd =
             if isEmailValid then
                 let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
-                Cmd.OfAsync.perform (fun () -> service.RetrieveEmailStatus streamToken) () (fun status ->
+                Cmd.OfAsync.perform (fun () -> async {
+                    do! Async.Sleep 500 // Delay for 500 milliseconds
+                    return! service.RetrieveEmailStatus streamToken
+                }) () (fun status ->
                     match status with
                     | Some (_, _, EmailStatus.Verified) -> EmailVerificationChecked true
                     | _ -> EmailVerificationChecked false)
@@ -248,17 +268,57 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
 
         let newModel = { model with State.SignUpForm.Email = email; IsEmailValid = Some isEmailValid }
         let errors, _, _, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [cmd; checkEmailVerificationCmd]
-    | UpdateJobTitle jobTitle -> { model with State.SignUpForm.JobTitle = jobTitle }, Cmd.none
-    | UpdatePhone phone -> { model with State.SignUpForm.Phone = phone }, Cmd.none
-    | UpdateDepartment department -> { model with State.SignUpForm.Department = department }, Cmd.none
-    | UpdateIndustry industry -> { model with State.SignUpForm.Industry = industry }, Cmd.none
-    | UpdateStreetAddress1 streetAddress1 -> { model with State.SignUpForm.StreetAddress1 = streetAddress1 }, Cmd.none
-    | UpdateStreetAddress2 streetAddress2 -> { model with State.SignUpForm.StreetAddress2 = streetAddress2 }, Cmd.none
-    | UpdateCity city -> { model with State.SignUpForm.City = city }, Cmd.none
-    | UpdateStateProvince stateProvince -> { model with State.SignUpForm.StateProvince = stateProvince }, Cmd.none
-    | UpdateCountry country -> { model with State.SignUpForm.Country = country }, Cmd.none
-    | UpdatePostCode postCode -> { model with State.SignUpForm.PostCode = postCode }, Cmd.none
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [delayedCmd; checkEmailVerificationCmd]
+
+    | UpdateJobTitle jobTitle ->
+        let newModel = { model with State.SignUpForm.JobTitle = jobTitle }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdatePhone phone ->
+        let newModel = { model with State.SignUpForm.Phone = phone }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateDepartment department ->
+        let newModel = { model with State.SignUpForm.Department = department }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateIndustry industry ->
+        let newModel = { model with State.SignUpForm.Industry = industry }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateStreetAddress1 streetAddress1 ->
+        let newModel = { model with State.SignUpForm.StreetAddress1 = streetAddress1 }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateStreetAddress2 streetAddress2 ->
+        let newModel = { model with State.SignUpForm.StreetAddress2 = streetAddress2 }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateCity city ->
+        let newModel = { model with State.SignUpForm.City = city }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateStateProvince stateProvince ->
+        let newModel = { model with State.SignUpForm.StateProvince = stateProvince }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdateCountry country ->
+        let newModel = { model with State.SignUpForm.Country = country }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+
+    | UpdatePostCode postCode ->
+        let newModel = { model with State.SignUpForm.PostCode = postCode }
+        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
     | UpdateSignUpForm signUpForm -> { model with SignUpForm = signUpForm }, Cmd.none
     | MessageReceived (Ok msg) -> { model with Message = $"Information Successfully Pasted" }, Cmd.none
     | MessageReceived (Result.Error error) -> { model with Message = $"Message Received!" }, Cmd.none
@@ -402,6 +462,8 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             { newState with CurrentStep = 3 }, Cmd.none
         else
             newState, nextCmd
+    | UpdateSemanticSearchQuery query ->
+        { model with SemanticSearchQuery = query }, Cmd.none
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
@@ -420,7 +482,20 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
         match state.IsEmailValid, state.IsWebmailDomain with
         | Some false, _ -> "input-error"
         | _, Some true -> "input-error"
+        | _ when String.IsNullOrWhiteSpace(state.SignUpForm.Email) -> "input-error"
         | _ -> ""
+
+    let nameInputClass =
+        if String.IsNullOrWhiteSpace(state.SignUpForm.Name) then "input-error" else ""
+
+    let jobTitleInputClass =
+        if String.IsNullOrWhiteSpace(state.SignUpForm.JobTitle) then "input-error" else ""
+
+    let phoneInputClass =
+        if String.IsNullOrWhiteSpace(state.SignUpForm.Phone) then "input-error" else ""
+
+    let industryInputClass =
+        if String.IsNullOrWhiteSpace(state.SignUpForm.Industry) then "input-error" else ""
 
     let getClipboardText () =
         promise {
@@ -602,8 +677,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200 required"
-                                                            prop.placeholder "Name is required"
+                                                            prop.className $"input input-bordered h-10 w-full pl-4 bg-base-200 required {nameInputClass}"
+                                                            prop.placeholder "Your Name"
                                                             prop.autoComplete "name"
                                                             prop.required true
                                                             prop.value state.SignUpForm.Name
@@ -618,7 +693,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.children [
                                                         Html.input [
                                                             prop.className $"input input-bordered h-10 w-full pl-4 bg-base-200 required {emailInputClass}"
-                                                            prop.placeholder "A work email is required"
+                                                            prop.placeholder "Work Email"
                                                             prop.autoComplete "email"
                                                             prop.required true
                                                             prop.value state.SignUpForm.Email
@@ -637,7 +712,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
+                                                            prop.className $"input input-bordered h-10 w-full pl-4 bg-base-200 {jobTitleInputClass}"
                                                             prop.placeholder "Job Title"
                                                             prop.autoComplete "organization-title"
                                                             prop.value state.SignUpForm.JobTitle
@@ -651,7 +726,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     prop.className "relative flex flex-col w-full"
                                                     prop.children [
                                                         Html.input [
-                                                            prop.className "input input-bordered h-10 w-full pl-4 bg-base-200"
+                                                            prop.className $"input input-bordered h-10 w-full pl-4 bg-base-200 {phoneInputClass}"
                                                             prop.placeholder "Phone Number"
                                                             prop.autoComplete "tel"
                                                             prop.value state.SignUpForm.Phone
@@ -687,8 +762,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                             prop.className "join flex w-full"
                                                             prop.children [
                                                                 Html.input [
-                                                                    prop.className "input input-bordered flex-grow gap-4 bg-base-200 join-item overflow-x-auto"
-                                                                    prop.placeholder "Industry"
+                                                                    prop.className $"input input-bordered flex-grow gap-4 bg-base-200 join-item overflow-x-auto {industryInputClass}"
+                                                                    prop.placeholder "Your Company's Industry"
                                                                     prop.style [
                                                                         style.overflowX.scroll
                                                                         style.maxHeight (length.px 40)
@@ -1014,10 +1089,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.children [
                                     Html.h3 [
                                         prop.className "text-lg font-bold"
-                                        prop.text "GICS Standard with Additional Sectors"
+                                        prop.text "GICS Taxonomy with Additional Sectors"
                                     ]
                                     Html.p [
-                                        prop.text "We use the GICS standard plus two additional sectors for Non-Profits & NGOs and Public Sector. Use the search field below to narrow your choices."
+                                        prop.text "We use the Global Industry Classification Standard as well as two additional categories - 'Non-Profits & NGOs' and 'Public Sector' to populate this hierarchy. You have multiple options for choosing an industry: 1) Click on an avatar below to select a specific Sector and sub-set the list, 2) Use partial industry term matching to narrow the options further, or 3) use 'Smart Search' describing your company to narrow results to a subset of industries that can be inferred from that description."
                                     ]
                                 ]
                             ]
@@ -1062,8 +1137,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.className "input-group join w-full mb-4"
                                 prop.children [
                                     Html.input [
-                                        prop.className "input input-bordered join-item flex-grow"
-                                        prop.placeholder "Search Industry"
+                                        prop.className "input input-bordered join-item flex-grow focus:border-secondary focus:ring-1 focus:ring-secondary placeholder-gray-500"
+                                        prop.placeholder "Partial Match - Start Typing To See Industry Path Options ['Edu' will show paths that include 'Education', etc]"
                                         prop.value state.GicsQuery
                                         prop.onChange (fun (ev: Browser.Types.Event) ->
                                             let target = ev.target :?> Browser.Types.HTMLInputElement
@@ -1078,16 +1153,44 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                                     |> List.filter (fun (_, path) -> path.ToLower().Contains(target.value.ToLower()))
                                                     |> List.length
                                                 | None -> 0
-                                            selectElement.size <- if filteredOptionsCount > 0 then filteredOptionsCount else 1
+                                            selectElement.size <- if filteredOptionsCount > 1 then filteredOptionsCount else 2
                                         )
                                     ]
                                     Html.button [
                                         prop.className "btn join-item btn-secondary"
-                                        prop.text "Clear Search"
+                                        prop.text "Clear"
                                         prop.onClick (fun _ ->
                                             dispatch (UpdateGicsQuery "")
                                             let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
                                             selectElement.size <- 1
+                                        )
+                                    ]
+                                ]
+                            ]
+                            Html.div [
+                                prop.className "input-group join w-full mb-4"
+                                prop.children [
+                                    Html.input [
+                                        prop.className "input input-bordered join-item w-full focus:border-accent focus:ring-1 focus:ring-accent placeholder-accent"
+                                        prop.placeholder (if state.SemanticSearchQuery = "" then "Smart Search - Simply Describe Your Business or Industry and select 'Search'" else "")
+                                        prop.value state.SemanticSearchQuery
+                                        prop.onChange (fun (ev: Browser.Types.Event) ->
+                                            let target = ev.target :?> Browser.Types.HTMLInputElement
+                                            dispatch (UpdateSemanticSearchQuery target.value)
+                                        )
+                                    ]
+                                    Html.button [
+                                        prop.className "btn join-item btn-accent"
+                                        prop.text "Search"
+                                        prop.onClick (fun _ ->
+                                            dispatch (UpdateSemanticSearchQuery "")
+                                        )
+                                    ]
+                                    Html.button [
+                                        prop.className "btn join-item btn-secondary"
+                                        prop.text "Clear"
+                                        prop.onClick (fun _ ->
+                                            dispatch (UpdateSemanticSearchQuery "")
                                         )
                                     ]
                                 ]

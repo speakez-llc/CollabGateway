@@ -162,46 +162,46 @@
 60201020,Real Estate Operating Companies,"Companies engaged in operating real estate properties for the purpose of leasing & management, including real estate property managers.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
 60201030,Real Estate Development,"Companies that develop real estate and sell the properties after development, including developers of active senior communities. This Sub-Industry excludes companies classified in the Homebuilding Sub-Industry.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
 60201040,Real Estate Services,"Real estate service providers such as real estate agents, brokers, real estate appraisers and other real estate related services. This Sub-Industry includes providers of real estate information, analytics, data and tools. This Sub-Industry excludes online real estate platforms that offer mainly information and earn revenue from pay-per-click advertising classified in the Interactive Media & Services Sub-Industry.",602010,Real Estate Management & Development,6020,Real Estate Management & Development,60,Real Estate
-,,,901010,Individual Support & Outreach Services,9010,Charitable Organizations,90,Non-Profit & NGOs
-,,,901020,Education and Research,9010,Charitable Organizations,90,Non-Profit & NGOs
-,,,901030,Health and Medical,9010,Charitable Organizations,90,Non-Profit & NGOs
-,,,901040,Environmental Services,9010,Charitable Organizations,90,Non-Profit & NGOs
-,,,901050,Animal Welfare,9010,Charitable Organizations,90,Non-Profit & NGOs
-,,,902010,Private Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
-,,,902020,Community Foundation,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
-,,,902030,Corporate Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
-,,,903010,Churches and Religious Institution,9030,Religious Organizations,90,Non-Profit & NGOs
-,,,903020,Faith-Based Charities,9030,Religious Organizations,90,Non-Profit & NGOs
-,,,904010,Advocacy Groups,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
-,,,904020,Civic and Social Organizations,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
-,,,905010,Humanitarian Aid,9050,International NGOs,90,Non-Profit & NGOs
-,,,905020,Development and Relief Services,9050,International NGOs,90,Non-Profit & NGOs
-,,,905030,International Health Services,9050,International NGOs,90,Non-Profit & NGOs
-,,,905040,Environmental NGOs,9050,International NGOs,90,Non-Profit & NGOs
-,,,906010,Professional Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
-,,,906020,Trade Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
-,,,906030,Labor Unions,9060,Professional and Trade Associations,90,Non-Profit & NGOs
-,,,951010,Central Government,9510,General Administration,95,Public Sector
-,,,951020,Regional Government,9510,General Administration,95,Public Sector
-,,,951030,State/Provincial Government,9510,General Administration,95,Public Sector
-,,,951040,Local/Municipal Government,9510,General Administration,95,Public Sector
-,,,952010,Education Services,9520,Public Services,95,Public Sector
-,,,952020,Healthcare Services,9520,Public Services,95,Public Sector
-,,,952030,Social Services,9520,Public Services,95,Public Sector
-,,,953010,Law Enforcement,9530,Public Safety,95,Public Sector
-,,,953020,Fire and Rescue Services,9530,Public Safety,95,Public Sector
-,,,953030,Emergency Management,9530,Public Safety,95,Public Sector
-,,,954010,Transportation Services,9540,Infrastructure and Utilities,95,Public Sector
-,,,954020,Utility Services,9540,Infrastructure and Utilities,95,Public Sector
-,,,955010,Armed Services ,9550,Defense and Security,95,Public Sector
-,,,955020,National Security,9550,Defense and Security,95,Public Sector
-,,,955030,Cybersecurity,9550,Defense and Security,95,Public Sector
-,,,956010,Conservation Service,9560,Environmental Management,95,Public Sector
-,,,956020,Environmental Protection,9560,Environmental Management,95,Public Sector
-,,,956030,Parks and Recreation,9560,Environmental Management,95,Public Sector
-,,,957010,Revenue Services,9570,Public Finance,95,Public Sector
-,,,957010,Public Budgeting,9570,Public Finance,95,Public Sector
-,,,957020,Government Accounting,9570,Public Finance,95,Public Sector
-,,,958010,Financial Regulation,9580,Regulatory Agencies,95,Public Sector
-,,,958020,Health and Safety Regulation,9580,Regulatory Agencies,95,Public Sector
-,,,958030,Environmental Regulation,9580,Regulatory Agencies,95,Public Sector
+,,"Non-profits that provide direct support and outreach services to individuals in need, including food banks, shelters, and counseling services.",901010,Individual Support & Outreach Services,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,"Non-profit organizations dedicated to advancing education and research through funding, scholarships, and support for educational institutions and research projects.",901020,Education and Research,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,"Organizations focused on improving health and medical care, including hospitals, clinics, disease research foundations, and health education programs.",901030,Health and Medical,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,"Organizations focused on environmental conservation, protection, and sustainability, including activities such as wildlife preservation, pollution control, and promoting renewable energy.",901040,Environmental Services,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,"Non-profits dedicated to the protection and welfare of animals, including shelters, rescue organizations, and advocacy groups for animal rights.",901050,Animal Welfare,9010,Charitable Organizations,90,Non-Profit & NGOs
+,,"Organizations that are privately funded and provide grants to individuals, other non-profits, or institutions for various charitable purposes.",902010,Private Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,"Publicly supported foundations that manage and distribute funds for community benefit, often focusing on local needs and initiatives.",902020,Community Foundation,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,"Foundations established by corporations to manage their charitable giving and community involvement, often focusing on areas related to company business interests.",902030,Corporate Foundations,9020,Foundations and Grantmaking,90,Non-Profit & NGOs
+,,"Organizations that provide religious services, education, and community support, including churches, temples, mosques, and other places of worship.",903010,Churches and Religious Institution,9030,Religious Organizations,90,Non-Profit & NGOs
+,,"Charitable organizations that operate based on religious principles, providing various services such as disaster relief, education, and community support.",903020,Faith-Based Charities,9030,Religious Organizations,90,Non-Profit & NGOs
+,,"Organizations that promote specific causes or issues, working to influence public policy, raise awareness, and mobilize supporters.",904010,Advocacy Groups,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
+,,"Non-profits that promote civic engagement and social welfare, including community centers, social clubs, and organizations focused on civic education.",904020,Civic and Social Organizations,9040,Advocacy and Civic Organizations,90,Non-Profit & NGOs
+,,"Non-profits that provide emergency relief and long-term support to people affected by disasters, conflicts, and poverty around the world.",905010,Humanitarian Aid,9050,International NGOs,90,Non-Profit & NGOs
+,,"Organizations that work on long-term development projects and provide relief services in areas affected by poverty, conflict, and natural disasters.",905020,Development and Relief Services,9050,International NGOs,90,Non-Profit & NGOs
+,,"Organizations that deliver health services and medical care in underserved regions globally, often focusing on disease prevention, treatment, and health education.",905030,International Health Services,9050,International NGOs,90,Non-Profit & NGOs
+,,"Non-profits that focus on global environmental issues, advocating for policies and practices that protect the environment and promote sustainability.",905040,Environmental NGOs,9050,International NGOs,90,Non-Profit & NGOs
+,,"Organizations that support the interests and development of professionals in specific fields, offering certification, training, and networking opportunities.",906010,Professional Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,"Organizations that represent the interests of specific industries or professions, providing advocacy, education, and networking opportunities for their members.",906020,Trade Associations,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,"Organizations that represent the interests of workers in specific industries, advocating for fair wages, safe working conditions, and other labor rights.",906030,Labor Unions,9060,Professional and Trade Associations,90,Non-Profit & NGOs
+,,"The central authority responsible for national governance, including the formulation and implementation of policies, laws, and regulations that affect the entire country.",951010,Central Government,9510,General Administration,95,Public Sector
+,,"Government bodies that manage administrative functions and services at a regional level, often encompassing multiple local jurisdictions within a larger geographic area.",951020,Regional Government,9510,General Administration,95,Public Sector
+,,"Government entities that operate at the state or provincial level, overseeing regional administration, legislation, and public services within their respective territories.",951030,State/Provincial Government,9510,General Administration,95,Public Sector
+,,"Local government authorities responsible for managing public services, infrastructure, and regulations within cities, towns, or municipalities.",951040,Local/Municipal Government,9510,General Administration,95,Public Sector
+,,"Public institutions and agencies that provide educational services, including primary, secondary, and higher education, as well as vocational training and adult education programs.",952010,Education Services,9520,Public Services,95,Public Sector
+,,"Government-funded healthcare providers and agencies that deliver medical services, public health programs, and healthcare infrastructure to the population.",952020,Healthcare Services,9520,Public Services,95,Public Sector
+,,"Agencies and organizations that offer support and assistance to individuals and families in need, including welfare programs, housing assistance, and child protective services.",952030,Social Services,9520,Public Services,95,Public Sector
+,,"Government agencies responsible for maintaining public order, enforcing laws, and ensuring community safety through policing and investigative services.",953010,Law Enforcement,9530,Public Safety,95,Public Sector
+,,"Public services dedicated to fire prevention, firefighting, and rescue operations, including emergency response to natural and man-made disasters.",953020,Fire and Rescue Services,9530,Public Safety,95,Public Sector
+,,"Agencies that coordinate disaster preparedness, response, and recovery efforts to protect communities from natural disasters, emergencies, and other crises.",953030,Emergency Management,9530,Public Safety,95,Public Sector
+,,"Public entities that manage and maintain transportation infrastructure and services, including roads, public transit, airports, and ports.",954010,Transportation Services,9540,Infrastructure and Utilities,95,Public Sector
+,,"Government or publicly regulated entities that provide essential services such as water, electricity, gas, and waste management to the public.",954020,Utility Services,9540,Infrastructure and Utilities,95,Public Sector
+,,"Military organizations responsible for national defense, including the army, navy, air force, and other specialized military units.",955010,Armed Services ,9550,Defense and Security,95,Public Sector
+,,"Agencies and departments focused on protecting the nation from internal and external threats, including intelligence services and homeland security.",955020,National Security,9550,Defense and Security,95,Public Sector
+,,Government bodies tasked with protecting national information systems and critical infrastructure from cyber threats and attacks.,955030,Cybersecurity,9550,Defense and Security,95,Public Sector
+,,"Agencies dedicated to the conservation and sustainable management of natural resources, including wildlife, forests, and water bodies.",956010,Conservation Service,9560,Environmental Management,95,Public Sector
+,,"Government organizations that enforce environmental laws and regulations, aiming to reduce pollution and protect natural ecosystems.",956020,Environmental Protection,9560,Environmental Management,95,Public Sector
+,,"Public agencies that manage and maintain parks, recreational facilities, and natural reserves, promoting outdoor activities and conservation.",956030,Parks and Recreation,9560,Environmental Management,95,Public Sector
+,,"Government departments responsible for the collection of taxes, duties, and other revenues to fund public services and infrastructure.",957010,Revenue Services,9570,Public Finance,95,Public Sector
+,,"Agencies involved in the planning, allocation, and management of government budgets and financial resources.",957010,Public Budgeting,9570,Public Finance,95,Public Sector
+,,"Departments that handle the financial records, audits, and accounting practices of government entities to ensure transparency and accountability.",957020,Government Accounting,9570,Public Finance,95,Public Sector
+,,"Government bodies that oversee and regulate financial institutions and markets to ensure stability, transparency, and consumer protection.",958010,Financial Regulation,9580,Regulatory Agencies,95,Public Sector
+,,"Agencies that establish and enforce health and safety standards in workplaces, public spaces, and industries to protect public well-being.",958020,Health and Safety Regulation,9580,Regulatory Agencies,95,Public Sector
+,,Government organizations that develop and enforce regulations aimed at protecting the environment and promoting sustainable practices.,958030,Environmental Regulation,9580,Regulatory Agencies,95,Public Sector

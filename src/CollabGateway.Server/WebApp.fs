@@ -2,8 +2,8 @@
 
 open System
 open System.Net
+open System.Text
 open System.Net.Http
-open CollabGateway.Server.Database
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -13,6 +13,7 @@ open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 open CollabGateway.Shared.Errors
 open CollabGateway.Server.EmailHelpers
+open CollabGateway.Server.Database
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open Npgsql
@@ -40,6 +41,37 @@ let validateClipboardText (text: string) =
     else
         // Add more validation logic if needed
         true
+
+type EmbeddingResponse = {
+    embeddings: float[][]
+}
+
+type TextRequest = {
+    model: string
+    input: string
+}
+
+let generateVector (text: string) =
+    task {
+        use client = new HttpClient()
+        let requestUri = "http://localhost:11434/api/embed"
+        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text }), Encoding.UTF8, "application/json")
+        let! response = client.PostAsync(requestUri, content) |> Async.AwaitTask
+        if not response.IsSuccessStatusCode then
+            let! errorContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            Console.WriteLine $"HTTP error: {response.StatusCode} - {errorContent}"
+        let! responseBody = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        try
+            let embeddingResponse = JsonConvert.DeserializeObject<EmbeddingResponse>(responseBody)
+            if embeddingResponse.embeddings = null || embeddingResponse.embeddings.Length = 0 then
+                failwith "Embedding is null or empty"
+            let vectorBody = embeddingResponse.embeddings.[0]
+            return vectorBody
+        with
+        | ex ->
+            Console.WriteLine $"Error deserializing response: {ex.Message}"
+            return Array.empty<float>
+    }
 
 let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: SmartFormRawContent) : Async<SignUpForm> =
     task {

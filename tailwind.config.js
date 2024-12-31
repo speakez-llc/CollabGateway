@@ -26,7 +26,20 @@ export default {
         daisyui,
     ],
     daisyui: {
-        themes: ["business", "nord"],
+        themes: [
+            {
+                business: {
+                    ...require("daisyui/src/theming/themes")["business"],
+                    accent: "#ED5B00",
+                },
+            },
+            {
+                nord: {
+                    ...require("daisyui/src/theming/themes")["nord"],
+                    accent: "#ED5B00",
+                },
+            }
+        ],
         base: true,
         styled: true,
         utils: true,

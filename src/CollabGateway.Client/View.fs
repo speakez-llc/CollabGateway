@@ -342,7 +342,7 @@ let AppView () =
                                     prop.className "cursor-pointer"
                                     prop.onClick (fun _ -> toggleTheme())
                                     prop.children [
-                                        if theme = "dark" then
+                                        if theme = "business" then
                                             Fa.i [ Fa.Solid.Sun ] []
                                         else
                                             Fa.i [ Fa.Solid.Moon ] []
