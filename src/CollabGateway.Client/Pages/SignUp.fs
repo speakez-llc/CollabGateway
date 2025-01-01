@@ -36,8 +36,12 @@ type State = {
     VerificationToken: VerificationToken
     SubscriptionToken: SubscriptionToken
     GicsTaxonomy: GicsTaxonomy[] option
+    SemanticTaxonomy: GicsTaxonomy[] option
     GicsQuery: string
     SemanticSearchQuery: string
+    BreadcrumbPaths: Map<string, string>
+    IsSemanticSearchActive: bool
+    IsSemanticMode: bool
 }
 
 type Msg =
@@ -78,6 +82,12 @@ type Msg =
     | UpdateSubscriptionToken of VerificationToken
     | SendVerificationEmail of VerificationToken * SubscriptionToken
     | UpdateSemanticSearchQuery of string
+    | PerformSemanticSearch
+    | SearchFailed of string
+    | OpenSelectDropdown
+    | PartialGicsTaxonomyLoaded of GicsTaxonomy[]
+    | ResetIndustrySelections
+    | ResetSemanticMode
 
 
 
@@ -99,27 +109,31 @@ let isPhoneNumberValid (phone: string) =
     let phoneRegex = System.Text.RegularExpressions.Regex(@"^\+?(\d{1,3})?[-. (]*(\d{1,4})[-. )]*(\d{1,4})[-. ]*(\d{4,9})(?: *x(\d+))?$")
     phoneRegex.IsMatch(phone)
 
-let private validateForm (signupForm: SignUpForm) =
-    let submittedEmailIsValid = isEmailValid signupForm.Email
-    let submittedPhoneIsValid = isPhoneNumberValid signupForm.Phone
+let private validateForm (form: SignUpForm) =
+    let submittedEmailIsValid = isEmailValid form.Email
     let cmd =
         if submittedEmailIsValid then
-            Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain signupForm.Email) () WebmailDomainFlagged
+            Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain form.Email) () WebmailDomainFlagged
         else
             Cmd.none
 
     let errors =
-        [ if String.IsNullOrWhiteSpace(signupForm.Email) then Some("A work email is required") else None
-          if not submittedEmailIsValid then Some("Email is not valid") else None
-          if String.IsNullOrWhiteSpace(signupForm.Name) then Some("Your name is required") else None
-          if String.IsNullOrWhiteSpace(signupForm.JobTitle) then Some("Your job title is required") else None
-          if String.IsNullOrWhiteSpace(signupForm.Phone) then Some("A valid phone number is required") else None
-          if not submittedPhoneIsValid then Some("Phone number is not valid") else None
-          if String.IsNullOrWhiteSpace(signupForm.Industry) then Some("Industry is required") else None ]
+        [ if String.IsNullOrWhiteSpace(form.Name) then Some("Name is required") else None
+          if String.IsNullOrWhiteSpace(form.Email) then Some("Email is required") else None
+          if String.IsNullOrWhiteSpace(form.JobTitle) then Some("Job Title is required") else None
+          if String.IsNullOrWhiteSpace(form.Phone) then Some("Phone is required") else None
+          if String.IsNullOrWhiteSpace(form.Department) then Some("Department is required") else None
+          if String.IsNullOrWhiteSpace(form.Industry) then Some("Industry is required") else None
+          if String.IsNullOrWhiteSpace(form.StreetAddress1) then Some("Street Address is required") else None
+          if String.IsNullOrWhiteSpace(form.City) then Some("City is required") else None
+          if String.IsNullOrWhiteSpace(form.StateProvince) then Some("State/Province is required") else None
+          if String.IsNullOrWhiteSpace(form.Country) then Some("Country is required") else None
+          if String.IsNullOrWhiteSpace(form.PostCode) then Some("Post Code is required") else None
+          if not submittedEmailIsValid then Some("Email is not valid") else None ]
         |> List.choose id
 
     let isSubmitActive =
-        List.isEmpty errors && submittedEmailIsValid && submittedPhoneIsValid
+        List.isEmpty errors && submittedEmailIsValid
 
     errors, not (List.isEmpty errors), cmd, isSubmitActive
 
@@ -178,8 +192,12 @@ let init () : State * Cmd<Msg> =
         VerificationToken = Guid.Empty
         SubscriptionToken = Guid.Empty
         GicsTaxonomy = None
+        SemanticTaxonomy = None
         GicsQuery = ""
         SemanticSearchQuery = ""
+        BreadcrumbPaths = Map.empty
+        IsSemanticSearchActive = false
+        IsSemanticMode = false
     }
 
     let checkFormSubmissionCmd =
@@ -228,12 +246,93 @@ let private checkEmailVerificationWithDelay streamToken =
         return! service.RetrieveEmailStatus streamToken
     }
 
+let generateBreadcrumbPaths (taxonomy: GicsTaxonomy[]) =
+    taxonomy
+    |> Array.collect (fun g ->
+        let sectorPath = [g.SectorName]
+        let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
+        let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
+        let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
+        let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
+        [|
+            (g.SectorCode, String.concat " > " sectorPath)
+            (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
+            (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
+            (g.SubIndustryCode, String.concat " > " fullPath)
+        |]
+    )
+    |> Array.distinctBy snd
+    |> Array.sortBy fst
+    |> Map.ofArray
+
+let generateDirectBreadcrumbs (taxonomy: GicsTaxonomy[]) =
+    taxonomy
+    |> Array.map (fun g ->
+        let path =
+            [
+                if not (String.IsNullOrWhiteSpace g.SectorName) then g.SectorName
+                if not (String.IsNullOrWhiteSpace g.IndustryGroupName) then g.IndustryGroupName
+                if not (String.IsNullOrWhiteSpace g.IndustryName) then g.IndustryName
+                if not (String.IsNullOrWhiteSpace g.SubIndustryName) then g.SubIndustryName
+            ]
+            |> String.concat " > "
+
+        let code =
+            if not (String.IsNullOrWhiteSpace g.SubIndustryName) then g.SubIndustryCode
+            elif not (String.IsNullOrWhiteSpace g.IndustryName) then g.IndustryCode
+            elif not (String.IsNullOrWhiteSpace g.IndustryGroupName) then g.IndustryGroupCode
+            else g.SectorCode
+
+        (code, path)
+    )
+    |> Map.ofArray
+
+
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
     | ToggleIndustryModal ->
         { model with IsIndustryModalOpen = not model.IsIndustryModalOpen }, Cmd.none
     | GicsTaxonomyLoaded taxonomy ->
-        { model with GicsTaxonomy = Some taxonomy }, Cmd.none
+        let breadcrumbPaths = generateBreadcrumbPaths taxonomy
+        { model with GicsTaxonomy = Some taxonomy; BreadcrumbPaths = breadcrumbPaths }, Cmd.none
+    | PerformSemanticSearch ->
+        let searchCmd =
+            Cmd.OfAsync.perform
+                (fun () -> service.ProcessSemanticSearch model.SemanticSearchQuery)
+                () (fun result -> PartialGicsTaxonomyLoaded result)
+        { model with IsSemanticSearchActive = true }, searchCmd
+    | PartialGicsTaxonomyLoaded taxonomy ->
+        let breadcrumbPaths = generateDirectBreadcrumbs taxonomy
+        { model with
+            SemanticTaxonomy = Some taxonomy  // Store in separate field
+            BreadcrumbPaths = breadcrumbPaths
+            IsSemanticSearchActive = false
+            IsSemanticMode = true },
+        Cmd.ofMsg OpenSelectDropdown
+    | OpenSelectDropdown ->
+        model, Cmd.OfFunc.attempt (fun () ->
+            let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
+            let filteredCount = 
+                if model.IsSemanticMode then
+                    match model.SemanticTaxonomy with
+                    | Some taxonomy -> 
+                        taxonomy
+                        |> generateDirectBreadcrumbs
+                        |> Map.count
+                        |> (+) 1  
+                    | None -> 0
+                else
+                    match model.GicsTaxonomy with
+                    | Some taxonomy ->
+                        taxonomy
+                        |> generateBreadcrumbPaths
+                        |> Map.count
+                        |> (+) 1  
+                    | None -> 0
+            
+            selectElement.size <- max 1 filteredCount
+            () // Return unit
+        ) () (fun _ -> OpenSelectDropdown)
     | UpdateGicsQuery query ->
         { model with GicsQuery = query }, Cmd.none
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
@@ -247,7 +346,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         let delayedCmd =
             if isEmailValid then
                 Cmd.OfAsync.perform (fun () -> async {
-                    do! Async.Sleep 500 // Delay for 500 milliseconds
                     return! flaggedWebmailDomain email
                 }) () WebmailDomainFlagged
             else
@@ -257,7 +355,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             if isEmailValid then
                 let streamToken = Guid.Parse (window.localStorage.getItem("UserStreamToken"))
                 Cmd.OfAsync.perform (fun () -> async {
-                    do! Async.Sleep 500 // Delay for 500 milliseconds
                     return! service.RetrieveEmailStatus streamToken
                 }) () (fun status ->
                     match status with
@@ -334,7 +431,8 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | SubmitForm ->
         let errors, hasErrors, cmd, _ = validateForm model.SignUpForm
         if hasErrors then
-            errors |> List.iter (fun error -> parentDispatch (ShowToast (error, AlertLevel.Warning)))
+            errors |> List.iter (fun error ->
+                parentDispatch (ShowToast (error, AlertLevel.Warning)))
             { model with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList }, cmd
         else
             let processCmd = Cmd.OfAsync.perform (fun () -> async {
@@ -464,6 +562,19 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             newState, nextCmd
     | UpdateSemanticSearchQuery query ->
         { model with SemanticSearchQuery = query }, Cmd.none
+    | SearchFailed error ->
+        parentDispatch (ShowToast ($"Failed to perform semantic search: {error}", AlertLevel.Error))
+        model, Cmd.none
+    | ResetIndustrySelections ->
+        let cmd = Cmd.OfAsync.perform (fun () -> service.LoadGicsTaxonomy()) () GicsTaxonomyLoaded
+        // Close the dropdown
+        let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
+        selectElement.size <- 1
+        { model with
+            SemanticSearchQuery = ""
+            IsSemanticSearchActive = false }, cmd
+    | ResetSemanticMode ->
+        { model with IsSemanticMode = false }, Cmd.none
 
 [<ReactComponent>]
 let IndexView (parentDispatch : ViewMsg -> unit) =
@@ -541,33 +652,23 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             dispatch ToggleIndustryModal
         | None -> ()
 
-    let generateBreadcrumbPaths (taxonomy: GicsTaxonomy[]) =
-        taxonomy
-        |> Array.collect (fun g ->
-            let sectorPath = [g.SectorName]
-            let industryGroupPath = if String.IsNullOrWhiteSpace(g.IndustryGroupName) then [] else [g.IndustryGroupName]
-            let industryPath = if String.IsNullOrWhiteSpace(g.IndustryName) then [] else [g.IndustryName]
-            let subIndustryPath = if String.IsNullOrWhiteSpace(g.SubIndustryName) then [] else [g.SubIndustryName]
-            let fullPath = sectorPath @ industryGroupPath @ industryPath @ subIndustryPath
-            [|
-                (g.SectorCode, String.concat " > " sectorPath)
-                (g.IndustryGroupCode, String.concat " > " (sectorPath @ industryGroupPath))
-                (g.IndustryCode, String.concat " > " (sectorPath @ industryGroupPath @ industryPath))
-                (g.SubIndustryCode, String.concat " > " fullPath)
-            |]
-        )
-        |> Array.distinctBy snd
-        |> Array.sortBy fst
-        |> Map.ofArray
-
     let filteredOptions =
-        match state.GicsTaxonomy with
-        | Some taxonomy ->
-            taxonomy
-            |> generateBreadcrumbPaths
-            |> Map.toList
-            |> List.filter (fun (_, path) -> path.ToLower().Contains(state.GicsQuery.ToLower()))
-        | None -> []
+        if state.IsSemanticMode then
+            match state.SemanticTaxonomy with
+            | Some taxonomy ->
+                taxonomy
+                |> generateDirectBreadcrumbs
+                |> Map.toList
+                |> List.filter (fun (_, path) -> path.ToLower().Contains(state.GicsQuery.ToLower()))
+            | None -> []
+        else
+            match state.GicsTaxonomy with
+            | Some taxonomy ->
+                taxonomy
+                |> generateBreadcrumbPaths
+                |> Map.toList
+                |> List.filter (fun (_, path) -> path.ToLower().Contains(state.GicsQuery.ToLower()))
+            | None -> []
 
     let renderStep1 () =
         Html.div [
@@ -1048,6 +1149,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
         else
             renderCurrentStep()
         if state.IsIndustryModalOpen then
+            let activeSearchRingClasses = "animate-pulse-ring ring-2 ring-accent border-accent"
+            let inactiveSearchRingClasses = "focus:ring-1 hover:ring-1 ring-accent focus:border-accent"
             let sectorIcons = Map.ofList [
                 ("10", ("fas fa-oil-well", "Energy"))
                 ("15", ("fas fa-trowel-bricks", "Materials"))
@@ -1092,7 +1195,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         prop.text "GICS Taxonomy with Additional Sectors"
                                     ]
                                     Html.p [
-                                        prop.text "We use the Global Industry Classification Standard as well as two additional categories - 'Non-Profits & NGOs' and 'Public Sector' to populate this hierarchy. You have multiple options for choosing an industry: 1) Click on an avatar below to select a specific Sector and sub-set the list, 2) Use partial industry term matching to narrow the options further, or 3) use 'Smart Search' describing your company to narrow results to a subset of industries that can be inferred from that description."
+                                        prop.text "We use the Global Industry Classification Standard as well as two additional categories - 'Non-Profits & NGOs' and 'Public Sector' to populate this hierarchy. You have multiple options for choosing an industry path: 1) Click on an avatar below to select a specific Sector and sub-set the list, 2) Use partial industry term matching to narrow the options further, or 3) use 'Smart Search' describing your company to narrow results to a subset of industries that can be inferred from that description."
                                     ]
                                 ]
                             ]
@@ -1138,7 +1241,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.children [
                                     Html.input [
                                         prop.className "input input-bordered join-item flex-grow focus:border-secondary focus:ring-1 focus:ring-secondary placeholder-gray-500"
-                                        prop.placeholder "Partial Match - Start Typing To See Industry Path Options ['Edu' will show paths that include 'Education', etc]"
+                                        prop.placeholder "Partial Match - Start Typing To See Industry Sub-Lists ['Edu' will show paths that include 'Education', etc]"
                                         prop.value state.GicsQuery
                                         prop.onChange (fun (ev: Browser.Types.Event) ->
                                             let target = ev.target :?> Browser.Types.HTMLInputElement
@@ -1171,19 +1274,25 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.className "input-group join w-full mb-4"
                                 prop.children [
                                     Html.input [
-                                        prop.className "input input-bordered join-item w-full focus:border-accent focus:ring-1 focus:ring-accent placeholder-accent"
+                                        prop.className $"""input input-bordered join-item w-full placeholder-accent
+        {(if state.IsSemanticSearchActive then activeSearchRingClasses else inactiveSearchRingClasses)}"""
                                         prop.placeholder (if state.SemanticSearchQuery = "" then "Smart Search - Simply Describe Your Business or Industry and select 'Search'" else "")
                                         prop.value state.SemanticSearchQuery
                                         prop.onChange (fun (ev: Browser.Types.Event) ->
                                             let target = ev.target :?> Browser.Types.HTMLInputElement
                                             dispatch (UpdateSemanticSearchQuery target.value)
                                         )
+                                        prop.onKeyDown (fun ev ->
+                                            if ev.key = "Enter" then
+                                                dispatch PerformSemanticSearch
+                                        )
                                     ]
                                     Html.button [
-                                        prop.className "btn join-item btn-accent"
+                                        prop.className $"""btn join-item btn-accent
+        {(if state.IsSemanticSearchActive then activeSearchRingClasses else inactiveSearchRingClasses)}"""
                                         prop.text "Search"
                                         prop.onClick (fun _ ->
-                                            dispatch (UpdateSemanticSearchQuery "")
+                                            dispatch PerformSemanticSearch
                                         )
                                     ]
                                     Html.button [
@@ -1191,6 +1300,8 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                         prop.text "Clear"
                                         prop.onClick (fun _ ->
                                             dispatch (UpdateSemanticSearchQuery "")
+                                            dispatch ResetIndustrySelections
+                                            dispatch ResetSemanticMode  // Add new message type
                                         )
                                     ]
                                 ]
@@ -1201,7 +1312,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.onChange (fun (ev: Browser.Types.Event) ->
                                     let target = ev.target :?> Browser.Types.HTMLSelectElement
                                     let selectedCode = target.value
-                                    updateTaxonomy selectedCode
+                                    if not state.IsSemanticMode then
+                                        updateTaxonomy selectedCode
+                                    else
+                                        dispatch (UpdateIndustry selectedCode)
                                 )
                                 prop.children (
                                     Html.option [ prop.value ""; prop.text "Select an Industry" ] ::

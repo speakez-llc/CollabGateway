@@ -104,6 +104,7 @@ type AlertLevel =
     | Error
     | Warning
     | Info
+    | Hidden
 
 type SubscribeStatus =
     | Open
@@ -303,6 +304,7 @@ type Service = {
     LoadGicsTaxonomy: unit -> Async<GicsTaxonomy[]>
     RetrieveCountOfEmptyStreams : unit -> Async<int>
     ArchiveEmptyStreams: unit -> Async<unit>
+    ProcessSemanticSearch: string -> Async<GicsTaxonomy array>
 }
 with
     static member RouteBuilder _ m = $"/api/service/%s{m}"

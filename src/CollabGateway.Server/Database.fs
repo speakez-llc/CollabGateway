@@ -7,6 +7,7 @@ open Marten
 open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 open Newtonsoft.Json
+open Npgsql
 open Weasel.Core
 open JasperFx.CodeGeneration
 
@@ -74,6 +75,46 @@ let getGeoInfo (clientIP: ClientIP) =
     }
     |> Async.AwaitTask
 
+let getNearestIndustries (vector: float[]) : Async<GicsTaxonomy array> =
+    async {
+        let vectorString = $"""[{vector |> Array.map (fun x -> x.ToString("G17")) |> String.concat ","}]"""
+        let connectionString =
+            match Environment.GetEnvironmentVariable("GATEWAY_STORE") with
+            | null | "" -> failwith "Environment variable GATEWAY_STORE is not set."
+            | connStr -> connStr
+
+        let commandStr =
+            $"""
+            SELECT "SectorCode", "Sector", "IndustryGroupCode", "IndustryGroup",
+                   "IndustryCode", "Industry", "SubIndustryCode", "SubIndustry"
+            FROM "GicsTaxonomy"
+            ORDER BY "Embedding" <-> '{vectorString}'::vector
+            LIMIT 3;
+            """
+
+        use conn = new NpgsqlConnection(connectionString)
+        use cmd = new NpgsqlCommand(commandStr, conn)
+
+        do! conn.OpenAsync() |> Async.AwaitTask
+        let! reader = cmd.ExecuteReaderAsync() |> Async.AwaitTask
+        let results = ResizeArray<GicsTaxonomy>()
+
+        while reader.Read() do
+            let gicsTaxonomy = {
+                SectorCode = reader.GetString(0)
+                SectorName = reader.GetString(1)
+                IndustryGroupCode = reader.GetString(2)
+                IndustryGroupName = reader.GetString(3)
+                IndustryCode = reader.GetString(4)
+                IndustryName = reader.GetString(5)
+                SubIndustryCode = if reader.IsDBNull(6) then "" else reader.GetString(6)
+                SubIndustryName = if reader.IsDBNull(7) then "" else reader.GetString(7)
+            }
+            results.Add(gicsTaxonomy)
+        results |> Seq.iter (fun gicsTaxonomy ->
+            Console.WriteLine $"{gicsTaxonomy.SectorName} > {gicsTaxonomy.IndustryGroupName} > {gicsTaxonomy.IndustryName} > {gicsTaxonomy.SubIndustryName}")
+        return results |> Array.ofSeq
+    }
 
 let eventProcessor = MailboxProcessor<EventProcessingMessage>.Start(fun inbox ->
     let rec loop () = async {

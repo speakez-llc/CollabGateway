@@ -49,13 +49,14 @@ type EmbeddingResponse = {
 type TextRequest = {
     model: string
     input: string
+    keep_alive: int
 }
 
 let generateVector (text: string) =
-    task {
+    async {
         use client = new HttpClient()
         let requestUri = "http://localhost:11434/api/embed"
-        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text }), Encoding.UTF8, "application/json")
+        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text; keep_alive = -1 }), Encoding.UTF8, "application/json")
         let! response = client.PostAsync(requestUri, content) |> Async.AwaitTask
         if not response.IsSuccessStatusCode then
             let! errorContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
@@ -71,6 +72,13 @@ let generateVector (text: string) =
         | ex ->
             Console.WriteLine $"Error deserializing response: {ex.Message}"
             return Array.empty<float>
+    }
+
+let processSemanticSearch (text: string) =
+    async {
+        let! textVector = generateVector text
+        let! nearestIndustries = getNearestIndustries textVector
+        return nearestIndustries
     }
 
 let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: SmartFormRawContent) : Async<SignUpForm> =
@@ -238,6 +246,7 @@ let service = {
     LoadGicsTaxonomy = getGicsTaxonomyAsync
     RetrieveCountOfEmptyStreams = Projections.retrieveCountOfEmptyStreams
     ArchiveEmptyStreams = archiveEmptyStreams
+    ProcessSemanticSearch = processSemanticSearch
 }
 
 let webApp : HttpHandler =

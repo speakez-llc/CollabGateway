@@ -1,30 +1,7 @@
-POST https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview
+POST http://localhost:11434/api/embeddings
 Content-Type: application/json
-api-key: e0d335b9bf2245ad8222153a916dac5f
 
 {
-    "messages": [
-        {
-            "role": "system",
-            "content": "Extract the following information from the text and respond with a JSON object with ONLY the following keys: name, email, title, phone, address1, address2, city, state, zip, country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
-        },
-        {
-            "role": "user",
-            "content": "Houston Haynes Managing Partner Rower Consulting O: (404) 689-9467 A: 1 W Ct Square Suite 750, Decatur, GA 30030 W: https://www.rowerconsulting.com E: hhaynes@rowerconsulting.com"
-        },
-        {
-            "role": "assistant",
-            "content": "{\n    \"name\": \"Houston Haynes\",\n    \"email\": \"hhaynes@rowerconsulting.com\",\n    \"title\": \"Managing Partner\",\n    \"phone\": \"(404) 689-9467\",\n    \"address1\": \"1 W Ct Square Suite 750\",\n    \"address2\": null,\n    \"city\": \"Decatur\",\n    \"state\": \"GA\",\n    \"zip\": \"30030\",\n    \"country\": null\n}"
-        },
-        {
-            "role": "user",
-            "content": "Nicole Vinci Hengst\nVice President, Commercial Operations, Analytics, and Insights\nM: 484-666-1709\nO: 781.287.8767| nicole.hengst@azurity.com"
-        }
-    ],
-    "max_tokens": 800,
-    "temperature": 0.7,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
-    "top_p": 0.95,
-    "stop": null
+    "model": "granite-embedding:latest",
+    "keep_alive": -1
 }

@@ -45,3 +45,12 @@
 .breadcrumb-select option[data-text] {
     display: none;
 }
+
+.toast > div {
+    transition: all 1000ms ease-in-out;
+}
+
+.toast > div.hidden {
+    opacity: 0;
+    transform: translateX(100%);
+}
