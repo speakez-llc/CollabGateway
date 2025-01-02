@@ -1,4 +1,4 @@
-POST http://localhost:11434/api/embeddings
+POST http://10.0.0.252:11434/api/embeddings
 Content-Type: application/json
 
 {

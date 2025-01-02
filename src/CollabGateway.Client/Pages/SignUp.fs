@@ -122,13 +122,7 @@ let private validateForm (form: SignUpForm) =
           if String.IsNullOrWhiteSpace(form.Email) then Some("Email is required") else None
           if String.IsNullOrWhiteSpace(form.JobTitle) then Some("Job Title is required") else None
           if String.IsNullOrWhiteSpace(form.Phone) then Some("Phone is required") else None
-          if String.IsNullOrWhiteSpace(form.Department) then Some("Department is required") else None
           if String.IsNullOrWhiteSpace(form.Industry) then Some("Industry is required") else None
-          if String.IsNullOrWhiteSpace(form.StreetAddress1) then Some("Street Address is required") else None
-          if String.IsNullOrWhiteSpace(form.City) then Some("City is required") else None
-          if String.IsNullOrWhiteSpace(form.StateProvince) then Some("State/Province is required") else None
-          if String.IsNullOrWhiteSpace(form.Country) then Some("Country is required") else None
-          if String.IsNullOrWhiteSpace(form.PostCode) then Some("Post Code is required") else None
           if not submittedEmailIsValid then Some("Email is not valid") else None ]
         |> List.choose id
 
@@ -287,6 +281,14 @@ let generateDirectBreadcrumbs (taxonomy: GicsTaxonomy[]) =
     )
     |> Array.toList
 
+let private validateAndDispatchErrors newModel parentDispatch =
+
+    let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
+    let currentErrors = newModel.Errors |> Map.toList |> List.map snd
+    let newErrors = errors |> List.filter (fun error -> not (List.contains error currentErrors))
+    newErrors |> List.iter (fun error ->
+        parentDispatch (ShowToast (error, AlertLevel.Warning)))
+    { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
@@ -342,11 +344,12 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | AskForMessage success -> model, Cmd.OfAsync.eitherAsResult (fun _ -> service.GetMessage (if success then "true" else "false")) MessageReceived
     | UpdateName name ->
         let newModel = { model with State.SignUpForm.Name = name }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateEmail email ->
         let isEmailValid = isEmailValid email
+        let newModel = { model with State.SignUpForm.Email = email; IsEmailValid = Some isEmailValid }
+
         let delayedCmd =
             if isEmailValid then
                 Cmd.OfAsync.perform (fun () -> async {
@@ -367,58 +370,48 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             else
                 Cmd.none
 
-        let newModel = { model with State.SignUpForm.Email = email; IsEmailValid = Some isEmailValid }
-        let errors, _, _, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [delayedCmd; checkEmailVerificationCmd]
+        let updatedModel, cmd = validateAndDispatchErrors newModel parentDispatch
+        updatedModel, Cmd.batch [cmd; delayedCmd; checkEmailVerificationCmd]
 
     | UpdateJobTitle jobTitle ->
         let newModel = { model with State.SignUpForm.JobTitle = jobTitle }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdatePhone phone ->
         let newModel = { model with State.SignUpForm.Phone = phone }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateDepartment department ->
         let newModel = { model with State.SignUpForm.Department = department }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateIndustry industry ->
         let newModel = { model with State.SignUpForm.Industry = industry }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
+
     | UpdateStreetAddress1 streetAddress1 ->
         let newModel = { model with State.SignUpForm.StreetAddress1 = streetAddress1 }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateStreetAddress2 streetAddress2 ->
         let newModel = { model with State.SignUpForm.StreetAddress2 = streetAddress2 }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateCity city ->
         let newModel = { model with State.SignUpForm.City = city }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateStateProvince stateProvince ->
         let newModel = { model with State.SignUpForm.StateProvince = stateProvince }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdateCountry country ->
         let newModel = { model with State.SignUpForm.Country = country }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
 
     | UpdatePostCode postCode ->
         let newModel = { model with State.SignUpForm.PostCode = postCode }
-        let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
+        validateAndDispatchErrors newModel parentDispatch
     | UpdateSignUpForm signUpForm -> { model with SignUpForm = signUpForm }, Cmd.none
     | MessageReceived (Ok msg) -> { model with Message = $"Information Successfully Pasted" }, Cmd.none
     | MessageReceived (Result.Error error) -> { model with Message = $"Message Received!" }, Cmd.none
