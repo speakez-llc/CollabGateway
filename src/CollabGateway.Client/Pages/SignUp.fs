@@ -390,7 +390,6 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         let newModel = { model with State.SignUpForm.Industry = industry }
         let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
         { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, cmd
-
     | UpdateStreetAddress1 streetAddress1 ->
         let newModel = { model with State.SignUpForm.StreetAddress1 = streetAddress1 }
         let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
