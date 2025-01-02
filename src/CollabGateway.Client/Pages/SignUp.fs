@@ -285,7 +285,7 @@ let generateDirectBreadcrumbs (taxonomy: GicsTaxonomy[]) =
 
         (code, path)
     )
-    |> Map.ofArray
+    |> Array.toList
 
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
@@ -303,23 +303,27 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         { model with IsSemanticSearchActive = true }, searchCmd
     | PartialGicsTaxonomyLoaded taxonomy ->
         let breadcrumbPaths = generateDirectBreadcrumbs taxonomy
+        Console.WriteLine("SemanticTaxonomy updated:")
+        taxonomy |> Array.iter (fun g -> Console.WriteLine($"{g.SectorCode}: {g.SectorName} > {g.IndustryGroupName} > {g.IndustryName} > {g.SubIndustryName}"))
+        Console.WriteLine("BreadcrumbPaths updated:")
+        breadcrumbPaths |> List.iter (fun (key, value) -> Console.WriteLine($"{key}: {value}"))
         { model with
-            SemanticTaxonomy = Some taxonomy  // Store in separate field
-            BreadcrumbPaths = breadcrumbPaths
+            SemanticTaxonomy = Some taxonomy
+            BreadcrumbPaths = breadcrumbPaths |> Map.ofList
             IsSemanticSearchActive = false
             IsSemanticMode = true },
         Cmd.ofMsg OpenSelectDropdown
     | OpenSelectDropdown ->
         model, Cmd.OfFunc.attempt (fun () ->
             let selectElement = document.querySelector("select") :?> Browser.Types.HTMLSelectElement
-            let filteredCount = 
+            let filteredCount =
                 if model.IsSemanticMode then
                     match model.SemanticTaxonomy with
-                    | Some taxonomy -> 
+                    | Some taxonomy ->
                         taxonomy
                         |> generateDirectBreadcrumbs
-                        |> Map.count
-                        |> (+) 1  
+                        |> List.length
+                        |> (+) 1
                     | None -> 0
                 else
                     match model.GicsTaxonomy with
@@ -327,9 +331,9 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
                         taxonomy
                         |> generateBreadcrumbPaths
                         |> Map.count
-                        |> (+) 1  
+                        |> (+) 1
                     | None -> 0
-            
+
             selectElement.size <- max 1 filteredCount
             () // Return unit
         ) () (fun _ -> OpenSelectDropdown)
@@ -658,8 +662,6 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
             | Some taxonomy ->
                 taxonomy
                 |> generateDirectBreadcrumbs
-                |> Map.toList
-                |> List.filter (fun (_, path) -> path.ToLower().Contains(state.GicsQuery.ToLower()))
             | None -> []
         else
             match state.GicsTaxonomy with

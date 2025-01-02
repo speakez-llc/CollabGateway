@@ -12,7 +12,7 @@ open System.Net.Http
 open FSharp.Data
 open Newtonsoft.Json
 open Npgsql
-
+open System.Threading.Tasks
 
 let execNonQueryAsync connStr commandStr =
     task {
@@ -27,18 +27,8 @@ let connStr = Environment.GetEnvironmentVariable("GATEWAY_STORE")
 
 let parseDatabase (connectionString: string) =
     let parts = connectionString.Split(';')
-    let databasePart = parts |> Array.find (_.StartsWith("Database="))
+    let databasePart = parts |> Array.find (fun part -> part.StartsWith("Database="))
     databasePart.Split('=') |> Array.last
-
-let getGicsTableRowCountAsync connStr databaseName =
-    task {
-        let commandStr = $"SELECT COUNT(Embeddings) FROM \"%s{databaseName}\".public.\"GicsTaxonomy\";"
-        use conn = new NpgsqlConnection(connStr)
-        use cmd = new NpgsqlCommand(commandStr, conn)
-        do! conn.OpenAsync()
-        let! result = cmd.ExecuteScalarAsync() |> Async.AwaitTask
-        return result :?> int64
-    }
 
 let createGicsTaxonomyTable databaseName =
     let commandStr = $"""
@@ -60,71 +50,7 @@ let createGicsTaxonomyTable databaseName =
     """
     execNonQueryAsync connStr commandStr
 
-let verifyGicsTableSchemaAsync connStr =
-    task {
-        let commandStr = """
-            SELECT column_name, data_type, udt_name
-            FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = 'GicsTaxonomy';
-        """
-        use conn = new NpgsqlConnection(connStr)
-        use cmd = new NpgsqlCommand(commandStr, conn)
-        do! conn.OpenAsync()
-        let! reader = cmd.ExecuteReaderAsync() |> Async.AwaitTask
-        let columns =
-            [ while reader.Read() do
-                let columnName = reader.GetString(0)
-                let dataType = reader.GetString(1)
-                let udtName = reader.GetString(2)
-                yield columnName, dataType, udtName ]
-        reader.Close()
-
-        let expectedSchema =
-            [ "Id", "uuid", "uuid"
-              "SubIndustryCode", "text", "text"
-              "SubIndustry", "text", "text"
-              "Definition", "text", "text"
-              "IndustryCode", "text", "text"
-              "Industry", "text", "text"
-              "IndustryGroupCode", "text", "text"
-              "IndustryGroup", "text", "text"
-              "SectorCode", "text", "text"
-              "Sector", "text", "text"
-              "Embedding", "vector", "vector" ]
-
-        let columnsSimplified = columns |> List.map (fun (name, dataType, udtName) -> name, dataType, udtName)
-        Console.WriteLine $"GicsTaxonomy table schema: {columnsSimplified}"
-        if (columnsSimplified |> List.sort) <> (expectedSchema |> List.sort) then
-            Console.WriteLine "GicsTaxonomy table schema is incorrect."
-            return false
-        else
-            Console.WriteLine "GicsTaxonomy table schema is correct."
-            return true
-    }
-
 type GicsCsv = CsvProvider<"GICS.csv", HasHeaders=true, Schema="SubIndustryCode (string), SubIndustry (string), Definition (string), IndustryCode (string), Industry (string), IndustryGroupCode (string), IndustryGroup (string), SectorCode (string), Sector (string)">
-
-let verifyEmbeddedColumnIsPopulatedAsync connStr =
-    task {
-        let commandStr = "SELECT COUNT(*) FROM public.\"GicsTaxonomy\" WHERE \"Embedding\" IS NOT NULL;"
-        let totalRowsCommandStr = "SELECT COUNT(*) FROM public.\"GicsTaxonomy\";"
-        use conn = new NpgsqlConnection(connStr)
-        use cmd = new NpgsqlCommand(commandStr, conn)
-        use totalRowsCmd = new NpgsqlCommand(totalRowsCommandStr, conn)
-        do! conn.OpenAsync()
-        let! populatedCount = cmd.ExecuteScalarAsync() |> Async.AwaitTask
-        let! totalCount = totalRowsCmd.ExecuteScalarAsync() |> Async.AwaitTask
-
-        let csv = GicsCsv.Load("GICS.csv")
-        let csvRowCount = csv.Rows |> Seq.length |> int64
-
-        if populatedCount = null || totalCount = null || (populatedCount :?> int64) <> csvRowCount then
-            Console.WriteLine "Not all rows in the GicsTaxonomy table Embedding column are populated or the row count does not match the CSV file."
-            return false
-        else
-            Console.WriteLine "All rows in the GicsTaxonomy table Embedding column are populated and match the CSV file row count."
-            return true
-    }
 
 type EmbeddingResponse = {
     embeddings: float[][]
@@ -136,7 +62,7 @@ type TextRequest = {
 }
 
 let generateVector (text: string) =
-    task {
+    async {
         use client = new HttpClient()
         let requestUri = "http://localhost:11434/api/embed"
         let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text }), Encoding.UTF8, "application/json")
@@ -196,15 +122,4 @@ let insertGicsTaxonomyAsync =
             | ex -> Console.WriteLine $"Error generating vector or inserting row: {ex.Message}"
     }
 
-let verifyGicsTaxonomyTableAsync =
-    task {
-        let! isSchemaCorrect = verifyGicsTableSchemaAsync connStr
-        let! isEmbeddingPopulated = verifyEmbeddedColumnIsPopulatedAsync connStr
-        if not isSchemaCorrect || not isEmbeddingPopulated then
-            Console.WriteLine "GicsTaxonomy table schema is incorrect or Embedding column is not fully populated."
-            do! insertGicsTaxonomyAsync
-        else
-            Console.WriteLine $"GicsTaxonomy table is in place and populated."
-    }
-
-verifyGicsTaxonomyTableAsync
+insertGicsTaxonomyAsync |> Async.AwaitTask |> ignore
