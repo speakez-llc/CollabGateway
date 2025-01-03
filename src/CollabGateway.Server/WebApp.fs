@@ -93,27 +93,43 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
             eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
             use httpClient = new HttpClient()
             let requestPayload = {
-                model = "llama32-address"
+                model = "llama3.2:latest"
                 messages = [
                     {
                         role = "system"
-                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. This especially important for email address values you extract. Do not modify email from the extracted value. Do not hallucinate. Where more than one phone is presented, always take the office phone where indicated. Otherwise take the first phone value. StateProvince is most often a US state, but can also be a province of anywhere in the world. PostCode and ZIP Code are often interchangeable terms in common use. The country value is least likely to appear and is often left as null. Country is never the same as the state value. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any extracted information in inputs, use the value null."
-                    };
+                        content = "Extract available information as it appears in the text and respond with a JSON object with ONLY the following keys which may be present in the input: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. For keys without extracted information from input present an empty value for that key. Do not create any new values under any circumstances. Presenting an empty value is an valid value if a value for a given key is not in the provided text. Do not hallucinate. StateProvince is most often a US state, but can also be a province of anywhere in the world. PostCode and ZIP Code are often interchangeable terms in common use. Country is never the same as the state value. Do not create new values. Do not change the values of the keys. Do not create new phone numbers. Do not create new email addresses."
+                    }
                     {
                         role = "user"
                         content = "Houston Haynes Managing Partner Rower Consulting O: (404) 689-9467 A: 1 W Ct Square Suite 750, Decatur, GA 30030 W: https://www.rowerconsulting.com E: hhaynes@rowerconsulting.com"
-                    };
+                    }
                     {
                         role = "assistant"
                         content = "{\n    \"Name\": \"Houston Haynes\",\n    \"Email\": \"hhaynes@rowerconsulting.com\",\n    \"Company\": \"Rower Consulting\",\n    \"JobTitle\": \"Managing Partner\",\n    \"Phone\": \"(404) 689-9467\",\n    \"StreetAddress1\": \"1 W Ct Square\",\n    \"StreetAddress2\": \"Suite 750\",\n    \"City\": \"Decatur\",\n    \"StateProvince\": \"GA\",\n    \"PostCode\": \"30030\",\n    \"Country\": null\n}"
-                    };
+                    }
                     {
                         role = "user"
                         content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USA Desk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
-                    };
+                    }
                     {
                         role = "assistant"
                         content = "{\n \"City\": \"New York\",\n \"Country\": \"USA\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financepro.fake\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+                    }
+                    {
+                        role = "user"
+                        content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USA Email: michael.johnson@financepro.fake"
+                    }
+                    {
+                        role = "assistant"
+                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financepro.fake\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": null,\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+                    }
+                    {
+                        role = "user"
+                        content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USA"
+                    }
+                    {
+                        role = "assistant"
+                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": null,\n \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": null,\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
                     }
                     {
                         role = "user"
@@ -136,7 +152,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                         ("PostCode", { ``type`` = "string" })
                         ("Country", { ``type`` = "string" })
                     ]
-                    required = ["Name"; "Email"; "JobTitle"; "Department"; "Phone"; "StreetAddress1"; "StreetAddress2"; "City"; "StateProvince"; "PostCode"; "Country"]
+                    required = [ "Name"; "Email"; "JobTitle"; "Department"; "Phone"; "StreetAddress1"; "StreetAddress2"; "City"; "StateProvince"; "PostCode"; "Country" ]
                 }
             }
 

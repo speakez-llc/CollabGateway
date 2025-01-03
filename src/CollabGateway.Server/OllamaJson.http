@@ -23,11 +23,11 @@ curl -X POST http://10.0.0.252:11434/api/chat -H "Content-Type: application/json
     },
     {
       "role": "user",
-      "content": "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USADesk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
+      "content": "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USA Email: michael.johnson@financepro.fake"
     },
     {
       "role": "assistant",
-      "content": "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financeproinc.com\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+      "content": "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financeproinc.com\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": null,\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
     }
     
   ],

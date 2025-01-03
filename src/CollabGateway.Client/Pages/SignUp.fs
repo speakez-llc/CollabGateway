@@ -296,8 +296,13 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | CloseIndustryModal ->
         { model with IsIndustryModalOpen = false }, Cmd.none
     | ToggleIndustryModal ->
-        Console.WriteLine("ToggleIndustryModal dispatched")
-        { model with IsIndustryModalOpen = not model.IsIndustryModalOpen }, Cmd.none
+        let newModel =
+            { model with
+                IsIndustryModalOpen = not model.IsIndustryModalOpen
+                GicsQuery = ""
+                SemanticSearchQuery = ""
+            }
+        newModel, Cmd.none
     | GicsTaxonomyLoaded taxonomy ->
         let breadcrumbPaths = generateBreadcrumbPaths taxonomy
         { model with GicsTaxonomy = Some taxonomy; BreadcrumbPaths = breadcrumbPaths }, Cmd.none
@@ -390,13 +395,13 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         validateAndDispatchErrors newModel parentDispatch
 
     | UpdateIndustry industry ->
-        let newModel = { model with 
-                                SignUpForm = { model.SignUpForm with Industry = industry } 
-                                IsIndustryModalOpen = false } 
+        let newModel = { model with
+                                SignUpForm = { model.SignUpForm with Industry = industry }
+                                IsIndustryModalOpen = false }
         let updatedModel, cmd = validateAndDispatchErrors newModel parentDispatch
-        updatedModel, Cmd.batch [ 
+        updatedModel, Cmd.batch [
             cmd
-            Cmd.ofMsg (UpdateEmail model.SignUpForm.Email) 
+            Cmd.ofMsg (UpdateEmail model.SignUpForm.Email)
         ]
 
     | UpdateStreetAddress1 streetAddress1 ->
@@ -490,10 +495,10 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
     | FormProcessed (Ok response) ->
         let currentIndustry = model.SignUpForm.Industry
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)
-        let newModel = { model with 
+        let newModel = { model with
                             SignUpForm = { parsedForm with Industry = currentIndustry }
-                            IsProcessing = false 
-                            FormSubmittedCount = model.FormSubmittedCount + 1 
+                            IsProcessing = false
+                            FormSubmittedCount = model.FormSubmittedCount + 1
                         }
         newModel, Cmd.none
     | FormProcessed (Result.Error ex) ->
@@ -1194,7 +1199,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
             Html.div [
                 prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
-                prop.onClick (fun e -> 
+                prop.onClick (fun e ->
                     if e.target = e.currentTarget then
                         dispatch CloseIndustryModal
                 )
