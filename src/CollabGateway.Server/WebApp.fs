@@ -25,6 +25,12 @@ let private serverName =
     | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
     | value -> value
 
+let private embeddingEndpoint =
+    let value = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT")
+    match value with
+    | null | "" -> failwith "OLLAMA_ENDPOINT environment variable is not set."
+    | value -> value
+
 let getMessage (input: string): Async<string> =
     async {
         return $"Received message: {input}"
@@ -55,7 +61,7 @@ type TextRequest = {
 let generateVector (text: string) =
     async {
         use client = new HttpClient()
-        let requestUri = "http://localhost:11434/api/embed"
+        let requestUri = $"{embeddingEndpoint}/api/embed"
         let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text; keep_alive = -1 }), Encoding.UTF8, "application/json")
         let! response = client.PostAsync(requestUri, content) |> Async.AwaitTask
         if not response.IsSuccessStatusCode then
