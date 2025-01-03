@@ -97,7 +97,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                 messages = [
                     {
                         role = "system"
-                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. Where more than one phone is available, always take the office phone where indicated. Otherwise take the first phone value. PostCode and ZIP Code are often interchangeable terms in common use. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
+                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. This especially important for email addresses. Do not modify them from the given value. Do not hallucinate. Where more than one phone is available, always take the office phone where indicated. Otherwise take the first phone value. PostCode and ZIP Code are often interchangeable terms in common use. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
                     };
                     {
                         role = "user"
@@ -107,13 +107,13 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                         role = "assistant"
                         content = "{\n    \"Name\": \"Houston Haynes\",\n    \"Email\": \"hhaynes@rowerconsulting.com\",\n    \"Company\": \"Rower Consulting\",\n    \"JobTitle\": \"Managing Partner\",\n    \"Phone\": \"(404) 689-9467\",\n    \"StreetAddress1\": \"1 W Ct Square\",\n    \"StreetAddress2\": \"Suite 750\",\n    \"City\": \"Decatur\",\n    \"StateProvince\": \"GA\",\n    \"PostCode\": \"30030\",\n    \"Country\": null\n}"
                     };
-                    {                    
+                    {
                         role = "user"
                         content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USADesk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
                     };
                     {
                         role = "assistant"
-                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financeproinc.com\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financepro.fake\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
                     }
                     {
                         role = "user"
@@ -139,50 +139,50 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                     required = ["Name"; "Email"; "JobTitle"; "Department"; "Phone"; "StreetAddress1"; "StreetAddress2"; "City"; "StateProvince"; "PostCode"; "Country"]
                 }
             }
-            
+
             let content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json")
-            
+
             let! response = httpClient.PostAsync(endpoint, content) |> Async.AwaitTask
             let! responseBody = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            
+
             // Add debug logging
             printfn "Raw Response: %s" responseBody
-            
+
             if String.IsNullOrEmpty(responseBody) then
                 raise (ServerException(ServerError.ProcessError ProcessErrorKind.EmptyResponse))
-                    
+
             if response.StatusCode <> HttpStatusCode.OK then
                 raise (ServerException(ServerError.ProcessError (ProcessErrorKind.InvalidStatusCode (int response.StatusCode))))
-                    
+
             let jsonResponse = JObject.Parse(responseBody)
             printfn "Parsed JSON: %A" jsonResponse
-            
+
             let messageContent =
                 match jsonResponse.SelectToken("message.content") with  // Updated path
-                | null -> 
+                | null ->
                     match jsonResponse.SelectToken("response") with    // Fallback path
                     | null -> raise (ServerException(ServerError.ProcessError ProcessErrorKind.NoContentField))
                     | token -> token.ToString()
                 | token -> token.ToString()
-                    
+
             printfn "Message Content: %s" messageContent
-                    
+
             if String.IsNullOrEmpty(messageContent) then
                 raise (ServerException(ServerError.ProcessError ProcessErrorKind.EmptyContent))
-                    
+
             let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
-            
+
             if isNull (box form) then
                 raise (ServerException(ServerError.ProcessError ProcessErrorKind.DeserializationError))
-            
+
             eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
             return form
-                
-        with 
-        | :? ServerException as ex -> 
+
+        with
+        | :? ServerException as ex ->
             printfn "Server Exception: %A" ex
             return raise ex
-        | ex -> 
+        | ex ->
             printfn "Unexpected Exception: %A" ex
             return raise (ServerException(ServerError.Exception ex.Message))
     }
