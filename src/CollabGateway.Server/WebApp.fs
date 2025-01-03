@@ -97,7 +97,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                 messages = [
                     {
                         role = "system"
-                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. This especially important for email addresses. Do not modify them from the given value. Do not hallucinate. Where more than one phone is available, always take the office phone where indicated. Otherwise take the first phone value. PostCode and ZIP Code are often interchangeable terms in common use. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
+                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. This especially important for email address values you extract. Do not modify email from the extracted value. Do not hallucinate. Where more than one phone is presented, always take the office phone where indicated. Otherwise take the first phone value. StateProvince is most often a US state, but can also be a province of anywhere in the world. PostCode and ZIP Code are often interchangeable terms in common use. The country value is least likely to appear and is often left as null. Country is never the same as the state value. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any extracted information in inputs, use the value null."
                     };
                     {
                         role = "user"
@@ -109,11 +109,11 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                     };
                     {
                         role = "user"
-                        content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USADesk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
+                        content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USA Desk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
                     };
                     {
                         role = "assistant"
-                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financepro.fake\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+                        content = "{\n \"City\": \"New York\",\n \"Country\": \"USA\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financepro.fake\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
                     }
                     {
                         role = "user"

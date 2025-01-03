@@ -387,7 +387,8 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
 
     | UpdateIndustry industry ->
         let newModel = { model with State.SignUpForm.Industry = industry }
-        validateAndDispatchErrors newModel parentDispatch
+        let updatedModel, cmd = validateAndDispatchErrors newModel parentDispatch
+        updatedModel, Cmd.batch [cmd; Cmd.ofMsg (UpdateEmail newModel.SignUpForm.Email)]
 
     | UpdateStreetAddress1 streetAddress1 ->
         let newModel = { model with State.SignUpForm.StreetAddress1 = streetAddress1 }
