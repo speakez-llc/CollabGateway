@@ -93,7 +93,7 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
             eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
             use httpClient = new HttpClient()
             let requestPayload = {
-                model = "llama3.2:1b"
+                model = "llama32-address"
                 messages = [
                     {
                         role = "system"
