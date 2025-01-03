@@ -67,14 +67,21 @@ type ChatMessage = {
     content: string
 }
 
-type OpenAIRequest = {
+type OllamaPropertiesType = {
+    ``type``: string
+}
+
+type OllamaFormat = {
+    ``type``: string
+    properties: Map<string, OllamaPropertiesType>
+    required: string list
+}
+
+type OllamaAddressRequest = {
+    model: string
     messages: ChatMessage list
-    max_tokens: int
-    temperature: float
-    frequency_penalty: float
-    presence_penalty: float
-    top_p: float
-    stop: string option
+    stream: bool
+    format: OllamaFormat
 }
 
 

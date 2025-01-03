@@ -25,7 +25,7 @@ let private serverName =
     | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
     | value -> value
 
-let private embeddingEndpoint =
+let private ollamaEndpoint =
     let value = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT")
     match value with
     | null | "" -> failwith "OLLAMA_ENDPOINT environment variable is not set."
@@ -55,14 +55,13 @@ type EmbeddingResponse = {
 type TextRequest = {
     model: string
     input: string
-    keep_alive: int
 }
 
 let generateVector (text: string) =
     async {
         use client = new HttpClient()
-        let requestUri = $"{embeddingEndpoint}/api/embed"
-        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text; keep_alive = -1 }), Encoding.UTF8, "application/json")
+        let requestUri = $"{ollamaEndpoint}/api/embed"
+        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text }), Encoding.UTF8, "application/json")
         let! response = client.PostAsync(requestUri, content) |> Async.AwaitTask
         if not response.IsSuccessStatusCode then
             let! errorContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
@@ -72,7 +71,7 @@ let generateVector (text: string) =
             let embeddingResponse = JsonConvert.DeserializeObject<EmbeddingResponse>(responseBody)
             if embeddingResponse.embeddings = null || embeddingResponse.embeddings.Length = 0 then
                 failwith "Embedding is null or empty"
-            let vectorBody = embeddingResponse.embeddings.[0]
+            let vectorBody = embeddingResponse.embeddings[0]
             return vectorBody
         with
         | ex ->
@@ -88,20 +87,17 @@ let processSemanticSearch (text: string) =
     }
 
 let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: SmartFormRawContent) : Async<SignUpForm> =
-    task {
-        let apiKey = Environment.GetEnvironmentVariable("AZUREOPENAI_API_KEY")
-        if String.IsNullOrEmpty(apiKey) then
-            return! ServerError.failwith (ServerError.Exception "Azure OpenAI API key is not set.")
-        else
+    async {
+        try
+            let endpoint = $"{ollamaEndpoint}/api/chat"
             eventProcessor.Post(ProcessSmartFormInput (timeStamp, streamToken, text))
-            let url = "https://addreslookup.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview"
             use httpClient = new HttpClient()
-            httpClient.DefaultRequestHeaders.Add("api-key", apiKey)
             let requestPayload = {
+                model = "llama3.2:1b"
                 messages = [
                     {
                         role = "system"
-                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
+                        content = "Extract the following information from the text and respond with a JSON object with ONLY the following keys: Name, Email, JobTitle, Department, Phone, StreetAddress1, StreetAddress2, City, StateProvince, PostCode, Country. Do not modify any text information in the extracted values. Where more than one phone is available, always take the office phone where indicated. Otherwise take the first phone value. PostCode and ZIP Code are often interchangeable terms in common use. Extract for the reasonable value for the appropriate code given the address text. For each key, infer a value from inputs. For fields without any corresponding information in inputs, use the value null."
                     };
                     {
                         role = "user"
@@ -111,31 +107,85 @@ let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: 
                         role = "assistant"
                         content = "{\n    \"Name\": \"Houston Haynes\",\n    \"Email\": \"hhaynes@rowerconsulting.com\",\n    \"Company\": \"Rower Consulting\",\n    \"JobTitle\": \"Managing Partner\",\n    \"Phone\": \"(404) 689-9467\",\n    \"StreetAddress1\": \"1 W Ct Square\",\n    \"StreetAddress2\": \"Suite 750\",\n    \"City\": \"Decatur\",\n    \"StateProvince\": \"GA\",\n    \"PostCode\": \"30030\",\n    \"Country\": null\n}"
                     };
+                    {                    
+                        role = "user"
+                        content = "Michael Johnson Chief Financial Officer Finance Department FinancePro Inc. 4321 Maple Street Suite 234 New York NY 10001 USADesk: +1 (555) 246-8102 Email: michael.johnson@financepro.fake"
+                    };
                     {
-                        role = "user";
+                        role = "assistant"
+                        content = "{\n \"City\": \"New York\",\n \"Country\": \"US\",\n \"Department\": \"Finance Department\",\n \"Email\": \"michael.johnson@financeproinc.com\"\n   , \"JobTitle\": \"Chief Financial Officer\" ,\n \"Name\": \"Michael Johnson\",\n \"Phone\": \"+1 (555) 246-8102\",\n \"PostCode\": \"10001\",\n \"StateProvince\": \"NY\",\n \"StreetAddress1\": \"4321 Maple Street\",\n \"StreetAddress2\": \"Suite 234\"\n}"
+                    }
+                    {
+                        role = "user"
                         content = text
                     }
                 ]
-                max_tokens = 800
-                temperature = 0.7
-                frequency_penalty = 0.0
-                presence_penalty = 0.0
-                top_p = 0.95
-                stop = None
+                stream = false
+                format = {
+                    ``type`` = "object"
+                    properties = Map.ofList [
+                        ("Name", { ``type`` = "string" })
+                        ("Email", { ``type`` = "string" })
+                        ("JobTitle", { ``type`` = "string" })
+                        ("Department", { ``type`` = "string"})
+                        ("Phone", { ``type`` = "string" })
+                        ("StreetAddress1", { ``type`` = "string" })
+                        ("StreetAddress2", { ``type`` = "string" })
+                        ("City", { ``type`` = "string" })
+                        ("StateProvince", { ``type`` = "string" })
+                        ("PostCode", { ``type`` = "string" })
+                        ("Country", { ``type`` = "string" })
+                    ]
+                    required = ["Name"; "Email"; "JobTitle"; "Department"; "Phone"; "StreetAddress1"; "StreetAddress2"; "City"; "StateProvince"; "PostCode"; "Country"]
+                }
             }
-            let content = new StringContent(JsonConvert.SerializeObject(requestPayload), System.Text.Encoding.UTF8, "application/json")
-            let! response = httpClient.PostAsync(url, content)
-            let! responseBody = response.Content.ReadAsStringAsync()
-            if response.StatusCode = HttpStatusCode.OK then
-                let jsonResponse = JObject.Parse(responseBody)
-                let messageContent = jsonResponse.SelectToken("choices[0].message.content").ToString()
-                let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
-                eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
-                return form
-            else
-                return! ServerError.failwith (ServerError.Exception $"Call failed to inference: {response.StatusCode} - {responseBody}")
+            
+            let content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json")
+            
+            let! response = httpClient.PostAsync(endpoint, content) |> Async.AwaitTask
+            let! responseBody = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            
+            // Add debug logging
+            printfn "Raw Response: %s" responseBody
+            
+            if String.IsNullOrEmpty(responseBody) then
+                raise (ServerException(ServerError.ProcessError ProcessErrorKind.EmptyResponse))
+                    
+            if response.StatusCode <> HttpStatusCode.OK then
+                raise (ServerException(ServerError.ProcessError (ProcessErrorKind.InvalidStatusCode (int response.StatusCode))))
+                    
+            let jsonResponse = JObject.Parse(responseBody)
+            printfn "Parsed JSON: %A" jsonResponse
+            
+            let messageContent =
+                match jsonResponse.SelectToken("message.content") with  // Updated path
+                | null -> 
+                    match jsonResponse.SelectToken("response") with    // Fallback path
+                    | null -> raise (ServerException(ServerError.ProcessError ProcessErrorKind.NoContentField))
+                    | token -> token.ToString()
+                | token -> token.ToString()
+                    
+            printfn "Message Content: %s" messageContent
+                    
+            if String.IsNullOrEmpty(messageContent) then
+                raise (ServerException(ServerError.ProcessError ProcessErrorKind.EmptyContent))
+                    
+            let form = JsonConvert.DeserializeObject<SignUpForm>(messageContent)
+            
+            if isNull (box form) then
+                raise (ServerException(ServerError.ProcessError ProcessErrorKind.DeserializationError))
+            
+            eventProcessor.Post(ProcessSmartFormResult (timeStamp, streamToken, form))
+            return form
+                
+        with 
+        | :? ServerException as ex -> 
+            printfn "Server Exception: %A" ex
+            return raise ex
+        | ex -> 
+            printfn "Unexpected Exception: %A" ex
+            return raise (ServerException(ServerError.Exception ex.Message))
     }
-    |> Async.AwaitTask
 
 let establishStreamToken (timeStamp: EventDateTime, streamToken: StreamToken) = async {
     eventProcessor.Post(EstablishStreamToken (timeStamp, streamToken))

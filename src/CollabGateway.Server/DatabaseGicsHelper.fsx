@@ -16,7 +16,7 @@ let execNonQuery connStr commandStr =
     conn.Open()
     cmd.ExecuteNonQuery() |> ignore
 
-let connStr =
+let connStr = Environment.GetEnvironmentVariable("GATEWAY_STORE")
 
 let parseDatabase (connectionString: string) =
     let parts = connectionString.Split(';')

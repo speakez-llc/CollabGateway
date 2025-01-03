@@ -1,0 +1,7 @@
+POST https://embed-stg.speakez.tech/api/embed
+Content-Type: application/json
+
+{
+    "model": "granite-embedding:latest",
+    "input": "Public Address and Sound Equipment"
+}

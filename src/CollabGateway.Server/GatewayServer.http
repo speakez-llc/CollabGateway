@@ -1,0 +1,6 @@
+POST https://rower-stg.speakez.tech/api/service/ProcessUserClientIP
+Content-Type: application/json
+
+{
+["6f1262c6-7080-4b71-b52b-d7509dde42cd", "2024-10-25T16:13:13.287Z", "97.82.238.105"]
+}

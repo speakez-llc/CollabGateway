@@ -1,0 +1,22 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "10.0.0.31",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "gateway",
+            "database": "gatewaystore",
+            "username": "cmsadmin"
+        },
+        {
+            "previewLimit": 50,
+            "server": "10.0.0.31",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "gwstorestaging",
+            "database": "gatewaystorestaging",
+            "username": "cmsadmin"
+        }
+    ]
+}
