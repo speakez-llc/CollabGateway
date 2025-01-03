@@ -109,27 +109,6 @@ let isPhoneNumberValid (phone: string) =
     let phoneRegex = System.Text.RegularExpressions.Regex(@"^\+?(\d{1,3})?[-. (]*(\d{1,4})[-. )]*(\d{1,4})[-. ]*(\d{4,9})(?: *x(\d+))?$")
     phoneRegex.IsMatch(phone)
 
-let private validateForm (form: SignUpForm) =
-    let submittedEmailIsValid = isEmailValid form.Email
-    let cmd =
-        if submittedEmailIsValid then
-            Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain form.Email) () WebmailDomainFlagged
-        else
-            Cmd.none
-
-    let errors =
-        [ if String.IsNullOrWhiteSpace(form.Name) then Some("Name is required") else None
-          if String.IsNullOrWhiteSpace(form.Email) then Some("Email is required") else None
-          if String.IsNullOrWhiteSpace(form.JobTitle) then Some("Job Title is required") else None
-          if String.IsNullOrWhiteSpace(form.Phone) then Some("Phone is required") else None
-          if String.IsNullOrWhiteSpace(form.Industry) then Some("Industry is required") else None
-          if not submittedEmailIsValid then Some("Email is not valid") else None ]
-        |> List.choose id
-
-    let isSubmitActive =
-        List.isEmpty errors && submittedEmailIsValid
-
-    errors, not (List.isEmpty errors), cmd, isSubmitActive
 
 let private checkFormSubmission streamToken =
     async {
@@ -226,7 +205,7 @@ let isFormEmpty (form: SignUpForm) =
     String.IsNullOrWhiteSpace(form.JobTitle) &&
     String.IsNullOrWhiteSpace(form.Phone) &&
     String.IsNullOrWhiteSpace(form.Department) &&
-    String.IsNullOrWhiteSpace(form.Industry) &&
+    String.IsNullOrEmpty(form.Industry) &&
     String.IsNullOrWhiteSpace(form.StreetAddress1) &&
     String.IsNullOrWhiteSpace(form.StreetAddress2) &&
     String.IsNullOrWhiteSpace(form.City) &&
@@ -281,8 +260,29 @@ let generateDirectBreadcrumbs (taxonomy: GicsTaxonomy[]) =
     )
     |> Array.toList
 
-let private validateAndDispatchErrors newModel parentDispatch =
+let private validateForm (form: SignUpForm) =
+    let submittedEmailIsValid = isEmailValid form.Email
+    let cmd =
+        if submittedEmailIsValid then
+            Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain form.Email) () WebmailDomainFlagged
+        else
+            Cmd.none
 
+    let errors =
+        [ if String.IsNullOrWhiteSpace(form.Name) then Some("Name is required") else None
+          if String.IsNullOrWhiteSpace(form.Email) then Some("Email is required") else None
+          if String.IsNullOrWhiteSpace(form.JobTitle) then Some("Job Title is required") else None
+          if String.IsNullOrWhiteSpace(form.Phone) then Some("Phone is required") else None
+          if String.IsNullOrEmpty(form.Industry) then Some("Industry is required") else None
+          if not submittedEmailIsValid then Some("Email is not valid") else None ]
+        |> List.choose id
+
+    let isSubmitActive =
+        List.isEmpty errors && submittedEmailIsValid
+
+    errors, not (List.isEmpty errors), cmd, isSubmitActive
+
+let private validateAndDispatchErrors newModel parentDispatch =
     let errors, _, cmd, isSubmitActive = validateForm newModel.SignUpForm
     let currentErrors = newModel.Errors |> Map.toList |> List.map snd
     let newErrors = errors |> List.filter (fun error -> not (List.contains error currentErrors))
@@ -485,9 +485,9 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         { model with IsProcessing = false }, Cmd.none
     | SmartFormProcessed (Ok response) ->
         let newModel = { model with SignUpForm = response; IsProcessing = false }
-        let errors, _, cmd1, isSubmitActive = validateForm newModel.SignUpForm
+        let validatedModel, cmd1 = validateAndDispatchErrors newModel parentDispatch
         let cmd2 = Cmd.OfAsync.perform (fun () -> flaggedWebmailDomain response.Email) () WebmailDomainFlagged
-        { newModel with Errors = errors |> List.mapi (fun i error -> (i.ToString(), error)) |> Map.ofList; IsSubmitActive = isSubmitActive }, Cmd.batch [cmd1; cmd2]
+        validatedModel, Cmd.batch [cmd1; cmd2]
     | SmartFormProcessed (Result.Error ex) ->
         parentDispatch (ShowToast ($"Failed to process smart form: {ex}", AlertLevel.Error ))
         { model with IsProcessing = false }, Cmd.none
@@ -514,8 +514,13 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
                 IsSubmitActive = false
                 IsEmailValid = None
                 IsWebmailDomain = None
-            }
-        newModel, Cmd.none
+        }
+
+        // Debug statement to check the value of the Industry field
+        Console.WriteLine($"Industry field after clearing: '{newModel.SignUpForm.Industry}'")
+
+        let validatedModel, cmd = validateAndDispatchErrors newModel parentDispatch
+        validatedModel, cmd
     | RetrieveFormSubmittedCount (Ok count) ->
         if count >= 5 then
             parentDispatch (ShowToast ("You have reached the limit of form submissions", AlertLevel.Warning))
