@@ -66,6 +66,7 @@ type Msg =
     | ToggleAccordion2
     | ToggleAccordion3
     | ToggleIndustryModal
+    | CloseIndustryModal
     | SubmitForm
     | ClearForm
     | FormSubmitted of ServerResult<string>
@@ -292,7 +293,10 @@ let private validateAndDispatchErrors newModel parentDispatch =
 
 let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) : State * Cmd<Msg> =
     match msg with
+    | CloseIndustryModal ->
+        { model with IsIndustryModalOpen = false }, Cmd.none
     | ToggleIndustryModal ->
+        Console.WriteLine("ToggleIndustryModal dispatched")
         { model with IsIndustryModalOpen = not model.IsIndustryModalOpen }, Cmd.none
     | GicsTaxonomyLoaded taxonomy ->
         let breadcrumbPaths = generateBreadcrumbPaths taxonomy
@@ -386,9 +390,14 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
         validateAndDispatchErrors newModel parentDispatch
 
     | UpdateIndustry industry ->
-        let newModel = { model with State.SignUpForm.Industry = industry }
+        let newModel = { model with 
+                                SignUpForm = { model.SignUpForm with Industry = industry } 
+                                IsIndustryModalOpen = false } 
         let updatedModel, cmd = validateAndDispatchErrors newModel parentDispatch
-        updatedModel, Cmd.batch [cmd; Cmd.ofMsg (UpdateEmail newModel.SignUpForm.Email)]
+        updatedModel, Cmd.batch [ 
+            cmd
+            Cmd.ofMsg (UpdateEmail model.SignUpForm.Email) 
+        ]
 
     | UpdateStreetAddress1 streetAddress1 ->
         let newModel = { model with State.SignUpForm.StreetAddress1 = streetAddress1 }
@@ -479,8 +488,14 @@ let private update (msg: Msg) (model: State) (parentDispatch: ViewMsg -> unit) :
             let cmd = Cmd.OfAsync.eitherAsResult (fun _ -> service.ProcessSmartForm (DateTime.UtcNow, Guid.Parse (window.localStorage.getItem("UserStreamToken")), clipboardText)) SmartFormProcessed
             { model with IsProcessing = true }, cmd
     | FormProcessed (Ok response) ->
+        let currentIndustry = model.SignUpForm.Industry
         let parsedForm = JsonConvert.DeserializeObject<SignUpForm>(response)
-        { model with SignUpForm = parsedForm; IsProcessing = false }, Cmd.none
+        let newModel = { model with 
+                            SignUpForm = { parsedForm with Industry = currentIndustry }
+                            IsProcessing = false 
+                            FormSubmittedCount = model.FormSubmittedCount + 1 
+                        }
+        newModel, Cmd.none
     | FormProcessed (Result.Error ex) ->
         parentDispatch (ShowToast ($"Failed to process form: {ex}", AlertLevel.Error ))
         { model with IsProcessing = false }, Cmd.none
@@ -1179,6 +1194,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
 
             Html.div [
                 prop.className "fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 pointer-events-auto"
+                prop.onClick (fun e -> 
+                    if e.target = e.currentTarget then
+                        dispatch CloseIndustryModal
+                )
                 prop.children [
                     Html.div [
                         prop.className "bg-base-100 p-6 rounded-lg shadow-lg w-full max-w-7xl mx-auto max-h-screen overflow-y-auto"
@@ -1312,10 +1331,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                 prop.onChange (fun (ev: Browser.Types.Event) ->
                                     let target = ev.target :?> Browser.Types.HTMLSelectElement
                                     let selectedCode = target.value
-                                    if not state.IsSemanticMode then
-                                        updateTaxonomy selectedCode
-                                    else
-                                        dispatch (UpdateIndustry selectedCode)
+                                    dispatch (UpdateIndustry selectedCode)
                                 )
                                 prop.children (
                                     Html.option [ prop.value ""; prop.text "Select an Industry" ] ::
@@ -1336,7 +1352,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     Html.button [
                                         prop.className "btn btn-sm btn-secondary"
                                         prop.text "Cancel"
-                                        prop.onClick (fun _ -> dispatch ToggleIndustryModal)
+                                        prop.onClick (fun _ -> dispatch CloseIndustryModal)
                                     ]
                                 ]
                             ]
