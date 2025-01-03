@@ -6,6 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EmailHelpers.fs" />
+    <None Include="DatabaseWebDomainHelper.fsx" />
+    <None Include="DatabaseGicsHelper.fsx" /> 
     <Compile Include="Database.fs" />
     <Compile Include="Aggregates.fs" />
     <Compile Include="Notifications.fs" />
@@ -25,17 +27,23 @@
     <PackageReference Include="Giraffe" Version="5.0.0" />
     <PackageReference Include="JasperFx.CodeGeneration" Version="3.6.0" />
     <PackageReference Include="JasperFx.Core" Version="1.4.0" />
-    <PackageReference Include="JasperFx.RuntimeCompiler" Version="3.6.0" />
+    <PackageReference Include="JasperFx.RuntimeCompiler" Version="3.7.2" />
     <PackageReference Include="LamarCodeGeneration" Version="6.3.0" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Marten" Version="7.31.0" />
     <PackageReference Include="Marten.FSharp" Version="0.6.2" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.0.1-preview.1.24570.5" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageReference Include="MimeKit" Version="4.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql.FSharp" Version="5.7.0" />
+    <PackageReference Include="OllamaSharp" Version="4.0.11" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.0" />
     <PackageReference Include="WolverineFx" Version="3.0.1" />
     <PackageReference Include="WolverineFx.Marten" Version="3.0.1" />
+    <PackageReference Update="System.Text.Json">
+      <Version>9.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="FreeEmailDomains.txt">
@@ -54,6 +62,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="samplequery.sql" />
+    <None Include="DatabaseWebmailDomainHelper.fsx" />
+    <None Include="DatabaseGicsHelper.fsx" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

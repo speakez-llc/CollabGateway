@@ -161,16 +161,75 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
     | DataPolicyChoiceRetrieved choice ->
         { state with DataPolicyChoice = choice }, Cmd.none
     | ShowToast (message, level) ->
-        let newToast = { Index = state.NextToastIndex; Message = message; Level = level }
-        let hideToastCommand =
-            Cmd.OfAsync.perform (fun () ->
-                async {
-                    do! Async.Sleep 4000
-                    return HideToast newToast.Index
-                }) () id
-        { state with Toasts = newToast :: state.Toasts; NextToastIndex = state.NextToastIndex + 1 }, hideToastCommand
+        // Check if toast with same message exists
+        let existingToast = 
+            state.Toasts 
+            |> List.tryFind (fun t -> t.Message = message && t.Level = level)
+        
+        match existingToast with
+        | Some toast ->
+            // Remove existing toast and create new one with same message
+            let filteredToasts = 
+                state.Toasts 
+                |> List.filter (fun t -> t.Index <> toast.Index)
+            
+            let newToast = { 
+                Index = state.NextToastIndex
+                Message = message
+                Level = level 
+            }
+            
+            let hideCmd = 
+                Cmd.OfAsync.perform 
+                    (fun () -> async {
+                        do! Async.Sleep 4000
+                        return HideToast newToast.Index 
+                    }) () id
+            
+            { state with 
+                Toasts = newToast :: filteredToasts
+                NextToastIndex = state.NextToastIndex + 1 
+            }, hideCmd
+            
+        | None ->
+            // Create new toast as before
+            let newToast = { 
+                Index = state.NextToastIndex
+                Message = message
+                Level = level 
+            }
+            
+            let hideCmd = 
+                Cmd.OfAsync.perform 
+                    (fun () -> async {
+                        do! Async.Sleep 4000
+                        return HideToast newToast.Index 
+                    }) () id
+            
+            { state with 
+                Toasts = newToast :: state.Toasts
+                NextToastIndex = state.NextToastIndex + 1 
+            }, hideCmd
+
     | HideToast index ->
-        { state with Toasts = List.filter (fun t -> t.Index <> index) state.Toasts }, Cmd.none
+        let newState = { 
+            state with 
+                Toasts = state.Toasts |> List.map (fun t -> 
+                    if t.Index = index then { t with Level = Hidden } else t)
+        }
+        let removeCmd = 
+            Cmd.OfAsync.perform 
+                (fun () -> async {
+                    do! Async.Sleep 1000  // Match CSS transition duration
+                    return RemoveToast index
+                }) () id
+        newState, removeCmd
+
+    | RemoveToast index ->
+        { state with 
+            Toasts = List.filter (fun t -> t.Index <> index) state.Toasts 
+        }, Cmd.none
+    
     | ProcessPageVisited pageName ->
         processPageVisited pageName |> ignore
         state, Cmd.none
@@ -201,11 +260,13 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with IsAdmin = isAdmin }, Cmd.none
 
 let getAlertClass level =
+    let baseClass = "alert transition-all duration-200 ease-in-out p-4 text-base md:p-2 md:text-sm"
     match level with
-    | Success -> "alert alert-success p-4 text-base md:p-2 md:text-sm"
-    | Error -> "alert alert-error p-4 text-base md:p-2 md:text-sm"
-    | Warning -> "alert alert-warning p-4 text-base md:p-2 md:text-sm"
-    | Info -> "alert alert-info p-4 text-base md:p-2 md:text-sm"
+    | Success -> $"{baseClass} alert-success"
+    | Error -> $"{baseClass} alert-error"
+    | Warning -> $"{baseClass} alert-warning"
+    | Info -> $"{baseClass} alert-info"
+    | Hidden -> $"{baseClass} opacity-0"
 
 let Toast (toast: Toast) (dispatch: ViewMsg -> unit) =
     Html.div [
@@ -237,8 +298,20 @@ let AppView () =
 
     let renderToast (toasts: Toast list) (dispatch: ViewMsg -> unit) =
         Html.div [
-            prop.className "toast fadeOut"
-            prop.children (toasts |> List.map (fun toast -> Toast toast dispatch))
+            prop.className "toast toast-end"
+            prop.children (
+                toasts |> List.map (fun toast -> 
+                    Html.div [
+                        prop.key toast.Index
+                        prop.className [
+                            getAlertClass toast.Level
+                            "transition-all duration-300 ease-in-out"
+                            if toast.Level = Hidden then "opacity-0 transform translate-x-full"
+                        ]
+                        prop.children [ Html.text toast.Message ]
+                    ]
+                )
+            )
         ]
 
     let initialSidebarState =
@@ -342,7 +415,7 @@ let AppView () =
                                     prop.className "cursor-pointer"
                                     prop.onClick (fun _ -> toggleTheme())
                                     prop.children [
-                                        if theme = "dark" then
+                                        if theme = "business" then
                                             Fa.i [ Fa.Solid.Sun ] []
                                         else
                                             Fa.i [ Fa.Solid.Moon ] []

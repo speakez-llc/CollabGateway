@@ -2,8 +2,8 @@
 
 open System
 open System.Net
+open System.Text
 open System.Net.Http
-open CollabGateway.Server.Database
 open Giraffe
 open Giraffe.GoodRead
 open Fable.Remoting.Server
@@ -13,6 +13,7 @@ open CollabGateway.Shared.API
 open CollabGateway.Shared.Events
 open CollabGateway.Shared.Errors
 open CollabGateway.Server.EmailHelpers
+open CollabGateway.Server.Database
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open Npgsql
@@ -22,6 +23,12 @@ let private serverName =
     let value = Environment.GetEnvironmentVariable("VITE_BACKEND_URL")
     match value with
     | null | "" -> failwith "VITE_BACKEND_URL environment variable is not set."
+    | value -> value
+
+let private embeddingEndpoint =
+    let value = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT")
+    match value with
+    | null | "" -> failwith "OLLAMA_ENDPOINT environment variable is not set."
     | value -> value
 
 let getMessage (input: string): Async<string> =
@@ -40,6 +47,45 @@ let validateClipboardText (text: string) =
     else
         // Add more validation logic if needed
         true
+
+type EmbeddingResponse = {
+    embeddings: float[][]
+}
+
+type TextRequest = {
+    model: string
+    input: string
+    keep_alive: int
+}
+
+let generateVector (text: string) =
+    async {
+        use client = new HttpClient()
+        let requestUri = $"{embeddingEndpoint}/api/embed"
+        let content = new StringContent(JsonConvert.SerializeObject({ model = "granite-embedding:latest"; input = text; keep_alive = -1 }), Encoding.UTF8, "application/json")
+        let! response = client.PostAsync(requestUri, content) |> Async.AwaitTask
+        if not response.IsSuccessStatusCode then
+            let! errorContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            Console.WriteLine $"HTTP error: {response.StatusCode} - {errorContent}"
+        let! responseBody = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        try
+            let embeddingResponse = JsonConvert.DeserializeObject<EmbeddingResponse>(responseBody)
+            if embeddingResponse.embeddings = null || embeddingResponse.embeddings.Length = 0 then
+                failwith "Embedding is null or empty"
+            let vectorBody = embeddingResponse.embeddings.[0]
+            return vectorBody
+        with
+        | ex ->
+            Console.WriteLine $"Error deserializing response: {ex.Message}"
+            return Array.empty<float>
+    }
+
+let processSemanticSearch (text: string) =
+    async {
+        let! textVector = generateVector text
+        let! nearestIndustries = getNearestIndustries textVector
+        return nearestIndustries
+    }
 
 let processSmartForm (timeStamp: EventDateTime, streamToken: StreamToken, text: SmartFormRawContent) : Async<SignUpForm> =
     task {
@@ -206,6 +252,7 @@ let service = {
     LoadGicsTaxonomy = getGicsTaxonomyAsync
     RetrieveCountOfEmptyStreams = Projections.retrieveCountOfEmptyStreams
     ArchiveEmptyStreams = archiveEmptyStreams
+    ProcessSemanticSearch = processSemanticSearch
 }
 
 let webApp : HttpHandler =
