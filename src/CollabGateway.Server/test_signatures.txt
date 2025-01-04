@@ -2,7 +2,7 @@
 🏢 Job Title: Marketing Director 
 Marketing & Sales 
 Creative Solutions LLC 
-5678 Oak Avenue Suite 910 
+5678 Oak Avenue, Suite 910 
 Seattle, WA 98101  USA
 Office: +1 (555) 987-6543 
 📧 jane.smith@creativesolutions.fake
@@ -13,7 +13,7 @@ Michael Johnson
 Chief Financial Officer 
 Finance Department 
 FinancePro Inc. 
-4321 Maple Street Suite 234 
+4321 Maple Street, Suite 234 
 New York, NY 10001  USA
 Desk: +1 (555) 246-8102 
 Email: michael.johnson@financepro.fake
@@ -23,7 +23,7 @@ Human Resources Manager
 HR Department 
 E: emily.davis@peoplefirst.fake 
 O: (555) 135-7913 
-A: 7890 Pine Road Suite 345 
+A: 7890 Pine Road, Suite 345 
 Chicago, IL 60605  USA
 
 
@@ -33,7 +33,7 @@ Chicago, IL 60605  USA
 IT Services Division
 📱 Phone: +1 (555) 864-2097 
 TechSavvy Solutions 
-3210 Birch Lane Suite 678 
+3210 Birch Lane, Suite 678 
 San Francisco, CA 94103  USA
 
 
