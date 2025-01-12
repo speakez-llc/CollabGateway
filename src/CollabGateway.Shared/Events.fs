@@ -92,6 +92,9 @@ type PageEventCase =
         | UserSummaryPageVisited e -> e.Id
 
 type ButtonEventCase =
+    | DataPolicyAcceptButtonClicked of ButtonEvent
+    | DataPolicyDeclineButtonClicked of ButtonEvent
+    | DataPolicyResetButtonClicked of ButtonEvent
     | HomeButtonClicked of ButtonEvent
     | HomeProjectButtonClicked of ButtonEvent
     | HomeSignUpButtonClicked of ButtonEvent
@@ -115,9 +118,6 @@ type ButtonEventCase =
     | PowerBISiteButtonClicked of ButtonEvent
     | ThoughtSpotSiteButtonClicked of ButtonEvent
     | SpeakEZSiteButtonClicked of ButtonEvent
-    | DataPolicyAcceptButtonClicked of ButtonEvent
-    | DataPolicyDeclineButtonClicked of ButtonEvent
-    | DataPolicyResetButtonClicked of ButtonEvent
     | SummaryActivityButtonClicked of ButtonEvent
     | ContactActivityButtonClicked of ButtonEvent
     | SignUpActivityButtonClicked of ButtonEvent
@@ -125,6 +125,8 @@ type ButtonEventCase =
     | UserSummaryButtonClicked of ButtonEvent
     member this.Id =
         match this with
+        | DataPolicyDeclineButtonClicked e -> e.Id
+        | DataPolicyResetButtonClicked e -> e.Id
         | HomeButtonClicked e -> e.Id
         | HomeProjectButtonClicked e -> e.Id
         | HomeSignUpButtonClicked e -> e.Id
@@ -149,8 +151,6 @@ type ButtonEventCase =
         | ThoughtSpotSiteButtonClicked e -> e.Id
         | SpeakEZSiteButtonClicked e -> e.Id
         | DataPolicyAcceptButtonClicked e -> e.Id
-        | DataPolicyDeclineButtonClicked e -> e.Id
-        | DataPolicyResetButtonClicked e -> e.Id
         | SummaryActivityButtonClicked e -> e.Id
         | ContactActivityButtonClicked e -> e.Id
         | SignUpActivityButtonClicked e -> e.Id

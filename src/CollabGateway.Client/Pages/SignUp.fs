@@ -270,11 +270,11 @@ let private validateForm (form: SignUpForm) =
             Cmd.none
 
     let errors =
-        [ if String.IsNullOrWhiteSpace(form.Name) then Some("Name is required") else None
+        [ if String.IsNullOrWhiteSpace(form.Name) || form.Name.Length = 0 then Some("Name is required") else None
           if String.IsNullOrWhiteSpace(form.Email) then Some("Email is required") else None
           if String.IsNullOrWhiteSpace(form.JobTitle) then Some("Job Title is required") else None
           if String.IsNullOrWhiteSpace(form.Phone) then Some("Phone is required") else None
-          if String.IsNullOrEmpty(form.Industry) then Some("Industry is required") else None
+          if String.IsNullOrEmpty(form.Industry) || form.Industry.Length = 0 then Some("Industry is required") else None
           if not submittedEmailIsValid then Some("Email is not valid") else None ]
         |> List.choose id
 

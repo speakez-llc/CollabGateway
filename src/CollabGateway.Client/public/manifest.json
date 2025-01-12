@@ -1,0 +1,15 @@
+﻿{
+    "short_name": "Rower & SpeakEZ",
+    "name": "Collaboration Gateway",
+    "icons": [
+        {
+            "src": "img/Rower_Icon_Gold_t.ico",
+            "type": "image/x-icon",
+            "sizes": "any"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}

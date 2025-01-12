@@ -28,7 +28,6 @@ active_streams_without_datapolicy AS (
     SELECT DISTINCT stream_id
     FROM mt_events
     WHERE stream_id NOT IN (SELECT stream_id FROM streams_with_datapolicy)
-      AND is_archived = false
 )
 SELECT data->'Fields'->0->'UserGeoInfo'->'as'->>'asn' AS ASnumber,
        data->'Fields'->0->'UserGeoInfo'->>'isp' AS ISP,

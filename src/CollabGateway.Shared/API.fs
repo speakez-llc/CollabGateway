@@ -7,20 +7,6 @@ type DataPolicyChoice =
     | Declined
     | Unknown
 
-type PageName =
-    | DataPolicyPage
-    | HomePage
-    | ProjectPage
-    | CMSDataPage
-    | SignUpPage
-    | RowerPage
-    | SpeakEZPage
-    | ContactPage
-    | PartnersPage
-    | ActivityPage
-    | OverviewPage
-    | UserSummaryPage
-
 type ButtonName =
     | DataPolicyAcceptButton
     | DataPolicyDeclineButton
@@ -51,6 +37,20 @@ type ButtonName =
     | UserSummaryButton
     | ContactActivityButton
     | SignUpActivityButton
+type PageName =
+    | DataPolicyPage
+    | HomePage
+    | ProjectPage
+    | CMSDataPage
+    | SignUpPage
+    | RowerPage
+    | SpeakEZPage
+    | ContactPage
+    | PartnersPage
+    | ActivityPage
+    | OverviewPage
+    | UserSummaryPage
+
 
 type StreamToken = Guid
 type EventDateTime = DateTime
