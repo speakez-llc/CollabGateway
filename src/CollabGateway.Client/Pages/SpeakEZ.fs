@@ -102,7 +102,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Systm2"
                                         ]
                                         Html.p [
-                                            prop.text "Rather than following the 'AI hype train', Systm2 uses a unique approach to develop multiple paths to a verifiable result. Knowledge workers make and shape optimal decisions on mission-critical tasks while Systm2 provides user controls and a clear audit trail for compliance and transparency."
+                                            prop.text "Rather than following the 'AI hype train', Systm2 uses a unique approach to develop multiple paths to a verifiable result. Your knowledge workers use System2 to make and shape optimal decisions while Systm2 provides efficient 'fan out' of solution options with clear user control points and full audit trail for compliance and transparency."
                                         ]
                                     ]
                                 ]
@@ -127,7 +127,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "We have all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. Users have the ability to 'teach' the system, and the system learns from the users."
+                                            prop.text "Everyone has experienced how LLMs become less reliable - shallow - through overuse. SpeakEZ's systems are different - 'deep' by design - avoiding the inherent weakness of language models by using them efficiently. With Systm2, users have the ability to 'teach' the system, and the system learns from the users."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
