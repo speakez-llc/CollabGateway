@@ -73,7 +73,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Seasoned Experience, Modern Tools and Human Centered Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery' that combines long-standing and leading-edge machine learning tools to build and deploy customized real-time decision support systems. Solutions are designed with security and privacy as first-class considerations, and are built to run efficiently in a variety of environments. If you're looking for a secure industrial-strength platform to support skilled, mission-critical knowledge work - all with lower operational overhead, SpeakEZ is the place to start."
+                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine battle-tested machine learning with leading-edge 'AI' tooling to build deploy trustworthy decision support systems. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
                                         ]
                                     ]
                                 ]
@@ -95,14 +95,14 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Innovation without Compromise"
                                         ]
                                         Html.p [
-                                            prop.text "Because of the .com and SaaS eras, we've become inured to divulging data as a devil's bargain with Corporate Surveillance conglomerates. Their real business is selling ads to you, or worse, selling your data to others. SpeakEZ is security-first and is solely focused on delivering high quality knowledge services."
+                                            prop.text "After years of SaaS 'lock in' and surveillance capitalism, companies are waking up to the inherent compromises in dealing with large service providers. SpeakEZ is different. We build security-first and privacy-first systems tailor made for you and your users, with no shadowy agenda hidden in the terms of service."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
                                             prop.text "Systm2"
                                         ]
                                         Html.p [
-                                            prop.text "Rather than following the 'AI hype train' to the fastest answer, SpeakEZ's Systm2 platform quickly develops multiple paths to the best answer. It helps knowledge workers make optimal decisions on mission-critical tasks."
+                                            prop.text "Rather than following the 'AI hype train', Systm2 uses a unique approach to develop multiple paths to a verifiable result. Knowledge workers make and shape optimal decisions on mission-critical tasks while Systm2 provides user controls and a clear audit trail for compliance and transparency."
                                         ]
                                     ]
                                 ]
@@ -127,7 +127,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "We have all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. "
+                                            prop.text "We have all experienced how LLMs become more shallow as they age. SpeakEZ's systems are 'deep' by design, by virtue of their ability to continue to grow and adapt with new data. Users have the ability to 'teach' the system, and the system learns from the users."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
