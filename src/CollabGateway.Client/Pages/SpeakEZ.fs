@@ -73,7 +73,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Seasoned Experience, Modern Tools and Human Centered Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine battle-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
+                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine battle-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully within your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
                                         ]
                                     ]
                                 ]
