@@ -95,7 +95,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Innovation without Compromise"
                                         ]
                                         Html.p [
-                                            prop.text "After years of SaaS 'lock in' and surveillance capitalism, companies are waking up to the inherent compromises in dealing with large service providers. SpeakEZ is different. We build security-first and privacy-first systems tailored to you and your business, with no shadowy agenda hidden in the terms of service."
+                                            prop.text "After years of SaaS 'lock in' and surveillance capitalism, people are waking up to the inherent compromises in dealing with large service providers. SpeakEZ is different. We build security-first and privacy-first systems tailored to you and your business, with no shadowy agenda hidden in the terms of service."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
