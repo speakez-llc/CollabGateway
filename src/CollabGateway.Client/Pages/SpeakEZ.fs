@@ -127,7 +127,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "Everyone has seen how LLMs become less reliable - shallow - through overuse. Systm2 is different - 'deep' by design - avoiding inherent weakness in language models by being sparse and targeted in their use. With Systm2, users have the ability to 'teach' the system, and the system learns by taking instruction from users."
+                                            prop.text "Everyone has seen LLMs grow 'shallow' through overuse. Systm2 is different - 'deep' by design - avoiding inherent weakness in language models by being sparse and targeted in their application. With our approach, users have the ability to 'teach' the system, and System2 can improve with guidance from users."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
