@@ -70,7 +70,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.children [
                                         Html.h1 [
                                             prop.className "card-title mx-auto"
-                                            prop.text "Seasoned Experience, Modern Tools and Human Centered Design"
+                                            prop.text "Seasoned Experience, Modern Tools & Human Centered Design"
                                         ]
                                         Html.p [
                                             prop.text "SpeakEZ is an 'AI Refinery'. We combine battle-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
@@ -95,7 +95,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Innovation without Compromise"
                                         ]
                                         Html.p [
-                                            prop.text "After years of SaaS 'lock in' and surveillance capitalism, companies are waking up to the inherent compromises in dealing with large service providers. SpeakEZ is different. We build security-first and privacy-first systems tailor made for you and your users, with no shadowy agenda hidden in the terms of service."
+                                            prop.text "After years of SaaS 'lock in' and surveillance capitalism, companies are waking up to the inherent compromises in dealing with large service providers. SpeakEZ is different. We build security-first and privacy-first systems tailored to you and your business, with no shadowy agenda hidden in the terms of service."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
@@ -127,7 +127,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "Everyone has experienced how LLMs become less reliable - shallow - through overuse. SpeakEZ's systems are different - 'deep' by design - avoiding the inherent weakness of language models by using them efficiently. With Systm2, users have the ability to 'teach' the system, and the system learns from the users."
+                                            prop.text "Everyone has seen how LLMs become less reliable - shallow - through overuse. Systm2 is different - 'deep' by design - avoiding inherent weakness in language models by being sparse and targeted in their use. With Systm2, users have the ability to 'teach' the system, and the system learns from the users."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
