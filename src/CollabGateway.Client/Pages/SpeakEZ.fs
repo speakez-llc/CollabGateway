@@ -16,7 +16,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Next-Gen Decision Support For Speed, Security And The Bottom Line" }, Cmd.none
+let private init () = { Message = "High Speed Decision Support  And The Bottom Line" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -70,10 +70,10 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.children [
                                         Html.h1 [
                                             prop.className "card-title mx-auto"
-                                            prop.text "Seasoned Experience, Modern Tools & Human Centered Design"
+                                            prop.text "Seasoned Experience - Modern Tools - Human Centered Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine battle-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
+                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine time-tested machine learning with leading-edge 'AI' tooling to deliver trustworthy decision support that remains fully in your sphere of control. If you envision a high-performance, secure, industrial-strength solution for your company, SpeakEZ can help, both on the backplane and 'at the edge'. With our unique ability to deliver full-scale benefits with lower operational overhead and reduced environmental impact, Systm2 is the key to making your vision a reality that exceeds expectations."
                                         ]
                                     ]
                                 ]
@@ -102,7 +102,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Systm2"
                                         ]
                                         Html.p [
-                                            prop.text "Rather than following the 'AI hype train', Systm2 uses a unique approach to develop multiple paths to a verifiable result. Your knowledge workers use System2 to make and shape optimal decisions while Systm2 provides efficient 'fan out' of solution options with clear user control points and full audit trail for compliance and transparency."
+                                            prop.text "Rather than following the 'AI hype train', Systm2 uses a unique approach to develop multiple paths to a traceable, grounded result. The platform is woven into in-house systems to help users make and shape optimal choices. Its 'fan out' pattern behind the scenes provides options with clear user control points and a full audit trail for compliance and transparency."
                                         ]
                                     ]
                                 ]
@@ -127,7 +127,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Deep Systems"
                                         ]
                                         Html.p [
-                                            prop.text "Everyone has seen LLMs grow 'shallow' through overuse. Systm2 is different - 'deep' by design - avoiding inherent weakness in language models by being sparse and targeted in their application. With our approach, users have the ability to 'teach' the system, and System2 can improve over time with guidance from users."
+                                            prop.text "Everyone has seen LLMs grow 'shallow' through overuse. Systm2 is different - 'deep' by design - avoiding inherent weakness in language models by being targeted in their use. With our approach, knowledge workers have the ability to guide the system in-flight, and System2 improves over time as that guidance grows."
                                         ]
                                         Html.h2 [
                                             prop.className "card-title"
