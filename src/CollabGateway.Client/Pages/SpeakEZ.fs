@@ -16,7 +16,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Next-Gen Decision Support For Your Security And Your Bottom Line" }, Cmd.none
+let private init () = { Message = "Next-Gen Decision Support For Speed, Security And The Bottom Line" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
