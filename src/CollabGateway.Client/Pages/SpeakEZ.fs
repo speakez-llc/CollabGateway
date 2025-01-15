@@ -16,7 +16,7 @@ type private Msg =
     | AskForMessage of bool
     | MessageReceived of ServerResult<string>
 
-let private init () = { Message = "Next-Gen Decision Support For Speed, Security And The Bottom Line" }, Cmd.none
+let private init () = { Message = "Next Generation Decision Support For Speed, Security And The Bottom Line" }, Cmd.none
 
 let private update (msg:Msg) (model:State) : State * Cmd<Msg> =
     match msg with
@@ -73,7 +73,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Seasoned Experience, Modern Tools & Human Centered Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine field-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ can be your guide in making that vision a reality."
+                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine field-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ should be your first call to make that vision a reality."
                                         ]
                                     ]
                                 ]
