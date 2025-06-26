@@ -237,12 +237,12 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "card-title"
                                     prop.children [
                                         Html.a [
-                                            prop.href "https://speakez.ai/"
+                                            prop.href "https://speakez.tech/"
                                             prop.target "_blank"
                                             prop.onClick (fun _ -> parentDispatch (ProcessButtonClicked SpeakEZSiteButton))
                                             prop.children [
                                                 Html.span [
-                                                    prop.text "SpeakEZ.ai"
+                                                    prop.text "SpeakEZ.tech"
                                                 ]
                                                 Html.i [
                                                     prop.className "fas fa-external-link-alt ml-2 text-gold"
