@@ -15,6 +15,11 @@ export default ({ mode }) => {
                 '/api': env.VITE_BASE_URL || 'http://localhost:5000',
             }
         },
+        preview: {
+            port: 8080,
+            host: true,
+            allowedHosts: ['rower.speakez.tech', 'rower-stg.speakez.tech', 'localhost']
+        },
         build: {
             outDir: "../../publish/app/public"
         }
