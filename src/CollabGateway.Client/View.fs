@@ -162,63 +162,63 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         { state with DataPolicyChoice = choice }, Cmd.none
     | ShowToast (message, level) ->
         // Check if toast with same message exists
-        let existingToast = 
-            state.Toasts 
+        let existingToast =
+            state.Toasts
             |> List.tryFind (fun t -> t.Message = message && t.Level = level)
-        
+
         match existingToast with
         | Some toast ->
             // Remove existing toast and create new one with same message
-            let filteredToasts = 
-                state.Toasts 
+            let filteredToasts =
+                state.Toasts
                 |> List.filter (fun t -> t.Index <> toast.Index)
-            
-            let newToast = { 
+
+            let newToast = {
                 Index = state.NextToastIndex
                 Message = message
-                Level = level 
+                Level = level
             }
-            
-            let hideCmd = 
-                Cmd.OfAsync.perform 
+
+            let hideCmd =
+                Cmd.OfAsync.perform
                     (fun () -> async {
                         do! Async.Sleep 4000
-                        return HideToast newToast.Index 
+                        return HideToast newToast.Index
                     }) () id
-            
-            { state with 
+
+            { state with
                 Toasts = newToast :: filteredToasts
-                NextToastIndex = state.NextToastIndex + 1 
+                NextToastIndex = state.NextToastIndex + 1
             }, hideCmd
-            
+
         | None ->
             // Create new toast as before
-            let newToast = { 
+            let newToast = {
                 Index = state.NextToastIndex
                 Message = message
-                Level = level 
+                Level = level
             }
-            
-            let hideCmd = 
-                Cmd.OfAsync.perform 
+
+            let hideCmd =
+                Cmd.OfAsync.perform
                     (fun () -> async {
                         do! Async.Sleep 4000
-                        return HideToast newToast.Index 
+                        return HideToast newToast.Index
                     }) () id
-            
-            { state with 
+
+            { state with
                 Toasts = newToast :: state.Toasts
-                NextToastIndex = state.NextToastIndex + 1 
+                NextToastIndex = state.NextToastIndex + 1
             }, hideCmd
 
     | HideToast index ->
-        let newState = { 
-            state with 
-                Toasts = state.Toasts |> List.map (fun t -> 
+        let newState = {
+            state with
+                Toasts = state.Toasts |> List.map (fun t ->
                     if t.Index = index then { t with Level = Hidden } else t)
         }
-        let removeCmd = 
-            Cmd.OfAsync.perform 
+        let removeCmd =
+            Cmd.OfAsync.perform
                 (fun () -> async {
                     do! Async.Sleep 1000  // Match CSS transition duration
                     return RemoveToast index
@@ -226,10 +226,10 @@ let update (msg: ViewMsg) (state: State) : State * Cmd<ViewMsg> =
         newState, removeCmd
 
     | RemoveToast index ->
-        { state with 
-            Toasts = List.filter (fun t -> t.Index <> index) state.Toasts 
+        { state with
+            Toasts = List.filter (fun t -> t.Index <> index) state.Toasts
         }, Cmd.none
-    
+
     | ProcessPageVisited pageName ->
         processPageVisited pageName |> ignore
         state, Cmd.none
@@ -300,7 +300,7 @@ let AppView () =
         Html.div [
             prop.className "toast toast-end"
             prop.children (
-                toasts |> List.map (fun toast -> 
+                toasts |> List.map (fun toast ->
                     Html.div [
                         prop.key toast.Index
                         prop.className [
@@ -650,11 +650,11 @@ let AppView () =
                                         prop.children [
                                             if isOpen then
                                                 Html.span [
-                                                    prop.dangerouslySetInnerHTML "&copy; 2024 SpeakEZ LLC. <br> All Rights Reserved."
+                                                    prop.dangerouslySetInnerHTML "&copy; 2024 SpeakEZ Technologies <br> All Rights Reserved."
                                                 ]
                                             else
                                                 Html.span [
-                                                    prop.title "Copyright 2024 SpeakEZ LLC. All Rights Reserved."
+                                                    prop.title "Copyright 2024 SpeakEZ Technologies. All Rights Reserved."
                                                     prop.children [
                                                         Fa.i [ Fa.Solid.Copyright ] []
                                                     ]
