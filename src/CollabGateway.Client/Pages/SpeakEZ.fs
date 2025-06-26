@@ -73,7 +73,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Seasoned Experience, Modern Tools & Human Centered Design"
                                         ]
                                         Html.p [
-                                            prop.text "SpeakEZ is an 'AI Refinery'. We combine field-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. If you imagine a high-performance, secure industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge'- all with lower operational overhead and minimized environmental impact - SpeakEZ should be your first call to make that vision a reality."
+                                            prop.text "SpeakEZ Technologies has an 'AI Refinery' platform. We combine field-tested machine learning with leading-edge 'AI' tooling to build and deploy trustworthy decision support systems that remain fully in your sphere of control. Imagine a high-performance, secure, industrial-strength platform to support mission-critical knowledge work on the backplane and 'at the edge' - all with lower operational overhead and minimized environmental impact. If that fits the role of 'AI' in your business, SpeakEZ should be your first choice to make that vision a reality."
                                         ]
                                     ]
                                 ]
@@ -137,7 +137,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Many companies that are new to 'AI' are just now discovering some of the techniques that our engineers have been utilizing for decades."
                                         ]
                                         Html.p [
-                                            prop.text "Houston Haynes, the founder of SpeakEZ, has more than 20 years of building intelligent systems in various forms. It's that experience that brings unique value to our collaboration with Rower Consulting."
+                                            prop.text "Houston Haynes, the founder of SpeakEZ Technologies, has more than 20 years of building intelligent systems in various forms. It's that experience that brings unique value to our collaboration with Rower Consulting."
                                         ]
                                     ]
                                 ]
