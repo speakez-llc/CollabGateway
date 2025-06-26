@@ -119,7 +119,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                             prop.text "Step 3: Introduce Something New"
                                         ]
                                         Html.p [
-                                            prop.text "Our partner SpeakEZ has provided a sample application that lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
+                                            prop.text "Our partner SpeakEZ Technologies has provided a sample application that lets you explore data in surprising new ways, and yes, even Large Language Models are allowed to enter the conversation."
                                         ]
                                     ]
                                 ]
