@@ -54,8 +54,15 @@ export default {
         themes: [
             {
                 business: {
-                    ...require("daisyui/src/theming/themes")["black"],
-                    accent: "#ED5B00",
+                    "primary": "#1C4E80",
+                    "secondary": "#7C909A",
+                    "accent": "#ED5B00",  // Your custom accent
+                    "neutral": "#23282E",
+                    "base-100": "#010d12",  // Your custom background
+                    "info": "#0EA5E9",
+                    "success": "#22C55E",
+                    "warning": "#F59E0B",
+                    "error": "#EF4444",
                 },
             },
             {
