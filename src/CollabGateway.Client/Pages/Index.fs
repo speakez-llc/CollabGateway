@@ -62,7 +62,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                                     prop.className "flex flex-col space-y-4 mt-4 items-center md:items-end"
                                     prop.children [
                                         Html.p [
-                                            prop.text "Rower Consulting & SpeakEZ Platform Services are proud to present a showcase that demonstrates return-of-value on existing analytics investments while establishing a clear path for bringing in high-leverage additions to your solution portfolio. Our fully functional portal site demonstrates in real time how this hybrid approach can help advance an organization's mission while protecting the bottom line."
+                                            prop.text "Rower Consulting & SpeakEZ Technologies are proud to present a showcase that demonstrates return-of-value on existing analytics investments while establishing a clear path for bringing in high-leverage additions to your solution portfolio. Our fully functional portal site demonstrates in real time how this hybrid approach can help advance an organization's mission while protecting the bottom line."
                                         ]
                                         Html.p [
                                             prop.className "text-left"
