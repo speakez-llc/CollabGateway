@@ -520,7 +520,7 @@ let AppView () =
                                                         prop.onClick (fun e -> handleItemClick(); dispatch (ProcessButtonClicked SpeakEZButton); Router.goToUrl(e))
                                                         prop.children [
                                                             Html.img [
-                                                                prop.src "/img/SpeakEZ_RowerGold_Icon.svg"
+                                                                prop.src "/img/SpeakEZcoloricon_small.svg"
                                                                 prop.alt "SpeakEZ Icon"
                                                                 prop.style [
                                                                     style.width (length.px 24)

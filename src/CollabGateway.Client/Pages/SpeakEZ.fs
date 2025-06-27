@@ -146,7 +146,7 @@ let IndexView (parentDispatch : ViewMsg -> unit) =
                     ]
                 ]
                 Html.div [
-                    prop.className "card  mx-auto bg-base-200 shadow-3xl rounded-3xl"
+                    prop.className "card  mx-auto shadow-3xl rounded-3xl"
                     prop.children [
                         Html.div [
                             prop.className "flex"

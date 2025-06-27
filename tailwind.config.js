@@ -54,7 +54,7 @@ export default {
         themes: [
             {
                 business: {
-                    ...require("daisyui/src/theming/themes")["business"],
+                    ...require("daisyui/src/theming/themes")["black"],
                     accent: "#ED5B00",
                 },
             },
